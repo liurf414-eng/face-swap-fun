@@ -130,15 +130,31 @@ function App() {
 
   // 点击登录按钮时，触发隐藏的 Google 登录按钮
   const handleGoogleSignInClick = () => {
+    console.log('点击登录按钮')
     if (window.google && window.google.accounts && window.google.accounts.id) {
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // 如果无法显示提示，尝试直接登录
+      console.log('Google API 已加载')
+      try {
+        // 使用 One Tap 或 Modal 登录
+        window.google.accounts.id.prompt((notification) => {
           console.log('Google登录提示:', notification)
-        }
-      })
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            // 如果无法显示 One Tap，创建一个临时的登录按钮
+            console.log('One Tap 无法显示，尝试其他方法')
+            // 可以直接调用 initialize 并渲染按钮
+            if (notification.isDismissedMoment() || notification.isNotDisplayed()) {
+              // 打开 Google 登录页面
+              const loginUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com&redirect_uri=${window.location.origin}&response_type=code&scope=openid email profile`
+              window.location.href = loginUrl
+            }
+          }
+        })
+      } catch (error) {
+        console.error('登录错误:', error)
+        alert('登录功能暂时不可用，请刷新页面重试。')
+      }
     } else {
-      alert('Google Sign-In is not available. Please refresh the page.')
+      console.error('Google Sign-In API 未加载')
+      alert('Google 登录功能暂时不可用，请刷新页面重试。')
     }
   }
 
