@@ -799,28 +799,26 @@ function App() {
             )}
           </aside>
         </div>
-      </main>
 
-      {/* 庆祝动画 */}
-      {showCelebration && (
-        <div className="celebration-overlay">
-          <div className="confetti">
-            <div className="confetti-piece"></div>
-            <div className="confetti-piece"></div>
-            <div className="confetti-piece"></div>
-            <div className="confetti-piece"></div>
-            <div className="confetti-piece"></div>
-            <div className="confetti-piece"></div>
-            <div className="confetti-piece"></div>
-            <div className="confetti-piece"></div>
+        {/* 庆祝动画 */}
+        {showCelebration && (
+          <div className="celebration-overlay">
+            <div className="confetti">
+              <div className="confetti-piece"></div>
+              <div className="confetti-piece"></div>
+              <div className="confetti-piece"></div>
+              <div className="confetti-piece"></div>
+              <div className="confetti-piece"></div>
+              <div className="confetti-piece"></div>
+              <div className="confetti-piece"></div>
+              <div className="confetti-piece"></div>
+            </div>
+            <div className="success-message">
+              <h2>🎉 Amazing!</h2>
+              <p>Your meme is ready!</p>
+            </div>
           </div>
-          <div className="success-message">
-            <h2>🎉 Amazing!</h2>
-            <p>Your meme is ready!</p>
-          </div>
-        </div>
-      )}
-      
+        )}
       </main>
       )}
 
@@ -897,6 +895,7 @@ function App() {
       <footer className="footer">
         <p>© 2025 FaceAI Meme - AI-Powered Face Swap Application</p>
       </footer>
+      </div>
     </div>
   )
 }
