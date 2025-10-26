@@ -128,33 +128,37 @@ function App() {
     }
   }
 
-  // 点击登录按钮时，触发隐藏的 Google 登录按钮
-  const handleGoogleSignInClick = () => {
+  // 点击登录按钮时的处理
+  const handleGoogleSignInClick = async () => {
     console.log('点击登录按钮')
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      console.log('Google API 已加载')
+    
+    // 方案 1: 使用 Popup 登录
+    if (window.google && window.google.accounts && window.google.accounts.oauth2) {
       try {
-        // 使用 One Tap 或 Modal 登录
-        window.google.accounts.id.prompt((notification) => {
-          console.log('Google登录提示:', notification)
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            // 如果无法显示 One Tap，创建一个临时的登录按钮
-            console.log('One Tap 无法显示，尝试其他方法')
-            // 可以直接调用 initialize 并渲染按钮
-            if (notification.isDismissedMoment() || notification.isNotDisplayed()) {
-              // 打开 Google 登录页面
-              const loginUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com&redirect_uri=${window.location.origin}&response_type=code&scope=openid email profile`
-              window.location.href = loginUrl
-            }
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: '457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com',
+          scope: 'openid email profile',
+          callback: (response) => {
+            console.log('登录响应:', response)
+            // 处理响应
+            alert('登录成功！功能开发中...')
           }
         })
+        client.requestAccessToken({ prompt: '' })
       } catch (error) {
-        console.error('登录错误:', error)
-        alert('登录功能暂时不可用，请刷新页面重试。')
+        console.error('OAuth2 错误:', error)
+        // 降级到普通 OAuth
+        window.open(
+          `https://accounts.google.com/o/oauth2/v2/auth?client_id=457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com&redirect_uri=${encodeURIComponent(window.location.origin)}&response_type=code&scope=openid%20email%20profile`,
+          'Google Login',
+          'width=500,height=600'
+        )
       }
     } else {
-      console.error('Google Sign-In API 未加载')
-      alert('Google 登录功能暂时不可用，请刷新页面重试。')
+      console.error('Google API 未加载，使用备用方案')
+      // 备用方案：直接跳转
+      const loginUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com&redirect_uri=${encodeURIComponent(window.location.origin)}&response_type=code&scope=openid%20email%20profile`
+      window.location.href = loginUrl
     }
   }
 
