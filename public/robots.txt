@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://faceaihub.com/sitemap.xml
+
+# Disallow admin areas (if any)
+Disallow: /admin/
+Disallow: /api/
+Disallow: /uploads/
+
+# Allow important pages
+Allow: /
+Allow: /templates
+Allow: /generate

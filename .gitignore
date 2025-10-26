@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production
+/build
+/dist
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+Thumbs.db
+nul
+
+# Test files
+test-*.js
+*.test.js
+*.spec.js
+
+# Documentation that shouldn't be in production
+422_ERROR_SOLUTION.md
+AI_PROMPTS.md
+VIDEO_GUIDE.md
+VIDEO_IDEAS.md
+VIDEO_SOURCING_GUIDE.md
+TESTING_GUIDE.md
+SETUP_GUIDE.md
+README-UPLOAD.md
+
+# Check files
+templates_check_bad.json
+templates_check_ok.json
+
+# Uploads and local videos
+server/uploads/
+videos/
+public/videos/
+
+# Scripts (not needed for production)
+scripts/

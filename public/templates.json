@@ -1,0 +1,263 @@
+[
+  {
+    "id": 1,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\duo\\replicate-prediction-13g23vf881rm80ct08f8h9ag50.mp4",
+    "fileName": "replicate-prediction-13g23vf881rm80ct08f8h9ag50.mp4",
+    "category": "duo",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-13g23vf881rm80ct08f8h9ag50.mp4"
+  },
+  {
+    "id": 2,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\duo\\replicate-prediction-1fysh1tmfsrme0ct08g9nv53vm.mp4",
+    "fileName": "replicate-prediction-1fysh1tmfsrme0ct08g9nv53vm.mp4",
+    "category": "duo",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-1fysh1tmfsrme0ct08g9nv53vm.mp4"
+  },
+  {
+    "id": 3,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\duo\\replicate-prediction-cbrz4bm5tsrmc0ct08h8e9varr.mp4",
+    "fileName": "replicate-prediction-cbrz4bm5tsrmc0ct08h8e9varr.mp4",
+    "category": "duo",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-cbrz4bm5tsrmc0ct08h8e9varr.mp4"
+  },
+  {
+    "id": 4,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\duo\\replicate-prediction-e4md67vf85rme0ct08db2jbgzg.mp4",
+    "fileName": "replicate-prediction-e4md67vf85rme0ct08db2jbgzg.mp4",
+    "category": "duo",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-e4md67vf85rme0ct08db2jbgzg.mp4"
+  },
+  {
+    "id": 5,
+    "name": "Video",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\duo\\video.mp4",
+    "fileName": "video.mp4",
+    "category": "duo",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/video.mp4"
+  },
+  {
+    "id": 6,
+    "name": "Giphy (1)",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\funny\\giphy (1).mp4",
+    "fileName": "giphy (1).mp4",
+    "category": "funny",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (1).mp4"
+  },
+  {
+    "id": 7,
+    "name": "Giphy (2)",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\funny\\giphy (2).mp4",
+    "fileName": "giphy (2).mp4",
+    "category": "funny",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (2).mp4"
+  },
+  {
+    "id": 8,
+    "name": "Giphy (3)",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\funny\\giphy (3).mp4",
+    "fileName": "giphy (3).mp4",
+    "category": "funny",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (3).mp4"
+  },
+  {
+    "id": 9,
+    "name": "Giphy (4)",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\funny\\giphy (4).mp4",
+    "fileName": "giphy (4).mp4",
+    "category": "funny",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (4).mp4"
+  },
+  {
+    "id": 10,
+    "name": "Giphy (5)",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\funny\\giphy (5).mp4",
+    "fileName": "giphy (5).mp4",
+    "category": "funny",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (5).mp4"
+  },
+  {
+    "id": 11,
+    "name": "Giphy (6)",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\funny\\giphy (6).mp4",
+    "fileName": "giphy (6).mp4",
+    "category": "funny",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (6).mp4"
+  },
+  {
+    "id": 12,
+    "name": "Giphy",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\funny\\giphy.mp4",
+    "fileName": "giphy.mp4",
+    "category": "funny",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy.mp4"
+  },
+  {
+    "id": 13,
+    "name": "Aura",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\magic\\aura.mp4",
+    "fileName": "aura.mp4",
+    "category": "magic",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/aura.mp4"
+  },
+  {
+    "id": 14,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\magic\\replicate-prediction-9bfv7gbv2hrmc0ct085bn6phfm.mp4",
+    "fileName": "replicate-prediction-9bfv7gbv2hrmc0ct085bn6phfm.mp4",
+    "category": "magic",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-9bfv7gbv2hrmc0ct085bn6phfm.mp4"
+  },
+  {
+    "id": 15,
+    "name": "Snaps ",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\magic\\snaps .mp4",
+    "fileName": "snaps .mp4",
+    "category": "magic",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/snaps .mp4"
+  },
+  {
+    "id": 16,
+    "name": "Sparkle",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\magic\\Sparkle.mp4",
+    "fileName": "Sparkle.mp4",
+    "category": "magic",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/Sparkle.mp4"
+  },
+  {
+    "id": 17,
+    "name": "Touches",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\magic\\touches.mp4",
+    "fileName": "touches.mp4",
+    "category": "magic",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/touches.mp4"
+  },
+  {
+    "id": 18,
+    "name": "WHOOSH",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\magic\\WHOOSH.mp4",
+    "fileName": "WHOOSH.mp4",
+    "category": "magic",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/WHOOSH.mp4"
+  },
+  {
+    "id": 19,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\reactions\\717c4da6a019d076ba594a9452f13eae415a18f1c1bdd463de077f2e252587da.mp4",
+    "fileName": "717c4da6a019d076ba594a9452f13eae415a18f1c1bdd463de077f2e252587da.mp4",
+    "category": "reactions",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/717c4da6a019d076ba594a9452f13eae415a18f1c1bdd463de077f2e252587da.mp4"
+  },
+  {
+    "id": 20,
+    "name": "Frightened",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\reactions\\frightened.mp4",
+    "fileName": "frightened.mp4",
+    "category": "reactions",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/frightened.mp4"
+  },
+  {
+    "id": 21,
+    "name": "Surprise",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\reactions\\surprise.mp4",
+    "fileName": "surprise.mp4",
+    "category": "reactions",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/surprise.mp4"
+  },
+  {
+    "id": 22,
+    "name": "Banana ",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\slapstick\\Banana .mp4",
+    "fileName": "Banana .mp4",
+    "category": "slapstick",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/Banana .mp4"
+  },
+  {
+    "id": 23,
+    "name": "Chili",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\slapstick\\chili.mp4",
+    "fileName": "chili.mp4",
+    "category": "slapstick",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/chili.mp4"
+  },
+  {
+    "id": 24,
+    "name": "Exaggerated ",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\slapstick\\exaggerated .mp4",
+    "fileName": "exaggerated .mp4",
+    "category": "slapstick",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/exaggerated .mp4"
+  },
+  {
+    "id": 25,
+    "name": "Wrestling",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\slapstick\\Wrestling.mp4",
+    "fileName": "Wrestling.mp4",
+    "category": "slapstick",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/Wrestling.mp4"
+  },
+  {
+    "id": 26,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\stylemakeovers\\replicate-prediction-1spggf2t59rm80ct089a4hhdkm.mp4",
+    "fileName": "replicate-prediction-1spggf2t59rm80ct089a4hhdkm.mp4",
+    "category": "stylemakeovers",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-1spggf2t59rm80ct089a4hhdkm.mp4"
+  },
+  {
+    "id": 27,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\stylemakeovers\\replicate-prediction-2qr3q99wg5rme0ct08baew3b44.mp4",
+    "fileName": "replicate-prediction-2qr3q99wg5rme0ct08baew3b44.mp4",
+    "category": "stylemakeovers",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-2qr3q99wg5rme0ct08baew3b44.mp4"
+  },
+  {
+    "id": 28,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\stylemakeovers\\replicate-prediction-r0krvfbbb5rme0ct08aakbbjxw.mp4",
+    "fileName": "replicate-prediction-r0krvfbbb5rme0ct08aakbbjxw.mp4",
+    "category": "stylemakeovers",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-r0krvfbbb5rme0ct08aakbbjxw.mp4"
+  },
+  {
+    "id": 29,
+    "name": "视频模板",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\stylemakeovers\\replicate-prediction-w8y2d5c74drm80ct0878vbna04.mp4",
+    "fileName": "replicate-prediction-w8y2d5c74drm80ct0878vbna04.mp4",
+    "category": "stylemakeovers",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-w8y2d5c74drm80ct0878vbna04.mp4"
+  }
+]
