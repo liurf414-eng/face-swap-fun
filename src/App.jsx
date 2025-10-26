@@ -191,6 +191,12 @@ function App() {
     setUser(null)
     localStorage.removeItem('user')
     setMyVideos([])
+    setCurrentPage('home')
+    // 关闭下拉菜单
+    const menu = document.querySelector('.user-dropdown')
+    if (menu) {
+      menu.classList.remove('show')
+    }
   }
 
   // 保存生成的视频到"我的"列表
@@ -516,7 +522,9 @@ function App() {
       <div className="main-content">
       <header className="header">
         <div className="header-top">
-          <h2 className="site-title">Create Funny Memes</h2>
+          <div className="header-title">
+            🎭 FaceAI Meme
+          </div>
           <div className="header-actions">
             {user ? (
               <div className="user-menu">
