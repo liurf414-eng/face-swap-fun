@@ -167,7 +167,8 @@ function App() {
                 const savedVideos = localStorage.getItem('myVideos') || '[]'
                 setMyVideos(JSON.parse(savedVideos))
                 
-                alert('登录成功！欢迎 ' + userInfo.name + '!')
+                // 显示欢迎信息（可选）
+                console.log('✅ 登录成功！欢迎 ' + userInfo.name + '!')
               } catch (error) {
                 console.error('获取用户信息失败:', error)
                 alert('登录成功，但无法获取用户信息')
