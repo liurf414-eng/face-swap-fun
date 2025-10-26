@@ -56,6 +56,7 @@ function App() {
   const [user, setUser] = useState(null)  // 新增：用户信息
   const [showMyVideos, setShowMyVideos] = useState(false)  // 新增：显示我的视频
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
+  const [currentPage, setCurrentPage] = useState('home')  // 新增：当前页面
   const MAX_GENERATIONS = 4  // 每日最大生成次数
 
   // 分类名称映射
@@ -480,10 +481,42 @@ function App() {
         <div className="particle"></div>
         <div className="particle"></div>
       </div>
-      
+
+      {/* 左侧导航栏 */}
+      <div className="sidebar">
+        <div className="sidebar-logo">
+          <h1>🎭 FaceAI Meme</h1>
+        </div>
+        <nav className="sidebar-nav">
+          <button 
+            className={`nav-item ${currentPage === 'home' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('home')}
+          >
+            🏠 Home
+          </button>
+          {user && (
+            <button 
+              className={`nav-item ${currentPage === 'me' ? 'active' : ''}`}
+              onClick={() => setCurrentPage('me')}
+            >
+              👤 Me
+            </button>
+          )}
+        </nav>
+        <div className="sidebar-footer">
+          {!user && (
+            <button className="sidebar-login" onClick={handleGoogleSignInClick}>
+              Log In
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 主内容区域 */}
+      <div className="main-content">
       <header className="header">
         <div className="header-top">
-          <h2 className="site-title">🎭 FaceAI Meme</h2>
+          <h2 className="site-title">Create Funny Memes</h2>
           <div className="header-actions">
             {user ? (
               <>
@@ -517,6 +550,7 @@ function App() {
         )}
       </header>
 
+      {currentPage === 'home' && (
       <main className="main">
         <div className="content-wrapper">
           {/* 左侧：模板选择区 */}
@@ -785,6 +819,79 @@ function App() {
             <p>Your meme is ready!</p>
           </div>
         </div>
+      )}
+      
+      </main>
+      )}
+
+      {currentPage === 'me' && user && (
+        <main className="main">
+          <div className="content-wrapper">
+            <div className="me-section">
+              <div className="me-header">
+                <img src={user.picture} alt={user.name} className="me-avatar" />
+                <div className="me-info">
+                  <h2>{user.name}</h2>
+                  <p>{user.email}</p>
+                  <div className="me-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Videos</span>
+                      <span className="stat-value">{myVideos.length}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Level</span>
+                      <span className="stat-value">{Math.floor(myVideos.length / 10) + 1}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="me-content">
+                <h3>📁 My Created Videos</h3>
+                <div className="my-videos-grid">
+                  {myVideos.length === 0 ? (
+                    <div className="empty-message">
+                      <p>No videos yet. Start creating!</p>
+                    </div>
+                  ) : (
+                    myVideos.map((video) => (
+                      <div key={video.id} className="my-video-card">
+                        <video
+                          src={video.url}
+                          muted
+                          playsInline
+                          style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                        />
+                        <div className="my-video-info">
+                          <p className="video-date">{new Date(video.timestamp).toLocaleDateString()}</p>
+                          <button 
+                            className="download-btn-small"
+                            onClick={() => window.open(video.url, '_blank')}
+                          >
+                            📥 Download
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {!user && currentPage !== 'home' && (
+        <main className="main">
+          <div className="content-wrapper">
+            <div className="login-prompt">
+              <h2>Please log in to view your profile</h2>
+              <button className="generate-button" onClick={handleGoogleSignInClick}>
+                Log In
+              </button>
+            </div>
+          </div>
+        </main>
       )}
       
       <footer className="footer">
