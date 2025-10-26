@@ -764,7 +764,7 @@ function App() {
       )}
       
       <footer className="footer">
-        <p>© 2025 FaceAI Hub - AI-Powered Face Swap Application</p>
+        <p>© 2025 FaceAI Meme - AI-Powered Face Swap Application</p>
       </footer>
     </div>
   )
