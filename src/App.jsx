@@ -57,7 +57,7 @@ function App() {
   const [showMyVideos, setShowMyVideos] = useState(false)  // 新增：显示我的视频
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
   const [currentPage, setCurrentPage] = useState('home')  // 新增：当前页面
-  const MAX_GENERATIONS = 4  // 每日最大生成次数
+  const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
 
   // 分类名称映射
   const categoryMap = {
@@ -346,8 +346,13 @@ function App() {
     }
 
     // 检查生成次数限制
-    if (generationCount >= MAX_GENERATIONS) {
-      alert(`⚠️ 您今日的生成次数已用完（${MAX_GENERATIONS}次）\n\n感谢您的理解！`)
+    const maxGenerations = user ? 6 : 3
+    if (generationCount >= maxGenerations) {
+      if (!user) {
+        alert(`⚠️ 免费额度已用完（${maxGenerations}次）\n\n如需继续使用，请登录账号获得更多额度！`)
+      } else {
+        alert(`⚠️ 您的免费额度已用完（${maxGenerations}次）\n\n感谢您的使用！`)
+      }
       return
     }
 
@@ -704,20 +709,20 @@ function App() {
               {/* 剩余次数提示 */}
               <div className="usage-info">
                 <span className="usage-text">
-                  Remaining today: <strong>{MAX_GENERATIONS - generationCount}</strong> / {MAX_GENERATIONS}
+                  Remaining today: <strong>{(user ? 6 : 3) - generationCount}</strong> / {user ? 6 : 3}
                 </span>
-                {generationCount >= MAX_GENERATIONS && (
-                  <span className="usage-warning">⚠️ Daily limit reached</span>
+                {generationCount >= (user ? 6 : 3) && (
+                  <span className="usage-warning">⚠️ {user ? 'Daily limit reached' : 'Free quota used up. Please log in for more.'}</span>
                 )}
               </div>
 
                 <button
                   className="generate-button"
                   onClick={handleGenerate}
-                  disabled={isProcessing || !selectedTemplate || !uploadedImage || generationCount >= MAX_GENERATIONS}
+                  disabled={isProcessing || !selectedTemplate || !uploadedImage || generationCount >= (user ? 6 : 3)}
                 >
                   {isProcessing ? '🔄 Processing...' :
-                   generationCount >= MAX_GENERATIONS ? '🚫 Daily limit reached' :
+                   generationCount >= (user ? 6 : 3) ? '🚫 Daily limit reached' :
                    !selectedTemplate ? '📝 Please select a template' :
                    !uploadedImage ? '📤 Please upload a photo' :
                    '🎨 Start Generating'}
