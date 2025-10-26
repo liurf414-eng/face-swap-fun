@@ -6,7 +6,6 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import Replicate from 'replicate'
-import fal from '@fal-ai/serverless-client'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -15,22 +14,14 @@ const app = express()
 const PORT = 3001
 
 // API配置
-const FACESWAP_API = process.env.FACESWAP_API || 'fal'  // fal, replicate 或 aifaceswap
+const FACESWAP_API = process.env.FACESWAP_API || 'replicate'  // replicate 或 aifaceswap
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN
-const AIFACESWAP_API_KEY = process.env.AIFACESWAP_API_KEY
-const FAL_API_KEY = process.env.FAL_API_KEY
+const API_KEY = process.env.AIFACESWAP_API_KEY
 const API_BASE_URL = 'https://aifaceswap.io/api/aifaceswap/v1'
 const IMGBB_API_KEY = process.env.IMGBB_API_KEY || 'd2e54d0b8582a97a9f5f8c4e3e7f9c2a'
 
 // 初始化 Replicate 客户端
 const replicate = REPLICATE_API_TOKEN ? new Replicate({ auth: REPLICATE_API_TOKEN }) : null
-
-// 初始化 FAL.ai 客户端
-if (FAL_API_KEY) {
-  fal.config({
-    credentials: FAL_API_KEY,
-  })
-}
 
 // 进度存储（内存中）
 const taskProgress = new Map()
@@ -104,17 +95,7 @@ app.post('/api/face-swap', async (req, res) => {
     })
 
     // 异步处理换脸任务
-    if (FACESWAP_API === 'fal') {
-      processFaceSwapFAL(clientTaskId, targetImage, sourceImage).catch(error => {
-        console.error('FAL.ai处理失败:', error)
-        taskProgress.set(clientTaskId, {
-          status: 'failed',
-          progress: 100,
-          message: error.message || '处理失败',
-          error: error.message
-        })
-      })
-    } else if (FACESWAP_API === 'replicate') {
+    if (FACESWAP_API === 'replicate') {
       processFaceSwapReplicate(clientTaskId, targetImage, sourceImage).catch(error => {
         console.error('Replicate处理失败:', error)
         taskProgress.set(clientTaskId, {
@@ -151,89 +132,6 @@ app.post('/api/face-swap', async (req, res) => {
     })
   }
 })
-
-// 使用 FAL.ai 进行换脸处理（最快）
-async function processFaceSwapFAL(clientTaskId, targetImage, sourceImage) {
-  try {
-    if (!FAL_API_KEY) {
-      throw new Error('FAL API Key 未配置')
-    }
-
-    taskProgress.set(clientTaskId, { status: 'processing', progress: 10, message: '正在初始化FAL.ai处理...' })
-    console.log('🚀 使用FAL.ai快速换脸...')
-    
-    // 上传用户照片到图床
-    taskProgress.set(clientTaskId, { status: 'processing', progress: 20, message: '正在上传照片...' })
-    console.log('📤 上传用户照片到图床...')
-    const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
-
-    const formData = new URLSearchParams()
-    formData.append('image', base64Data)
-
-    const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-      method: 'POST',
-      body: formData
-    })
-
-    const imgbbData = await imgbbResponse.json()
-
-    if (!imgbbData.success || !imgbbData.data?.url) {
-      throw new Error('图片上传失败: ' + (imgbbData.error?.message || '未知错误'))
-    }
-
-    const faceImageUrl = imgbbData.data.url
-    console.log('✅ 照片已上传到图床，URL:', faceImageUrl)
-
-    // 调用 FAL.ai Fast Face Swap
-    taskProgress.set(clientTaskId, { status: 'processing', progress: 40, message: 'FAL.ai正在快速处理中...' })
-    console.log('🎬 调用FAL.ai API...')
-    
-    const result = await fal.subscribe('fal-ai/face-swap', {
-      input: {
-        target_video: targetImage,
-        face_image: faceImageUrl,
-      },
-      logs: true,
-      onQueueUpdate: (update) => {
-        console.log('FAL.ai 队列状态:', update)
-        if (update.status === 'IN_QUEUE') {
-          taskProgress.set(clientTaskId, { status: 'processing', progress: 50, message: '排队中，请稍候...' })
-        } else if (update.status === 'IN_PROGRESS') {
-          taskProgress.set(clientTaskId, { status: 'processing', progress: 60, message: '正在快速处理中...' })
-        }
-      }
-    })
-
-    console.log('✅ FAL.ai处理完成:', result)
-    
-    // 获取结果URL
-    const resultUrl = result.video_url || result.video || result.output?.video_url || result.output?.video
-    
-    if (!resultUrl) {
-      throw new Error('未获取到结果视频URL')
-    }
-
-    // 更新进度为完成
-    taskProgress.set(clientTaskId, {
-      status: 'completed',
-      progress: 100,
-      message: '✅ 换脸完成！',
-      result: resultUrl
-    })
-
-    console.log('🎉 FAL.ai换脸成功！结果URL:', resultUrl)
-
-  } catch (error) {
-    console.error('❌ FAL.ai处理失败:', error)
-    taskProgress.set(clientTaskId, {
-      status: 'failed',
-      progress: 100,
-      message: `处理失败: ${error.message}`,
-      error: error.message
-    })
-    throw error
-  }
-}
 
 // 使用 Replicate 进行换脸处理
 async function processFaceSwapReplicate(clientTaskId, targetImage, sourceImage) {

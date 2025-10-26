@@ -53,6 +53,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)  // 新增：模板加载状态
   const [isOnline, setIsOnline] = useState(navigator.onLine)  // 新增：网络状态
   const [showCelebration, setShowCelebration] = useState(false)  // 新增：庆祝动画
+  const [user, setUser] = useState(null)  // 新增：用户信息
+  const [showMyVideos, setShowMyVideos] = useState(false)  // 新增：显示我的视频
+  const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
   const MAX_GENERATIONS = 4  // 每日最大生成次数
 
   // 分类名称映射
@@ -99,6 +102,98 @@ function App() {
       window.removeEventListener('offline', handleOffline)
     }
   }, [])
+
+  // Google 登录
+  const handleGoogleSignIn = async (response) => {
+    try {
+      console.log('Google登录响应:', response)
+      const userInfo = {
+        email: response.email,
+        name: response.name,
+        picture: response.picture,
+        sub: response.sub
+      }
+      setUser(userInfo)
+      // 保存用户信息到本地存储
+      localStorage.setItem('user', JSON.stringify(userInfo))
+      
+      // 从本地存储加载用户的视频
+      const savedVideos = localStorage.getItem('myVideos') || '[]'
+      setMyVideos(JSON.parse(savedVideos))
+      
+      console.log('✅ 登录成功:', userInfo)
+    } catch (error) {
+      console.error('登录失败:', error)
+      alert('Login failed. Please try again.')
+    }
+  }
+
+  // 点击登录按钮时，触发隐藏的 Google 登录按钮
+  const handleGoogleSignInClick = () => {
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // 如果无法显示提示，尝试直接登录
+          console.log('Google登录提示:', notification)
+        }
+      })
+    } else {
+      alert('Google Sign-In is not available. Please refresh the page.')
+    }
+  }
+
+  const handleSignOut = () => {
+    setUser(null)
+    localStorage.removeItem('user')
+    setMyVideos([])
+  }
+
+  // 保存生成的视频到"我的"列表
+  const saveVideoToMyList = (videoData) => {
+    if (!user) return
+    
+    const video = {
+      id: Date.now(),
+      url: videoData.url,
+      template: videoData.template,
+      timestamp: new Date().toISOString(),
+      userId: user.sub
+    }
+    
+    const updatedVideos = [...myVideos, video]
+    setMyVideos(updatedVideos)
+    localStorage.setItem('myVideos', JSON.stringify(updatedVideos))
+  }
+
+  // 页面加载时检查登录状态
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user')
+    if (savedUser) {
+      setUser(JSON.parse(savedUser))
+      const savedVideos = localStorage.getItem('myVideos') || '[]'
+      setMyVideos(JSON.parse(savedVideos))
+    }
+  }, [])
+
+  // 初始化 Google 登录
+  useEffect(() => {
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      // 使用 One Tap 登录
+      window.google.accounts.id.initialize({
+        client_id: '457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com',
+        callback: handleGoogleSignIn,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      })
+      
+      // 自动显示 One Tap 提示（可选）
+      if (!user) {
+        window.google.accounts.id.prompt((notification) => {
+          console.log('One Tap提示状态:', notification)
+        })
+      }
+    }
+  }, [user])
 
   // 获取今天的日期字符串（格式：YYYY-MM-DD）
   const getTodayDateString = () => {
@@ -249,10 +344,17 @@ function App() {
             // 任务完成
             setProcessingStatus('✅ 换脸完成！')
             setProgress(100)
-            setResult({
+            const result = {
               url: progressData.result,
               template: selectedTemplate
-            })
+            }
+            setResult(result)
+            
+            // 保存到"我的"列表（如果已登录）
+            if (user) {
+              saveVideoToMyList(result)
+            }
+            
             setIsProcessing(false)
             
             // 触发庆祝动画
@@ -336,8 +438,34 @@ function App() {
       </div>
       
       <header className="header">
-        <h1>🎭 FaceAI Hub</h1>
-        <p>AI-Powered Face Swap, Generate Your Memes in 3 Seconds</p>
+        <div className="header-top">
+          <h2 className="site-title">🎭 FaceAI Meme</h2>
+          <div className="header-actions">
+            {user ? (
+              <>
+                <button 
+                  className="my-videos-btn"
+                  onClick={() => setShowMyVideos(!showMyVideos)}
+                >
+                  📁 My Videos ({myVideos.length})
+                </button>
+                <div className="user-info">
+                  <img src={user.picture} alt={user.name} className="user-avatar" />
+                  <span className="user-name">{user.name}</span>
+                  <button className="sign-out-btn" onClick={handleSignOut}>Sign Out</button>
+                </div>
+              </>
+            ) : (
+              <button 
+                className="login-btn"
+                onClick={handleGoogleSignInClick}
+              >
+                Log In
+              </button>
+            )}
+          </div>
+        </div>
+        <h1>Create Funny Memes with AI Face Swap</h1>
         {!isOnline && (
           <div className="offline-notice">
             ⚠️ You're offline. Some features may not work properly.
@@ -520,10 +648,45 @@ function App() {
               </div>
             )}
 
+            {/* 我的视频面板 */}
+            {showMyVideos && user && (
+              <div className="my-videos-panel">
+                <div className="my-videos-header">
+                  <h3>📁 My Videos</h3>
+                  <button className="close-btn" onClick={() => setShowMyVideos(false)}>✕</button>
+                </div>
+                <div className="my-videos-grid">
+                  {myVideos.length === 0 ? (
+                    <p className="empty-message">No videos yet. Start creating!</p>
+                  ) : (
+                    myVideos.map((video) => (
+                      <div key={video.id} className="my-video-card">
+                        <video
+                          src={video.url}
+                          muted
+                          playsInline
+                          style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                        />
+                        <div className="my-video-info">
+                          <p className="video-date">{new Date(video.timestamp).toLocaleDateString()}</p>
+                          <button 
+                            className="download-btn-small"
+                            onClick={() => window.open(video.url, '_blank')}
+                          >
+                            📥 Download
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* 结果展示 */}
             {result && (
               <div className="result-container">
-                <h3>🎉 生成完成</h3>
+                <h3>🎉 Complete!</h3>
                 <div className="result-preview">
                   {result.url.endsWith('.mp4') || result.url.endsWith('.webm') ? (
                     <video
