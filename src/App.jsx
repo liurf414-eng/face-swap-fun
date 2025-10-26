@@ -132,33 +132,56 @@ function App() {
   const handleGoogleSignInClick = async () => {
     console.log('点击登录按钮')
     
-    // 方案 1: 使用 Popup 登录
-    if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+    // 使用 Google Identity Services (GIS)
+    if (window.google && window.google.accounts) {
       try {
-        const client = window.google.accounts.oauth2.initTokenClient({
+        // 使用 signIn 方法获取用户信息
+        window.google.accounts.oauth2.initTokenClient({
           client_id: '457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com',
           scope: 'openid email profile',
-          callback: (response) => {
-            console.log('登录响应:', response)
-            // 处理响应
-            alert('登录成功！功能开发中...')
+          callback: async (response) => {
+            console.log('Token 响应:', response)
+            
+            if (response.access_token) {
+              // 使用 token 获取用户信息
+              try {
+                const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                  headers: {
+                    'Authorization': `Bearer ${response.access_token}`
+                  }
+                })
+                const userInfo = await userInfoResponse.json()
+                console.log('用户信息:', userInfo)
+                
+                // 设置用户信息
+                const userData = {
+                  email: userInfo.email,
+                  name: userInfo.name,
+                  picture: userInfo.picture,
+                  sub: userInfo.id
+                }
+                
+                setUser(userData)
+                localStorage.setItem('user', JSON.stringify(userData))
+                
+                const savedVideos = localStorage.getItem('myVideos') || '[]'
+                setMyVideos(JSON.parse(savedVideos))
+                
+                alert('登录成功！欢迎 ' + userInfo.name + '!')
+              } catch (error) {
+                console.error('获取用户信息失败:', error)
+                alert('登录成功，但无法获取用户信息')
+              }
+            }
           }
-        })
-        client.requestAccessToken({ prompt: '' })
+        }).requestAccessToken({ prompt: 'consent' })
       } catch (error) {
         console.error('OAuth2 错误:', error)
-        // 降级到普通 OAuth
-        window.open(
-          `https://accounts.google.com/o/oauth2/v2/auth?client_id=457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com&redirect_uri=${encodeURIComponent(window.location.origin)}&response_type=code&scope=openid%20email%20profile`,
-          'Google Login',
-          'width=500,height=600'
-        )
+        alert('登录功能暂时不可用，请稍后重试')
       }
     } else {
-      console.error('Google API 未加载，使用备用方案')
-      // 备用方案：直接跳转
-      const loginUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com&redirect_uri=${encodeURIComponent(window.location.origin)}&response_type=code&scope=openid%20email%20profile`
-      window.location.href = loginUrl
+      console.error('Google API 未加载')
+      alert('Google 登录功能暂时不可用，请刷新页面重试')
     }
   }
 
