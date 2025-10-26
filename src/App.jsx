@@ -488,11 +488,45 @@ function App() {
         <div className="particle"></div>
       </div>
 
+      {/* 顶部导航栏 */}
+      <div className="top-navbar">
+        <div className="top-navbar-logo">
+          🎭 FaceAI Meme
+        </div>
+        <div className="top-navbar-actions">
+          {user ? (
+            <div className="user-menu">
+              <button 
+                className="user-menu-trigger"
+                onClick={() => {
+                  const menu = document.querySelector('.user-dropdown')
+                  menu.classList.toggle('show')
+                }}
+              >
+                <img src={user.picture} alt={user.name} className="user-avatar" />
+                <span className="user-name">{user.name}</span>
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              <div className="user-dropdown">
+                <button className="dropdown-item" onClick={handleSignOut}>
+                  🚪 Logout
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button 
+              className="login-btn"
+              onClick={handleGoogleSignInClick}
+            >
+              Log In
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="app-body">
       {/* 左侧导航栏 */}
       <div className="sidebar">
-        <div className="sidebar-logo">
-          <h1>🎭 FaceAI Meme</h1>
-        </div>
         <nav className="sidebar-nav">
           <button 
             className={`nav-item ${currentPage === 'home' ? 'active' : ''}`}
@@ -520,50 +554,14 @@ function App() {
 
       {/* 主内容区域 */}
       <div className="main-content">
-      <header className="header">
-        <div className="header-top">
-          <div className="header-title">
-            🎭 FaceAI Meme
-          </div>
-          <div className="header-actions">
-            {user ? (
-              <div className="user-menu">
-                <button 
-                  className="user-menu-trigger"
-                  onClick={() => {
-                    const menu = document.querySelector('.user-dropdown')
-                    menu.classList.toggle('show')
-                  }}
-                >
-                  <img src={user.picture} alt={user.name} className="user-avatar" />
-                  <span className="user-name">{user.name}</span>
-                  <span className="dropdown-arrow">▼</span>
-                </button>
-                <div className="user-dropdown">
-                  <button className="dropdown-item" onClick={handleSignOut}>
-                    🚪 Logout
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button 
-                className="login-btn"
-                onClick={handleGoogleSignInClick}
-              >
-                Log In
-              </button>
-            )}
-          </div>
-        </div>
-        <h1>Create Funny Memes with AI Face Swap</h1>
+        <h1 className="main-title">Create Funny Memes with AI Face Swap</h1>
         {!isOnline && (
           <div className="offline-notice">
             ⚠️ You're offline. Some features may not work properly.
           </div>
         )}
-      </header>
 
-      {currentPage === 'home' && (
+        {currentPage === 'home' && (
       <main className="main">
         <div className="content-wrapper">
           {/* 左侧：模板选择区 */}
@@ -905,9 +903,10 @@ function App() {
         </main>
       )}
       
-      <footer className="footer">
-        <p>© 2025 FaceAI Meme - AI-Powered Face Swap Application</p>
-      </footer>
+        <footer className="footer">
+          <p>© 2025 FaceAI Meme - AI-Powered Face Swap Application</p>
+        </footer>
+      </div>
       </div>
     </div>
   )
