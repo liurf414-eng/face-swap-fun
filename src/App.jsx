@@ -519,19 +519,24 @@ function App() {
           <h2 className="site-title">Create Funny Memes</h2>
           <div className="header-actions">
             {user ? (
-              <>
+              <div className="user-menu">
                 <button 
-                  className="my-videos-btn"
-                  onClick={() => setShowMyVideos(!showMyVideos)}
+                  className="user-menu-trigger"
+                  onClick={() => {
+                    const menu = document.querySelector('.user-dropdown')
+                    menu.classList.toggle('show')
+                  }}
                 >
-                  📁 My Videos ({myVideos.length})
-                </button>
-                <div className="user-info">
                   <img src={user.picture} alt={user.name} className="user-avatar" />
                   <span className="user-name">{user.name}</span>
-                  <button className="sign-out-btn" onClick={handleSignOut}>Sign Out</button>
+                  <span className="dropdown-arrow">▼</span>
+                </button>
+                <div className="user-dropdown">
+                  <button className="dropdown-item" onClick={handleSignOut}>
+                    🚪 Logout
+                  </button>
                 </div>
-              </>
+              </div>
             ) : (
               <button 
                 className="login-btn"

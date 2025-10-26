@@ -376,15 +376,30 @@ body {
   transform: translateY(0);
 }
 
-.user-info {
+/* 用户菜单 */
+.user-menu {
+  position: relative;
+}
+
+.user-menu-trigger {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-menu-trigger:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.3);
 }
@@ -393,6 +408,56 @@ body {
   color: white;
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+.dropdown-arrow {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: rgba(30, 30, 50, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem;
+  min-width: 150px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.user-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .header h1 {
