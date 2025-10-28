@@ -96,6 +96,16 @@ app.post('/api/face-swap', async (req, res) => {
 
     // 异步处理换脸任务
     if (FACESWAP_API === 'replicate') {
+      if (!REPLICATE_API_TOKEN) {
+        taskProgress.set(clientTaskId, {
+          status: 'failed',
+          progress: 100,
+          message: 'REPLICATE_API_TOKEN is not defined',
+          error: 'REPLICATE_API_TOKEN is not defined'
+        })
+        return
+      }
+      
       processFaceSwapReplicate(clientTaskId, targetImage, sourceImage).catch(error => {
         console.error('Replicate处理失败:', error)
         taskProgress.set(clientTaskId, {
@@ -106,6 +116,16 @@ app.post('/api/face-swap', async (req, res) => {
         })
       })
     } else {
+      if (!API_KEY) {
+        taskProgress.set(clientTaskId, {
+          status: 'failed',
+          progress: 100,
+          message: 'API_KEY is not defined',
+          error: 'API_KEY is not defined'
+        })
+        return
+      }
+      
       processFaceSwap(clientTaskId, targetImage, sourceImage).catch(error => {
         console.error('AIFaceSwap处理失败:', error)
         taskProgress.set(clientTaskId, {
