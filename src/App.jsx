@@ -62,11 +62,14 @@ function App() {
   // 分类名称映射
   const categoryMap = {
     'duo': 'Duo Interaction',
+    'Duo Interaction': 'Duo Interaction',
     'funny': 'Funny & Crazy',
-    'magic': 'Magic Effects',
-    'reactions': 'Emotional Reactions',
-    'slapstick': 'Slapstick Comedy',
-    'stylemakeovers': 'Style Makeovers'
+    'Emotional Reactions': 'Emotional Reactions',
+    'Magic Effects': 'Magic Effects',
+    'Slapstick': 'Slapstick Comedy',
+    'Slapstick Comedy': 'Slapstick Comedy',
+    'stylemakeovers': 'Style Makeovers',
+    'Style Makeovers': 'Style Makeovers'
   }
 
   // 加载模板数据
