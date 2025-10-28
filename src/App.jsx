@@ -365,7 +365,8 @@ function App() {
 
     try {
       // 提交换脸任务
-      const response = await fetch('http://localhost:3001/api/face-swap', {
+      const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3001' : ''
+      const response = await fetch(`${API_BASE_URL}/api/face-swap`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -378,79 +379,44 @@ function App() {
 
       const data = await response.json()
 
-      if (!data.success || !data.taskId) {
-        throw new Error(data.error || '任务创建失败')
+      if (!data.success) {
+        throw new Error(data.error || 'Face swap failed')
       }
 
-      const taskId = data.taskId
-      console.log('任务已创建:', taskId)
+      console.log('✅ Face swap completed:', data)
 
-      // 开始轮询查询进度
-      const pollProgress = async () => {
-        try {
-          const progressResponse = await fetch(`http://localhost:3001/api/progress/${taskId}`)
-          const progressData = await progressResponse.json()
-
-          if (!progressData.success) {
-            throw new Error(progressData.error || '查询进度失败')
-          }
-
-          // 更新进度信息和百分比
-          setProcessingStatus(progressData.message || '处理中...')
-          setProgress(progressData.progress || 0)  // 更新进度条
-
-          if (progressData.status === 'completed') {
-            // 任务完成
-            setProcessingStatus('✅ 换脸完成！')
-            setProgress(100)
-            const result = {
-              url: progressData.result,
-              template: selectedTemplate
-            }
-            setResult(result)
-            
-            // 保存到"我的"列表（如果已登录）
-            if (user) {
-              saveVideoToMyList(result)
-            }
-            
-            setIsProcessing(false)
-            
-            // 触发庆祝动画
-            setShowCelebration(true)
-            setTimeout(() => setShowCelebration(false), 3000)
-
-            // 成功完成后增加生成次数
-            const newCount = generationCount + 1
-            setGenerationCount(newCount)
-            localStorage.setItem('faceSwapGenerationCount', newCount.toString())
-            localStorage.setItem('faceSwapLastDate', getTodayDateString())  // 更新日期
-            console.log(`✅ 生成成功！今日已使用次数: ${newCount}/${MAX_GENERATIONS}`)
-
-          } else if (progressData.status === 'failed') {
-            // 任务失败
-            throw new Error(progressData.error || '换脸处理失败')
-          } else {
-            // 继续轮询
-            setTimeout(pollProgress, 1000)  // 每秒查询一次
-          }
-        } catch (error) {
-          console.error('轮询错误:', error)
-          setProcessingStatus('')
-          setProgress(0)
-          setIsProcessing(false)
-          alert(`❌ 换脸失败: ${error.message}`)
-        }
+      // 任务完成
+      setProcessingStatus('✅ 换脸完成！')
+      setProgress(100)
+      const result = {
+        url: data.result,
+        template: selectedTemplate
       }
+      setResult(result)
+      
+      // 保存到"我的"列表（如果已登录）
+      if (user) {
+        saveVideoToMyList(result)
+      }
+      
+      setIsProcessing(false)
+      
+      // 触发庆祝动画
+      setShowCelebration(true)
+      setTimeout(() => setShowCelebration(false), 3000)
 
-      // 开始第一次查询
-      pollProgress()
+      // 成功完成后增加生成次数
+      const newCount = generationCount + 1
+      setGenerationCount(newCount)
+      localStorage.setItem('faceSwapGenerationCount', newCount.toString())
+      localStorage.setItem('faceSwapLastDate', getTodayDateString())  // 更新日期
+      console.log(`✅ 生成成功！今日已使用次数: ${newCount}/${MAX_GENERATIONS}`)
 
     } catch (error) {
       console.error('换脸错误:', error)
       setProcessingStatus('')
       setIsProcessing(false)
-      alert(`❌ 换脸失败: ${error.message}\n\n请确保：\n1. 后端服务已启动 (npm run server)\n2. API密钥已配置\n3. 网络连接正常`)
+      alert(`❌ Face swap failed: ${error.message}`)
     }
   }
 
