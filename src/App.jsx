@@ -638,7 +638,14 @@ function App() {
                 groups[category].push(template)
                 return groups
               }, {})
-            ).map(([category, templates]) => (
+            )
+            .sort(([a], [b]) => {
+              // 将 "Duo Interaction" 排在最后
+              if (a === 'Duo Interaction') return 1
+              if (b === 'Duo Interaction') return -1
+              return 0
+            })
+            .map(([category, templates]) => (
               <div key={category} className="category-section">
                 <h3 className="category-title">{category}</h3>
                 <div className="templates-grid">
