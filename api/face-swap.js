@@ -3,6 +3,7 @@ import fetch from 'node-fetch'
 import Replicate from 'replicate'
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN
+const IMGBB_API_KEY = process.env.IMGBB_API_KEY
 
 // 初始化 Replicate 客户端
 const replicate = REPLICATE_API_TOKEN ? new Replicate({ auth: REPLICATE_API_TOKEN }) : null
@@ -36,10 +37,28 @@ export default async function handler(req, res) {
       })
     }
 
-    // 直接使用 base64 数据，无需上传到图床
-    console.log('📤 Using base64 image directly...')
-    const faceImageUrl = sourceImage  // 直接使用 base64 图片
-    console.log('✅ Image prepared')
+    // 上传用户照片到图床
+    console.log('📤 Uploading user photo to imgbb...')
+    const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
+    const formData = new URLSearchParams()
+    formData.append('image', base64Data)
+
+    const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: 'POST',
+      body: formData
+    })
+
+    const imgbbData = await imgbbResponse.json()
+
+    if (!imgbbData.success || !imgbbData.data?.url) {
+      return res.status(500).json({
+        success: false,
+        error: 'Image upload failed: ' + (imgbbData.error?.message || 'Unknown error. Please configure IMGBB_API_KEY in Vercel.')
+      })
+    }
+
+    const faceImageUrl = imgbbData.data.url
+    console.log('✅ Photo uploaded successfully:', faceImageUrl)
 
     // 调用 Replicate API
     console.log('📤 Submitting face swap task to Replicate...')
@@ -48,8 +67,8 @@ export default async function handler(req, res) {
       'wan-video/wan-2.2-animate-replace',
       {
         input: {
-          target_video: targetImage,
-          swap_source: faceImageUrl
+          video: targetImage,
+          character_image: faceImageUrl
         }
       }
     )
