@@ -3,7 +3,6 @@ import fetch from 'node-fetch'
 import Replicate from 'replicate'
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN
-const IMGBB_API_KEY = process.env.IMGBB_API_KEY
 
 // 初始化 Replicate 客户端
 const replicate = REPLICATE_API_TOKEN ? new Replicate({ auth: REPLICATE_API_TOKEN }) : null
@@ -37,28 +36,38 @@ export default async function handler(req, res) {
       })
     }
 
-    // 上传用户照片到图床
-    console.log('📤 Uploading user photo to imgbb...')
+    // 尝试将 base64 转换为可访问的 URL
+    console.log('📤 Processing user photo...')
     const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
-    const formData = new URLSearchParams()
-    formData.append('image', base64Data)
-
-    const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-      method: 'POST',
-      body: formData
-    })
-
-    const imgbbData = await imgbbResponse.json()
-
-    if (!imgbbData.success || !imgbbData.data?.url) {
-      return res.status(500).json({
-        success: false,
-        error: 'Image upload failed: ' + (imgbbData.error?.message || 'Unknown error. Please configure IMGBB_API_KEY in Vercel.')
+    
+    let faceImageUrl = sourceImage  // 默认使用 base64
+    
+    // 尝试上传到免费的图片托管服务
+    try {
+      // 使用 File.io API（临时文件存储）
+      const fileBuffer = Buffer.from(base64Data, 'base64')
+      const blob = new Blob([fileBuffer], { type: 'image/jpeg' })
+      
+      const formData = new FormData()
+      formData.append('file', blob, 'photo.jpg')
+      
+      const uploadResponse = await fetch('https://file.io/?expires=1h', {
+        method: 'POST',
+        body: formData
       })
+      
+      const uploadData = await uploadResponse.json()
+      
+      if (uploadData.success && uploadData.link) {
+        faceImageUrl = uploadData.link
+        console.log('✅ Photo uploaded to file.io:', faceImageUrl)
+      } else {
+        console.warn('Upload failed, using base64 as fallback')
+      }
+    } catch (uploadError) {
+      console.warn('Upload attempt failed, using base64:', uploadError.message)
+      // 继续使用 base64
     }
-
-    const faceImageUrl = imgbbData.data.url
-    console.log('✅ Photo uploaded successfully:', faceImageUrl)
 
     // 调用 Replicate API
     console.log('📤 Submitting face swap task to Replicate...')
