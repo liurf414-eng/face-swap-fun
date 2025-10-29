@@ -396,34 +396,97 @@ function App() {
         throw new Error(data.error || 'Face swap failed')
       }
 
-      console.log('✅ Face swap completed:', data)
+      // 如果是异步任务，开始轮询
+      if (data.taskId) {
+        console.log('Task created:', data.taskId)
+        const taskId = data.taskId
 
-      // 任务完成
-      setProcessingStatus('✅ 换脸完成！')
-      setProgress(100)
-      const result = {
-        url: data.result,
-        template: selectedTemplate
-      }
-      setResult(result)
-      
-      // 保存到"我的"列表（如果已登录）
-      if (user) {
-        saveVideoToMyList(result)
-      }
-      
-      setIsProcessing(false)
-      
-      // 触发庆祝动画
-      setShowCelebration(true)
-      setTimeout(() => setShowCelebration(false), 3000)
+        // 轮询任务状态
+        const pollTask = async () => {
+          try {
+            const statusResponse = await fetch(`${API_BASE_URL}/api/face-swap?taskId=${taskId}`)
+            const statusData = await statusResponse.json()
 
-      // 成功完成后增加生成次数
-      const newCount = generationCount + 1
-      setGenerationCount(newCount)
-      localStorage.setItem('faceSwapGenerationCount', newCount.toString())
-      localStorage.setItem('faceSwapLastDate', getTodayDateString())  // 更新日期
-      console.log(`✅ 生成成功！今日已使用次数: ${newCount}/${MAX_GENERATIONS}`)
+            if (!statusData.success) {
+              throw new Error(statusData.error || 'Task failed')
+            }
+
+            // 更新进度
+            setProcessingStatus(statusData.message || 'Processing...')
+            setProgress(statusData.progress || 0)
+
+            if (statusData.status === 'completed') {
+              // 任务完成
+              setProcessingStatus('✅ 换脸完成！')
+              setProgress(100)
+              const result = {
+                url: statusData.result,
+                template: selectedTemplate
+              }
+              setResult(result)
+              
+              // 保存到"我的"列表（如果已登录）
+              if (user) {
+                saveVideoToMyList(result)
+              }
+              
+              setIsProcessing(false)
+              
+              // 触发庆祝动画
+              setShowCelebration(true)
+              setTimeout(() => setShowCelebration(false), 3000)
+
+              // 成功完成后增加生成次数
+              const newCount = generationCount + 1
+              setGenerationCount(newCount)
+              localStorage.setItem('faceSwapGenerationCount', newCount.toString())
+              localStorage.setItem('faceSwapLastDate', getTodayDateString())
+              console.log(`✅ 生成成功！今日已使用次数: ${newCount}/${MAX_GENERATIONS}`)
+            } else if (statusData.status === 'failed') {
+              // 任务失败
+              throw new Error(statusData.error || 'Face swap failed')
+            } else {
+              // 继续轮询
+              setTimeout(pollTask, 1000)
+            }
+          } catch (error) {
+            console.error('Polling error:', error)
+            setProcessingStatus('')
+            setProgress(0)
+            setIsProcessing(false)
+            alert(`❌ Face swap failed: ${error.message}`)
+          }
+        }
+
+        // 开始第一次轮询
+        setTimeout(pollTask, 1000)
+      } else {
+        // 同步返回结果（兼容旧代码）
+        console.log('✅ Face swap completed:', data)
+
+        setProcessingStatus('✅ 换脸完成！')
+        setProgress(100)
+        const result = {
+          url: data.result,
+          template: selectedTemplate
+        }
+        setResult(result)
+        
+        if (user) {
+          saveVideoToMyList(result)
+        }
+        
+        setIsProcessing(false)
+        
+        setShowCelebration(true)
+        setTimeout(() => setShowCelebration(false), 3000)
+
+        const newCount = generationCount + 1
+        setGenerationCount(newCount)
+        localStorage.setItem('faceSwapGenerationCount', newCount.toString())
+        localStorage.setItem('faceSwapLastDate', getTodayDateString())
+        console.log(`✅ 生成成功！今日已使用次数: ${newCount}/${MAX_GENERATIONS}`)
+      }
 
     } catch (error) {
       console.error('换脸错误:', error)
