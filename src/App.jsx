@@ -377,6 +377,19 @@ function App() {
         }),
       })
 
+      // 检查响应状态
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`)
+      }
+
+      // 检查 Content-Type 是否为 JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text()
+        throw new Error(`Invalid response format: ${text.substring(0, 100)}`)
+      }
+
       const data = await response.json()
 
       if (!data.success) {
