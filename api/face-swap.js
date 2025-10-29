@@ -148,12 +148,30 @@ async function processFaceSwapAIFaceSwap(taskId, targetImage, sourceImage, API_K
       message: 'Creating webhook for callback...'
     })
 
-    // 创建 webhook
-    const webhookResponse = await fetch('https://webhook.site/token', {
-      method: 'POST'
-    })
-    const webhookData = await webhookResponse.json()
-    const webhookUrl = `https://webhook.site/${webhookData.uuid}`
+    // 创建 webhook (添加错误处理)
+    let webhookUrl
+    let webhookData
+    try {
+      const webhookResponse = await fetch('https://webhook.site/token', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+      
+      if (!webhookResponse.ok) {
+        throw new Error(`Webhook creation failed: ${webhookResponse.status}`)
+      }
+      
+      webhookData = await webhookResponse.json()
+      if (!webhookData.uuid) {
+        throw new Error('Invalid webhook response')
+      }
+      webhookUrl = `https://webhook.site/${webhookData.uuid}`
+    } catch (webhookError) {
+      console.error('Webhook creation error:', webhookError)
+      throw new Error(`Failed to create webhook: ${webhookError.message}`)
+    }
 
     taskStore.set(taskId, {
       status: 'processing',
@@ -162,22 +180,38 @@ async function processFaceSwapAIFaceSwap(taskId, targetImage, sourceImage, API_K
     })
 
     // 提交换脸任务
-    const submitResponse = await fetch(`${API_BASE_URL}/video_faceswap`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        source_video: targetImage,
-        face_image: faceImageUrl,
-        duration: 3,
-        enhance: 0,
-        webhook: webhookUrl
+    let submitResponse
+    try {
+      submitResponse = await fetch(`${API_BASE_URL}/video_faceswap`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          source_video: targetImage,
+          face_image: faceImageUrl,
+          duration: 3,
+          enhance: 0,
+          webhook: webhookUrl
+        })
       })
-    })
+      
+      if (!submitResponse.ok) {
+        const errorText = await submitResponse.text()
+        throw new Error(`AIFaceSwap API error: ${submitResponse.status} - ${errorText}`)
+      }
+    } catch (fetchError) {
+      console.error('Fetch error:', fetchError)
+      throw new Error(`Failed to connect to AIFaceSwap API: ${fetchError.message}`)
+    }
 
-    const submitData = await submitResponse.json()
+    let submitData
+    try {
+      submitData = await submitResponse.json()
+    } catch (parseError) {
+      throw new Error(`Failed to parse AIFaceSwap response: ${parseError.message}`)
+    }
 
     if (submitData.code !== 200 || !submitData.data?.task_id) {
       throw new Error(submitData.message || `API error: ${submitData.code || submitResponse.status}`)
@@ -192,13 +226,41 @@ async function processFaceSwapAIFaceSwap(taskId, targetImage, sourceImage, API_K
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      const webhookCheck = await fetch(`https://webhook.site/token/${webhookData.uuid}/requests?sorting=newest`, {
-        headers: {
-          'Api-Key': webhookData.uuid
+      let webhookCheck
+      try {
+        webhookCheck = await fetch(`https://webhook.site/token/${webhookData.uuid}/requests?sorting=newest`, {
+          headers: {
+            'Api-Key': webhookData.uuid
+          }
+        })
+        
+        if (!webhookCheck.ok) {
+          // 如果 webhook 检查失败，继续等待
+          progress = Math.min(25 + Math.floor((attempt / maxAttempts) * 70), 95)
+          taskStore.set(taskId, {
+            status: 'processing',
+            progress: progress,
+            message: `Processing... (${Math.floor(attempt * 2 / 60)}m ${(attempt * 2) % 60}s)`
+          })
+          continue
         }
-      })
+      } catch (webhookFetchError) {
+        // 网络错误，继续等待
+        progress = Math.min(25 + Math.floor((attempt / maxAttempts) * 70), 95)
+        taskStore.set(taskId, {
+          status: 'processing',
+          progress: progress,
+          message: `Processing... (${Math.floor(attempt * 2 / 60)}m ${(attempt * 2) % 60}s)`
+        })
+        continue
+      }
 
-      const webhookRequests = await webhookCheck.json()
+      let webhookRequests
+      try {
+        webhookRequests = await webhookCheck.json()
+      } catch (parseError) {
+        continue
+      }
 
       if (webhookRequests.data && webhookRequests.data.length > 0) {
         const latestRequest = webhookRequests.data[0]
@@ -247,26 +309,36 @@ async function processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLIC
     let faceImageUrl = sourceImage
 
     if (sourceImage.startsWith('data:image')) {
-      const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
-      const formData = new URLSearchParams()
-      formData.append('image', base64Data)
+      try {
+        const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
+        const formData = new URLSearchParams()
+        formData.append('image', base64Data)
 
-      const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+        const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        })
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text()
+          throw new Error(`ImgBB upload failed: ${uploadResponse.status} - ${errorText}`)
         }
-      })
 
-      const uploadData = await uploadResponse.json()
+        const uploadData = await uploadResponse.json()
 
-      if (!uploadData.success || !uploadData.data?.url) {
-        throw new Error(`ImgBB upload failed: ${uploadData.error?.message || 'Unknown error'}`)
+        if (!uploadData.success || !uploadData.data?.url) {
+          throw new Error(`ImgBB upload failed: ${uploadData.error?.message || 'Unknown error'}`)
+        }
+
+        faceImageUrl = uploadData.data.url
+        console.log('Image uploaded to ImgBB:', faceImageUrl)
+      } catch (uploadError) {
+        console.error('ImgBB upload error:', uploadError)
+        throw new Error(`Failed to upload image: ${uploadError.message}`)
       }
-
-      faceImageUrl = uploadData.data.url
-      console.log('Image uploaded to ImgBB:', faceImageUrl)
     }
 
     taskStore.set(taskId, {
