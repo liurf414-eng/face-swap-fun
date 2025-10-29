@@ -351,30 +351,57 @@ async function processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLIC
 
     // 开始时间追踪
     const startTime = Date.now()
-    let lastUpdate = startTime
+    
+    // 定期更新进度（每10秒更新一次，让用户知道还在处理）
+    const progressInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      const minutes = Math.floor(elapsed / 60)
+      const seconds = elapsed % 60
+      const estimatedProgress = Math.min(30 + Math.floor((elapsed / 600) * 65), 95) // 10分钟从30%到95%
+      
+      taskStore.set(taskId, {
+        status: 'processing',
+        progress: estimatedProgress,
+        message: `Processing with Replicate API... (${minutes}m ${seconds}s elapsed, estimated 5-10 minutes total)`
+      })
+    }, 10000) // 每10秒更新一次
 
-    const output = await replicate.run(
-      'wan-video/wan-2.2-animate-replace',
-      {
-        input: {
-          video: targetImage,
-          character_image: faceImageUrl
+    try {
+      const output = await replicate.run(
+        'wan-video/wan-2.2-animate-replace',
+        {
+          input: {
+            video: targetImage,
+            character_image: faceImageUrl
+          }
         }
+      )
+
+      // 停止进度更新
+      clearInterval(progressInterval)
+
+      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      console.log(`Replicate API completed in ${elapsed}s`)
+
+      taskStore.set(taskId, {
+        status: 'completed',
+        progress: 100,
+        message: 'Face swap completed!',
+        result: output
+      })
+    } catch (error) {
+      // 停止进度更新
+      if (progressInterval) {
+        clearInterval(progressInterval)
       }
-    )
-
-    const elapsed = Math.floor((Date.now() - startTime) / 1000)
-    console.log(`Replicate API completed in ${elapsed}s`)
-
-    taskStore.set(taskId, {
-      status: 'completed',
-      progress: 100,
-      message: 'Face swap completed!',
-      result: output
-    })
+      
+      console.error('Replicate API call error:', error)
+      throw error // 重新抛出错误，让外层 catch 处理
+    }
 
   } catch (error) {
-    console.error('Replicate error:', error)
+    // 外层 catch：处理所有未捕获的错误
+    console.error('Replicate processing error:', error)
     taskStore.set(taskId, {
       status: 'failed',
       progress: 100,
