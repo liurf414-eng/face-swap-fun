@@ -238,12 +238,15 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
       
       try {
         // 使用 Magic Hour 的 Upload Asset URLs API 上传视频
-        // 根据文档，端点应该是 /assets/upload-urls
-        // 尝试多个可能的端点
+        // 根据文档，端点是 POST /assets/upload-urls（但实际路径可能不同）
+        // 尝试多个可能的端点路径
         const uploadEndpoints = [
-          `${MAGICHOUR_API_URL}/assets/upload-urls`,
-          `${MAGICHOUR_API_URL}/upload-assets`,
-          `${MAGICHOUR_API_URL}/assets/upload`
+          `${MAGICHOUR_API_URL}/assets/upload-urls`,      // 文档中提到的端点
+          `${MAGICHOUR_API_URL}/v1/assets/upload-urls`,   // 带版本号
+          `${MAGICHOUR_API_URL}/upload-assets`,           // 简化版本
+          `${MAGICHOUR_API_URL}/v1/upload-assets`,        // 带版本号
+          `${MAGICHOUR_API_URL}/assets/upload`,           // 更短版本
+          `${MAGICHOUR_API_URL}/v1/assets/upload`         // 带版本号
         ]
         
         let uploadData = null
@@ -280,8 +283,9 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
         }
         
         if (!uploadData) {
-          // 所有端点都失败了，可能是 API 不支持或端点不对
-          throw new Error(`Magic Hour upload failed: ${lastError || 'All upload endpoints failed'}. Magic Hour requires file upload. Consider using PiAPI which supports direct URLs.`)
+          // 所有端点都失败了，Magic Hour 的上传 API 可能不存在或需要不同的方式
+          // 提示用户切换到 PiAPI，因为它支持直接 URL
+          throw new Error(`Magic Hour upload API not found (404). Magic Hour requires pre-uploaded files or YouTube URLs. For direct video URL support, please switch to PiAPI by setting FACESWAP_API=piapi in your environment variables.`)
         }
         
         // 获取上传后的文件 ID
@@ -308,20 +312,24 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
       }
     }
     
+    // 根据文档，Magic Hour API 使用下划线命名（snake_case）
+    // 但 JavaScript SDK 使用驼峰命名（camelCase）
+    // REST API 应该使用下划线命名
     const requestBody = {
       start_seconds: 0.0,
       end_seconds: 15.0, // 限制15秒以加快处理
       assets: {
         face_mappings: [
           {
-            new_face: faceImageUrl,  // 要替换的人脸图片（可能是 URL 或文件 ID）
-            original_face: "0-0",     // 使用第一个检测到的人脸（索引格式：人脸索引-帧索引）
+            new_face: faceImageUrl,  // 要替换的人脸图片（URL 或文件 ID，如 "api-assets/id/xxx.png"）
+            original_face: "0-0",     // 使用第一个检测到的人脸（格式：人脸索引-帧索引，如 "0-0"）
           }
         ],
-        face_swap_mode: "all-faces", // 替换所有人脸
-        video_file_path: videoPath,
+        face_swap_mode: "all-faces", // 替换所有人脸（或 "single-face"）
+        video_file_path: videoPath,   // 视频文件路径（上传后的文件 ID 或 YouTube URL）
         video_source: videoSource,    // "file" 或 "youtube"
-        // 注意：根据文档示例，可能还需要 image_file_path（如果图片也需要上传）
+        // 可选：如果图片也需要上传，可能需要 image_file_path
+        // image_file_path: faceImageUrl,
       },
       name: `Face Swap ${Date.now()}`,
       style: {
