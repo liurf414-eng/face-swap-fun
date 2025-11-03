@@ -95,8 +95,14 @@ IMGBB_API_KEY=你的imgbb_key
 
 ### 视频源选项
 
-- `"url"`: 使用视频 URL（我们使用这个）
-- `"file"`: 使用已上传的文件 ID
+**重要限制**：Magic Hour 只支持两种视频源：
+- `"youtube"`: 使用 YouTube URL（必须是 youtube.com 或 youtu.be）
+- `"file"`: 使用已上传到 Magic Hour 的文件 ID（需要先通过上传 API 上传）
+
+**不支持直接 URL**：普通的视频 URL（如 MP4 链接）不能直接使用，需要：
+1. 先通过 Magic Hour 的上传 API 上传视频
+2. 获取文件 ID
+3. 使用文件 ID 作为 `video_file_path`
 
 ### 状态值
 
