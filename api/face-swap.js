@@ -232,14 +232,25 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
     }
 
     const createData = await createResponse.json()
+    console.log('PiAPI task creation response:', JSON.stringify(createData, null, 2))
     
-    // 检查响应
-    if (createData.code !== 200 || !createData.data?.task_id) {
+    // 检查响应 - 可能有多种响应格式
+    if (createData.code !== 200) {
       throw new Error(`PiAPI error: ${createData.message || JSON.stringify(createData)}`)
     }
     
-    const piapiTaskId = createData.data.task_id
-    console.log('PiAPI task created:', piapiTaskId)
+    // 尝试多种方式获取 task_id
+    const piapiTaskId = createData.data?.task_id || 
+                       createData.task_id || 
+                       createData.data?.id ||
+                       createData.id
+    
+    if (!piapiTaskId) {
+      console.error('Failed to extract task_id from response:', JSON.stringify(createData, null, 2))
+      throw new Error(`PiAPI error: No task_id in response. Response: ${JSON.stringify(createData)}`)
+    }
+    
+    console.log('PiAPI task created successfully, task_id:', piapiTaskId)
 
     taskStore.set(taskId, {
       status: 'processing',
@@ -247,12 +258,15 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
       message: 'PiAPI processing video...'
     })
 
-    // 轮询任务状态（最多等待5分钟）
-    const maxAttempts = 300  // 5分钟 = 300次 * 1秒
+    // 轮询任务状态（最多等待10分钟，因为视频处理可能需要更长时间）
+    const maxAttempts = 600  // 10分钟 = 600次 * 1秒
     let progress = 40
+    let lastStatus = null
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       await new Promise(resolve => setTimeout(resolve, 2000)) // 每2秒检查一次
+      
+      console.log(`[${new Date().toISOString()}] PiAPI polling attempt ${attempt}/${maxAttempts}, task_id: ${piapiTaskId}`)
 
       let statusResponse
       try {
@@ -268,6 +282,9 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
         }
 
         const statusData = await statusResponse.json()
+        
+        // 添加详细日志
+        console.log(`PiAPI status check [${attempt}]:`, JSON.stringify(statusData, null, 2))
 
         // 更新进度
         progress = Math.min(40 + Math.floor((attempt / maxAttempts) * 55), 95)
@@ -279,15 +296,28 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
           message: `PiAPI processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s elapsed)`
         })
 
-        if (statusData.code === 200 && statusData.data) {
-          const taskStatus = statusData.data.status
+        // 检查响应格式（可能有多种格式）
+        if (statusData.code === 200) {
+          const taskData = statusData.data || statusData
+          const taskStatus = taskData.status || statusData.status
           
-          if (taskStatus === 'completed' || taskStatus === 'success') {
-            // 任务完成
-            const outputUrl = statusData.data.output?.video_url || statusData.data.video_url
+          console.log('Task status:', taskStatus, 'Data:', JSON.stringify(taskData, null, 2))
+          
+          // 检查完成状态（可能有多种表示方式）
+          if (taskStatus === 'completed' || taskStatus === 'success' || taskStatus === 'finished' || taskStatus === 'done') {
+            // 任务完成 - 尝试多种方式获取输出URL
+            const outputUrl = taskData.output?.video_url || 
+                            taskData.video_url || 
+                            taskData.output?.url ||
+                            taskData.output ||
+                            statusData.output?.video_url ||
+                            statusData.video_url
+
+            console.log('Task completed, output URL:', outputUrl)
 
             if (!outputUrl) {
-              throw new Error('No video URL in PiAPI response')
+              console.error('No video URL found in response:', JSON.stringify(statusData, null, 2))
+              throw new Error('No video URL in PiAPI response. Response: ' + JSON.stringify(statusData))
             }
 
             taskStore.set(taskId, {
@@ -297,10 +327,22 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
               result: outputUrl
             })
             return
-          } else if (taskStatus === 'failed' || taskStatus === 'error') {
-            throw new Error(statusData.data.message || statusData.message || 'PiAPI processing failed')
+          } else if (taskStatus === 'failed' || taskStatus === 'error' || taskStatus === 'failure') {
+            const errorMsg = taskData.message || statusData.message || taskData.error || 'PiAPI processing failed'
+            console.error('Task failed:', errorMsg)
+            throw new Error(`PiAPI processing failed: ${errorMsg}`)
+          } else if (taskStatus === 'pending' || taskStatus === 'processing' || taskStatus === 'running') {
+            // 继续轮询
+            console.log(`Task still ${taskStatus}, continuing to poll...`)
+          } else {
+            // 未知状态，记录但继续轮询
+            console.warn(`Unknown task status: ${taskStatus}, continuing to poll...`)
           }
-          // 如果状态是 'processing' 或 'pending'，继续轮询
+        } else {
+          // API 返回错误代码
+          console.error('PiAPI returned error code:', statusData.code, statusData)
+          const errorMsg = statusData.message || 'PiAPI API error'
+          throw new Error(`PiAPI error (code ${statusData.code}): ${errorMsg}`)
         }
 
       } catch (fetchError) {
