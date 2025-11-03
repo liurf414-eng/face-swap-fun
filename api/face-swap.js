@@ -297,25 +297,41 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
         })
 
         // 检查响应格式（可能有多种格式）
-        if (statusData.code === 200) {
+        if (statusData.code === 200 || !statusData.code) {
+          // 尝试多种方式获取任务数据
           const taskData = statusData.data || statusData
-          const taskStatus = taskData.status || statusData.status
+          const taskStatus = taskData.status || statusData.status || taskData.task_status
           
-          console.log('Task status:', taskStatus, 'Data:', JSON.stringify(taskData, null, 2))
+          console.log('Task status:', taskStatus, 'Full response:', JSON.stringify(statusData, null, 2))
           
-          // 检查完成状态（可能有多种表示方式）
-          if (taskStatus === 'completed' || taskStatus === 'success' || taskStatus === 'finished' || taskStatus === 'done') {
+          // 首先检查完成状态（优先级最高）
+          if (taskStatus === 'completed' || taskStatus === 'success' || taskStatus === 'finished' || taskStatus === 'done' || taskStatus === 'succeeded') {
             // 任务完成 - 尝试多种方式获取输出URL
             const outputUrl = taskData.output?.video_url || 
-                            taskData.video_url || 
                             taskData.output?.url ||
+                            taskData.video_url || 
                             taskData.output ||
+                            statusData.data?.output?.video_url ||
+                            statusData.data?.video_url ||
                             statusData.output?.video_url ||
                             statusData.video_url
 
-            console.log('Task completed, output URL:', outputUrl)
+            console.log('Task completed! Status:', taskStatus, 'Output URL:', outputUrl)
 
             if (!outputUrl) {
+              // 如果没有URL，检查是否是字符串格式
+              const outputStr = taskData.output || statusData.output
+              if (typeof outputStr === 'string' && outputStr.startsWith('http')) {
+                console.log('Found output as string:', outputStr)
+                taskStore.set(taskId, {
+                  status: 'completed',
+                  progress: 100,
+                  message: `Face swap completed!`,
+                  result: outputStr
+                })
+                return
+              }
+              
               console.error('No video URL found in response:', JSON.stringify(statusData, null, 2))
               throw new Error('No video URL in PiAPI response. Response: ' + JSON.stringify(statusData))
             }
@@ -327,20 +343,44 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
               result: outputUrl
             })
             return
-          } else if (taskStatus === 'failed' || taskStatus === 'error' || taskStatus === 'failure') {
+          } 
+          // 然后检查失败状态
+          else if (taskStatus === 'failed' || taskStatus === 'error' || taskStatus === 'failure') {
             const errorMsg = taskData.message || statusData.message || taskData.error || 'PiAPI processing failed'
-            console.error('Task failed:', errorMsg)
+            console.error('Task failed:', errorMsg, 'Status:', taskStatus)
             throw new Error(`PiAPI processing failed: ${errorMsg}`)
-          } else if (taskStatus === 'pending' || taskStatus === 'processing' || taskStatus === 'running') {
+          } 
+          // 处理中状态
+          else if (taskStatus === 'pending' || taskStatus === 'processing' || taskStatus === 'running' || taskStatus === 'in_progress') {
             // 继续轮询
             console.log(`Task still ${taskStatus}, continuing to poll...`)
-          } else {
-            // 未知状态，记录但继续轮询
-            console.warn(`Unknown task status: ${taskStatus}, continuing to poll...`)
+          } 
+          // 未定义状态但code是200
+          else if (statusData.code === 200 && !taskStatus) {
+            // 可能是成功但没有明确状态，尝试直接获取output
+            const outputUrl = statusData.data?.output?.video_url || 
+                            statusData.data?.video_url ||
+                            statusData.output?.video_url ||
+                            statusData.video_url
+            if (outputUrl) {
+              console.log('Found output URL without explicit status:', outputUrl)
+              taskStore.set(taskId, {
+                status: 'completed',
+                progress: 100,
+                message: `Face swap completed!`,
+                result: outputUrl
+              })
+              return
+            }
+            console.warn('No status and no output URL, continuing to poll...', JSON.stringify(statusData, null, 2))
+          }
+          // 未知状态，记录但继续轮询
+          else {
+            console.warn(`Unknown task status: "${taskStatus}", continuing to poll... Response:`, JSON.stringify(statusData, null, 2))
           }
         } else {
           // API 返回错误代码
-          console.error('PiAPI returned error code:', statusData.code, statusData)
+          console.error('PiAPI returned error code:', statusData.code, 'Response:', JSON.stringify(statusData, null, 2))
           const errorMsg = statusData.message || 'PiAPI API error'
           throw new Error(`PiAPI error (code ${statusData.code}): ${errorMsg}`)
         }
