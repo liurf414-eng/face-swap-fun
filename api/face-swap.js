@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     const PIAPI_API_KEY = process.env.PIAPI_API_KEY || 'a456b8f0b6cdc6e30e5b195eb66197740b8ca501da3d1051861dad4c2f6d8377'
     const MAGICHOUR_API_KEY = process.env.MAGICHOUR_API_KEY || 'mhk_live_6FBxHAfqe43imx12rAALt88Ux8j7s8HDfeezMinKCG7zh8Fv4QrfOd2Uh35Hb6c0MfBjhhOawc0EWBEk'
     const IMGBB_API_KEY = process.env.IMGBB_API_KEY
-    const FACESWAP_API = process.env.FACESWAP_API || 'magichour'  // 默认使用 Magic Hour（更快）
+    const FACESWAP_API = process.env.FACESWAP_API || 'piapi'  // 默认使用 PiAPI（Magic Hour 需要上传 API，目前不可用）
 
     if (!IMGBB_API_KEY) {
       return res.status(500).json({
@@ -240,13 +240,14 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
         // 使用 Magic Hour 的 Upload Asset URLs API 上传视频
         // 根据文档，端点是 POST /assets/upload-urls（但实际路径可能不同）
         // 尝试多个可能的端点路径
+        // Magic Hour 上传端点（注意：MAGICHOUR_API_URL 已经包含 /v1）
         const uploadEndpoints = [
           `${MAGICHOUR_API_URL}/assets/upload-urls`,      // 文档中提到的端点
-          `${MAGICHOUR_API_URL}/v1/assets/upload-urls`,   // 带版本号
+          `/assets/upload-urls`,                           // 相对路径（如果 base URL 已包含 /v1）
+          `${MAGICHOUR_API_URL.replace('/v1', '')}/assets/upload-urls`, // 去掉 /v1 前缀
           `${MAGICHOUR_API_URL}/upload-assets`,           // 简化版本
-          `${MAGICHOUR_API_URL}/v1/upload-assets`,        // 带版本号
           `${MAGICHOUR_API_URL}/assets/upload`,           // 更短版本
-          `${MAGICHOUR_API_URL}/v1/assets/upload`         // 带版本号
+          `https://api.magichour.ai/assets/upload-urls`    // 完整路径（不带版本号）
         ]
         
         let uploadData = null
