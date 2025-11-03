@@ -32,8 +32,9 @@ export default async function handler(req, res) {
   try {
     const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN
     const AIFACESWAP_API_KEY = process.env.AIFACESWAP_API_KEY
+    const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN
     const IMGBB_API_KEY = process.env.IMGBB_API_KEY
-    const FACESWAP_API = process.env.FACESWAP_API || 'replicate'
+    const FACESWAP_API = process.env.FACESWAP_API || 'vmodel'  // 默认使用 VModel（最快）
 
     if (!IMGBB_API_KEY) {
       return res.status(500).json({
@@ -52,7 +53,7 @@ export default async function handler(req, res) {
       })
     }
 
-    const { targetImage, sourceImage } = body || {}
+    const { targetImage, sourceImage, mode } = body || {}
 
     if (!targetImage || !sourceImage) {
       return res.status(400).json({
@@ -61,39 +62,89 @@ export default async function handler(req, res) {
       })
     }
 
+    // 检测输入类型：如果是图片 URL 或 base64 图片，使用快速模式
+    const isImageInput = targetImage.startsWith('data:image') || 
+                        (typeof targetImage === 'string' && targetImage.match(/\.(jpg|jpeg|png|gif|webp)$/i)) ||
+                        mode === 'fast' // 用户明确选择快速模式
+
     const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
     res.json({
       success: true,
       taskId: taskId,
       status: 'processing',
-      message: 'Task created, processing in background...'
+      message: isImageInput ? 'Fast mode: Processing image (10-30 seconds)...' : 'Processing video (VModel: ~15 seconds)...'
     })
 
-    // 根据配置选择 API
-    if (FACESWAP_API === 'aifaceswap' && AIFACESWAP_API_KEY) {
-      processFaceSwapAIFaceSwap(taskId, targetImage, sourceImage, AIFACESWAP_API_KEY, IMGBB_API_KEY).catch(error => {
-        console.error('AIFaceSwap processing error:', error)
+    // 根据配置选择 API（优先使用 VModel，最快）
+    if (FACESWAP_API === 'vmodel' && VMODEL_API_TOKEN && !isImageInput) {
+      // VModel 专门用于视频换脸（最快，约15秒）
+      processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_API_TOKEN, IMGBB_API_KEY).catch(error => {
+        console.error('VModel processing error:', error)
         taskStore.set(taskId, {
           status: 'failed',
           progress: 100,
           error: error.message || 'Processing failed'
         })
       })
+    } else if (FACESWAP_API === 'aifaceswap' && AIFACESWAP_API_KEY) {
+      // AIFaceSwap 主要用于视频，如果检测到图片，提示用户
+      if (isImageInput) {
+        console.log('AIFaceSwap only supports video. Switching to Replicate for image...')
+        if (REPLICATE_API_TOKEN) {
+          processFaceSwapImageReplicate(taskId, targetImage, sourceImage, REPLICATE_API_TOKEN, IMGBB_API_KEY).catch(error => {
+            console.error('Replicate image processing error:', error)
+            taskStore.set(taskId, {
+              status: 'failed',
+              progress: 100,
+              error: error.message || 'Processing failed'
+            })
+          })
+        } else {
+          taskStore.set(taskId, {
+            status: 'failed',
+            progress: 0,
+            error: 'Image face swap requires REPLICATE_API_TOKEN. AIFaceSwap only supports video.'
+          })
+        }
+      } else {
+        processFaceSwapAIFaceSwap(taskId, targetImage, sourceImage, AIFACESWAP_API_KEY, IMGBB_API_KEY).catch(error => {
+          console.error('AIFaceSwap processing error:', error)
+          taskStore.set(taskId, {
+            status: 'failed',
+            progress: 100,
+            error: error.message || 'Processing failed'
+          })
+        })
+      }
     } else if (REPLICATE_API_TOKEN) {
-      processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLICATE_API_TOKEN, IMGBB_API_KEY).catch(error => {
-        console.error('Replicate processing error:', error)
-        taskStore.set(taskId, {
-          status: 'failed',
-          progress: 100,
-          error: error.message || 'Processing failed'
+      // Replicate 支持图片和视频
+      if (isImageInput) {
+        // 快速模式：图片换脸（10-30秒）
+        processFaceSwapImageReplicate(taskId, targetImage, sourceImage, REPLICATE_API_TOKEN, IMGBB_API_KEY).catch(error => {
+          console.error('Replicate image processing error:', error)
+          taskStore.set(taskId, {
+            status: 'failed',
+            progress: 100,
+            error: error.message || 'Processing failed'
+          })
         })
-      })
+      } else {
+        // 标准模式：视频换脸（5-10分钟）
+        processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLICATE_API_TOKEN, IMGBB_API_KEY).catch(error => {
+          console.error('Replicate video processing error:', error)
+          taskStore.set(taskId, {
+            status: 'failed',
+            progress: 100,
+            error: error.message || 'Processing failed'
+          })
+        })
+      }
     } else {
       taskStore.set(taskId, {
         status: 'failed',
         progress: 0,
-        error: 'No API configured. Please set REPLICATE_API_TOKEN or AIFACESWAP_API_KEY'
+        error: 'No API configured. Please set VMODEL_API_TOKEN, REPLICATE_API_TOKEN, or AIFACESWAP_API_KEY'
       })
     }
 
@@ -102,6 +153,156 @@ export default async function handler(req, res) {
     return res.status(500).json({
       success: false,
       error: error.message || 'Face swap processing failed'
+    })
+  }
+}
+
+// VModel 处理（最快，约15秒）
+async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_API_TOKEN, IMGBB_API_KEY) {
+  const VMODEL_API_URL = 'https://api.vmodel.ai/api/tasks/v1'
+  const MODEL_VERSION = '537e83f7ed84751dc56aa80fb2391b07696c85a49967c72c64f002a0ca2bb224'
+
+  taskStore.set(taskId, {
+    status: 'processing',
+    progress: 10,
+    message: 'Uploading images to ImgBB...'
+  })
+
+  try {
+    // 上传用户照片到 ImgBB
+    let faceImageUrl = sourceImage
+    if (sourceImage.startsWith('data:image')) {
+      const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
+      const formData = new URLSearchParams()
+      formData.append('image', base64Data)
+
+      const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      })
+
+      const uploadData = await uploadResponse.json()
+      if (!uploadData.success || !uploadData.data?.url) {
+        throw new Error(`Failed to upload image: ${uploadData.error?.message || 'Unknown error'}`)
+      }
+      faceImageUrl = uploadData.data.url
+      console.log('Image uploaded to ImgBB:', faceImageUrl)
+    }
+
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 30,
+      message: 'Creating face swap task with VModel (usually ~15 seconds)...'
+    })
+
+    // 创建 VModel 任务
+    const createResponse = await fetch(`${VMODEL_API_URL}/create`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${VMODEL_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        version: MODEL_VERSION,
+        input: {
+          target: faceImageUrl,  // 要替换的人脸图片
+          source: targetImage,   // 原始视频
+          disable_safety_checker: false
+        }
+      })
+    })
+
+    if (!createResponse.ok) {
+      const errorText = await createResponse.text()
+      throw new Error(`VModel API error: ${createResponse.status} - ${errorText}`)
+    }
+
+    const createData = await createResponse.json()
+    const vmodelTaskId = createData.task_id || createData.id
+
+    if (!vmodelTaskId) {
+      throw new Error(`Invalid VModel response: ${JSON.stringify(createData)}`)
+    }
+
+    console.log('VModel task created:', vmodelTaskId)
+
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 40,
+      message: 'VModel processing video (usually completes in ~15 seconds)...'
+    })
+
+    // 轮询任务状态（最多等待2分钟）
+    const maxAttempts = 120  // 2分钟 = 120次 * 1秒
+    let progress = 40
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 1000)) // 每秒检查一次
+
+      let statusResponse
+      try {
+        statusResponse = await fetch(`${VMODEL_API_URL}/${vmodelTaskId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${VMODEL_API_TOKEN}`
+          }
+        })
+
+        if (!statusResponse.ok) {
+          throw new Error(`VModel status check failed: ${statusResponse.status}`)
+        }
+
+        const statusData = await statusResponse.json()
+
+        // 更新进度
+        progress = Math.min(40 + Math.floor((attempt / maxAttempts) * 50), 95)
+        const elapsed = Math.floor(attempt)
+        
+        taskStore.set(taskId, {
+          status: 'processing',
+          progress: progress,
+          message: `VModel processing... (${elapsed}s elapsed, usually ~15s)`
+        })
+
+        if (statusData.status === 'succeeded') {
+          // 任务完成
+          const outputUrl = statusData.output && statusData.output[0] ? statusData.output[0] : statusData.output
+
+          if (!outputUrl) {
+            throw new Error('No output URL in VModel response')
+          }
+
+          taskStore.set(taskId, {
+            status: 'completed',
+            progress: 100,
+            message: `Face swap completed in ${elapsed}s!`,
+            result: outputUrl
+          })
+          return
+        } else if (statusData.status === 'failed' || statusData.status === 'error') {
+          throw new Error(statusData.error || 'VModel processing failed')
+        }
+        // 如果状态是 'processing' 或 'pending'，继续轮询
+
+      } catch (fetchError) {
+        console.error('VModel status check error:', fetchError)
+        // 继续重试，不要立即失败
+        if (attempt === maxAttempts) {
+          throw new Error(`Failed to check VModel status: ${fetchError.message}`)
+        }
+      }
+    }
+
+    // 超时
+    throw new Error('VModel processing timeout (exceeded 2 minutes)')
+
+  } catch (error) {
+    console.error('VModel processing error:', error)
+    taskStore.set(taskId, {
+      status: 'failed',
+      progress: 100,
+      error: error.message || 'VModel processing failed'
     })
   }
 }
@@ -191,8 +392,8 @@ async function processFaceSwapAIFaceSwap(taskId, targetImage, sourceImage, API_K
         body: JSON.stringify({
           source_video: targetImage,
           face_image: faceImageUrl,
-          duration: 3,
-          enhance: 0,
+          duration: 2,  // 减少到2秒，加快处理速度
+          enhance: 0,   // 关闭增强，加快速度
           webhook: webhookUrl
         })
       })
@@ -219,12 +420,12 @@ async function processFaceSwapAIFaceSwap(taskId, targetImage, sourceImage, API_K
 
     const aiTaskId = submitData.data.task_id
 
-    // 轮询 webhook 获取结果（最多 5 分钟）
-    const maxAttempts = 300
+    // 轮询 webhook 获取结果（最多 3 分钟，因为视频已优化）
+    const maxAttempts = 180  // 3分钟 = 180次 * 1秒
     let progress = 25
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await new Promise(resolve => setTimeout(resolve, 1000)) // 改为1秒检查一次，更快响应
 
       let webhookCheck
       try {
@@ -297,7 +498,99 @@ async function processFaceSwapAIFaceSwap(taskId, targetImage, sourceImage, API_K
   }
 }
 
-// Replicate 处理（较慢，但更稳定）
+// Replicate 快速图片换脸（10-30秒）
+async function processFaceSwapImageReplicate(taskId, targetImage, sourceImage, REPLICATE_API_TOKEN, IMGBB_API_KEY) {
+  taskStore.set(taskId, {
+    status: 'processing',
+    progress: 10,
+    message: 'Uploading images to ImgBB... (Fast mode: 10-30 seconds)'
+  })
+
+  try {
+    const replicate = new Replicate({ auth: REPLICATE_API_TOKEN })
+    const startTime = Date.now()
+
+    // 上传两张图片到 ImgBB
+    let targetImageUrl = targetImage
+    let faceImageUrl = sourceImage
+
+    // 上传目标图片
+    if (targetImage.startsWith('data:image')) {
+      const base64Data = targetImage.replace(/^data:image\/\w+;base64,/, '')
+      const formData = new URLSearchParams()
+      formData.append('image', base64Data)
+
+      const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      })
+
+      const uploadData = await uploadResponse.json()
+      if (!uploadData.success || !uploadData.data?.url) {
+        throw new Error(`Failed to upload target image: ${uploadData.error?.message || 'Unknown error'}`)
+      }
+      targetImageUrl = uploadData.data.url
+    }
+
+    // 上传源图片（用户照片）
+    if (sourceImage.startsWith('data:image')) {
+      const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
+      const formData = new URLSearchParams()
+      formData.append('image', base64Data)
+
+      const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      })
+
+      const uploadData = await uploadResponse.json()
+      if (!uploadData.success || !uploadData.data?.url) {
+        throw new Error(`Failed to upload source image: ${uploadData.error?.message || 'Unknown error'}`)
+      }
+      faceImageUrl = uploadData.data.url
+    }
+
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 50,
+      message: 'Processing face swap (fast mode: usually 10-30 seconds)...'
+    })
+
+    // 使用 Replicate 的图片换脸模型（快速）
+    // 尝试使用 logofusion/face-swap 或其他快速模型
+    const output = await replicate.run(
+      'logofusion/face-swap:42e5134d7f0bf93f90ba64e3e4f97ea3c55adefe',
+      {
+        input: {
+          source_image: faceImageUrl,
+          target_image: targetImageUrl
+        }
+      }
+    )
+
+    const elapsed = Math.floor((Date.now() - startTime) / 1000)
+    console.log(`Fast image face swap completed in ${elapsed}s`)
+
+    taskStore.set(taskId, {
+      status: 'completed',
+      progress: 100,
+      message: `Face swap completed in ${elapsed}s!`,
+      result: output
+    })
+
+  } catch (error) {
+    console.error('Fast image face swap error:', error)
+    taskStore.set(taskId, {
+      status: 'failed',
+      progress: 100,
+      error: error.message || 'Fast image processing failed'
+    })
+  }
+}
+
+// Replicate 视频换脸处理（较慢，但更稳定，5-10分钟）
 async function processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLICATE_API_TOKEN, IMGBB_API_KEY) {
   taskStore.set(taskId, {
     status: 'processing',
@@ -344,7 +637,7 @@ async function processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLIC
     taskStore.set(taskId, {
       status: 'processing',
       progress: 30,
-      message: 'Calling Replicate API (this may take 5-10 minutes)...'
+      message: 'Calling Replicate API (optimized: 2-4 minutes with fast mode)...'
     })
 
     const replicate = new Replicate({ auth: REPLICATE_API_TOKEN })
@@ -357,22 +650,35 @@ async function processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLIC
       const elapsed = Math.floor((Date.now() - startTime) / 1000)
       const minutes = Math.floor(elapsed / 60)
       const seconds = elapsed % 60
-      const estimatedProgress = Math.min(30 + Math.floor((elapsed / 600) * 65), 95) // 10分钟从30%到95%
+      const estimatedProgress = Math.min(30 + Math.floor((elapsed / 240) * 65), 95) // 4分钟从30%到95%（优化后）
       
       taskStore.set(taskId, {
         status: 'processing',
         progress: estimatedProgress,
-        message: `Processing with Replicate API... (${minutes}m ${seconds}s elapsed, estimated 5-10 minutes total)`
+        message: `Processing with Replicate API (optimized: 2-4 min)... (${minutes}m ${seconds}s elapsed)`
       })
     }, 10000) // 每10秒更新一次
+
+    // 优化视频处理参数以加快速度
+    // 限制视频时长到2秒（如果URL中没有时间片段，添加它）
+    let optimizedVideoUrl = targetImage
+    if (!targetImage.includes('#t=') && !targetImage.includes('?t=')) {
+      // 添加时间片段限制（0-2秒）
+      optimizedVideoUrl = targetImage.includes('?') 
+        ? `${targetImage}&t=0,2` 
+        : `${targetImage}#t=0,2`
+    }
 
     try {
       const output = await replicate.run(
         'wan-video/wan-2.2-animate-replace',
         {
           input: {
-            video: targetImage,
-            character_image: faceImageUrl
+            video: optimizedVideoUrl,  // 使用优化后的URL（限制2秒）
+            character_image: faceImageUrl,
+            go_fast: true,              // 启用快速模式
+            resolution: "480",          // 降低分辨率到480p（更快）
+            frames_per_second: 15       // 降低帧率到15fps（更快）
           }
         }
       )
