@@ -33,8 +33,9 @@ export default async function handler(req, res) {
     const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN
     const AIFACESWAP_API_KEY = process.env.AIFACESWAP_API_KEY
     const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN
+    const PIAPI_API_KEY = process.env.PIAPI_API_KEY || 'a456b8f0b6cdc6e30e5b195eb66197740b8ca501da3d1051861dad4c2f6d8377'
     const IMGBB_API_KEY = process.env.IMGBB_API_KEY
-    const FACESWAP_API = process.env.FACESWAP_API || 'vmodel'  // 默认使用 VModel（最快）
+    const FACESWAP_API = process.env.FACESWAP_API || 'piapi'  // 默认使用 PiAPI
 
     if (!IMGBB_API_KEY) {
       return res.status(500).json({
@@ -73,11 +74,21 @@ export default async function handler(req, res) {
       success: true,
       taskId: taskId,
       status: 'processing',
-      message: isImageInput ? 'Fast mode: Processing image (10-30 seconds)...' : 'Processing video (VModel: ~15 seconds)...'
+      message: isImageInput ? 'Fast mode: Processing image (10-30 seconds)...' : 'Processing video with PiAPI...'
     })
 
-    // 根据配置选择 API（优先使用 VModel，最快）
-    if (FACESWAP_API === 'vmodel' && VMODEL_API_TOKEN && !isImageInput) {
+    // 根据配置选择 API（优先使用 PiAPI）
+    if (FACESWAP_API === 'piapi' && PIAPI_API_KEY && !isImageInput) {
+      // PiAPI 专门用于视频换脸
+      processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_KEY, IMGBB_API_KEY).catch(error => {
+        console.error('PiAPI processing error:', error)
+        taskStore.set(taskId, {
+          status: 'failed',
+          progress: 100,
+          error: error.message || 'Processing failed'
+        })
+      })
+    } else if (FACESWAP_API === 'vmodel' && VMODEL_API_TOKEN && !isImageInput) {
       // VModel 专门用于视频换脸（最快，约15秒）
       processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_API_TOKEN, IMGBB_API_KEY).catch(error => {
         console.error('VModel processing error:', error)
@@ -144,7 +155,7 @@ export default async function handler(req, res) {
       taskStore.set(taskId, {
         status: 'failed',
         progress: 0,
-        error: 'No API configured. Please set VMODEL_API_TOKEN, REPLICATE_API_TOKEN, or AIFACESWAP_API_KEY'
+        error: 'No API configured. Please set PIAPI_API_KEY, VMODEL_API_TOKEN, REPLICATE_API_TOKEN, or AIFACESWAP_API_KEY'
       })
     }
 
@@ -153,6 +164,163 @@ export default async function handler(req, res) {
     return res.status(500).json({
       success: false,
       error: error.message || 'Face swap processing failed'
+    })
+  }
+}
+
+// PiAPI 处理（视频换脸）
+async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_KEY, IMGBB_API_KEY) {
+  const PIAPI_API_URL = 'https://api.piapi.ai/api/v1'
+  const MODEL_NAME = 'Qubico/video-toolkit'
+
+  taskStore.set(taskId, {
+    status: 'processing',
+    progress: 10,
+    message: 'Uploading images to ImgBB...'
+  })
+
+  try {
+    // 上传用户照片到 ImgBB
+    let faceImageUrl = sourceImage
+    if (sourceImage.startsWith('data:image')) {
+      const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
+      const formData = new URLSearchParams()
+      formData.append('image', base64Data)
+
+      const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      })
+
+      const uploadData = await uploadResponse.json()
+      if (!uploadData.success || !uploadData.data?.url) {
+        throw new Error(`Failed to upload image: ${uploadData.error?.message || 'Unknown error'}`)
+      }
+      faceImageUrl = uploadData.data.url
+      console.log('Image uploaded to ImgBB:', faceImageUrl)
+    }
+
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 30,
+      message: 'Creating face swap task with PiAPI...'
+    })
+
+    // 创建 PiAPI 任务
+    const createResponse = await fetch(`${PIAPI_API_URL}/task`, {
+      method: 'POST',
+      headers: {
+        'x-api-key': PIAPI_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: MODEL_NAME,
+        task_type: 'face-swap',
+        input: {
+          swap_image: faceImageUrl,      // 要替换的人脸图片
+          target_video: targetImage,      // 目标视频
+          swap_faces_index: "0",          // 使用第一张脸（索引0）
+          target_faces_index: "0"         // 替换视频中第一张脸（索引0）
+        }
+      })
+    })
+
+    if (!createResponse.ok) {
+      const errorText = await createResponse.text()
+      throw new Error(`PiAPI API error: ${createResponse.status} - ${errorText}`)
+    }
+
+    const createData = await createResponse.json()
+    
+    // 检查响应
+    if (createData.code !== 200 || !createData.data?.task_id) {
+      throw new Error(`PiAPI error: ${createData.message || JSON.stringify(createData)}`)
+    }
+    
+    const piapiTaskId = createData.data.task_id
+    console.log('PiAPI task created:', piapiTaskId)
+
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 40,
+      message: 'PiAPI processing video...'
+    })
+
+    // 轮询任务状态（最多等待5分钟）
+    const maxAttempts = 300  // 5分钟 = 300次 * 1秒
+    let progress = 40
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 2000)) // 每2秒检查一次
+
+      let statusResponse
+      try {
+        statusResponse = await fetch(`${PIAPI_API_URL}/task/${piapiTaskId}`, {
+          method: 'GET',
+          headers: {
+            'x-api-key': PIAPI_API_KEY
+          }
+        })
+
+        if (!statusResponse.ok) {
+          throw new Error(`PiAPI status check failed: ${statusResponse.status}`)
+        }
+
+        const statusData = await statusResponse.json()
+
+        // 更新进度
+        progress = Math.min(40 + Math.floor((attempt / maxAttempts) * 55), 95)
+        const elapsed = Math.floor(attempt * 2)
+        
+        taskStore.set(taskId, {
+          status: 'processing',
+          progress: progress,
+          message: `PiAPI processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s elapsed)`
+        })
+
+        if (statusData.code === 200 && statusData.data) {
+          const taskStatus = statusData.data.status
+          
+          if (taskStatus === 'completed' || taskStatus === 'success') {
+            // 任务完成
+            const outputUrl = statusData.data.output?.video_url || statusData.data.video_url
+
+            if (!outputUrl) {
+              throw new Error('No video URL in PiAPI response')
+            }
+
+            taskStore.set(taskId, {
+              status: 'completed',
+              progress: 100,
+              message: `Face swap completed!`,
+              result: outputUrl
+            })
+            return
+          } else if (taskStatus === 'failed' || taskStatus === 'error') {
+            throw new Error(statusData.data.message || statusData.message || 'PiAPI processing failed')
+          }
+          // 如果状态是 'processing' 或 'pending'，继续轮询
+        }
+
+      } catch (fetchError) {
+        console.error('PiAPI status check error:', fetchError)
+        // 继续重试，不要立即失败
+        if (attempt === maxAttempts) {
+          throw new Error(`Failed to check PiAPI status: ${fetchError.message}`)
+        }
+      }
+    }
+
+    // 超时
+    throw new Error('PiAPI processing timeout (exceeded 5 minutes)')
+
+  } catch (error) {
+    console.error('PiAPI processing error:', error)
+    taskStore.set(taskId, {
+      status: 'failed',
+      progress: 100,
+      error: error.message || 'PiAPI processing failed'
     })
   }
 }
