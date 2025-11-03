@@ -34,8 +34,9 @@ export default async function handler(req, res) {
     const AIFACESWAP_API_KEY = process.env.AIFACESWAP_API_KEY
     const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN
     const PIAPI_API_KEY = process.env.PIAPI_API_KEY || 'a456b8f0b6cdc6e30e5b195eb66197740b8ca501da3d1051861dad4c2f6d8377'
+    const MAGICHOUR_API_KEY = process.env.MAGICHOUR_API_KEY || 'mhk_live_6FBxHAfqe43imx12rAALt88Ux8j7s8HDfeezMinKCG7zh8Fv4QrfOd2Uh35Hb6c0MfBjhhOawc0EWBEk'
     const IMGBB_API_KEY = process.env.IMGBB_API_KEY
-    const FACESWAP_API = process.env.FACESWAP_API || 'piapi'  // 默认使用 PiAPI
+    const FACESWAP_API = process.env.FACESWAP_API || 'piapi'  // 默认使用 PiAPI，可以改为 magichour 测试
 
     if (!IMGBB_API_KEY) {
       return res.status(500).json({
@@ -74,11 +75,21 @@ export default async function handler(req, res) {
       success: true,
       taskId: taskId,
       status: 'processing',
-      message: isImageInput ? 'Fast mode: Processing image (10-30 seconds)...' : 'Processing video with PiAPI...'
+      message: isImageInput ? 'Fast mode: Processing image (10-30 seconds)...' : 'Processing video...'
     })
 
-    // 根据配置选择 API（优先使用 PiAPI）
-    if (FACESWAP_API === 'piapi' && PIAPI_API_KEY && !isImageInput) {
+    // 根据配置选择 API
+    if (FACESWAP_API === 'magichour' && MAGICHOUR_API_KEY && !isImageInput) {
+      // Magic Hour 视频换脸
+      processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICHOUR_API_KEY, IMGBB_API_KEY).catch(error => {
+        console.error('Magic Hour processing error:', error)
+        taskStore.set(taskId, {
+          status: 'failed',
+          progress: 100,
+          error: error.message || 'Processing failed'
+        })
+      })
+    } else if (FACESWAP_API === 'piapi' && PIAPI_API_KEY && !isImageInput) {
       // PiAPI 专门用于视频换脸
       processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_KEY, IMGBB_API_KEY).catch(error => {
         console.error('PiAPI processing error:', error)
@@ -155,7 +166,7 @@ export default async function handler(req, res) {
       taskStore.set(taskId, {
         status: 'failed',
         progress: 0,
-        error: 'No API configured. Please set PIAPI_API_KEY, VMODEL_API_TOKEN, REPLICATE_API_TOKEN, or AIFACESWAP_API_KEY'
+        error: 'No API configured. Please set PIAPI_API_KEY, MAGICHOUR_API_KEY, VMODEL_API_TOKEN, REPLICATE_API_TOKEN, or AIFACESWAP_API_KEY'
       })
     }
 
@@ -164,6 +175,227 @@ export default async function handler(req, res) {
     return res.status(500).json({
       success: false,
       error: error.message || 'Face swap processing failed'
+    })
+  }
+}
+
+// Magic Hour 处理（视频换脸）
+async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICHOUR_API_KEY, IMGBB_API_KEY) {
+  const MAGICHOUR_API_URL = 'https://api.magichour.ai/v1'
+
+  taskStore.set(taskId, {
+    status: 'processing',
+    progress: 10,
+    message: 'Uploading images to ImgBB...'
+  })
+
+  try {
+    // 上传用户照片到 ImgBB
+    let faceImageUrl = sourceImage
+    if (sourceImage.startsWith('data:image')) {
+      const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
+      const formData = new URLSearchParams()
+      formData.append('image', base64Data)
+
+      const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      })
+
+      const uploadData = await uploadResponse.json()
+      if (!uploadData.success || !uploadData.data?.url) {
+        throw new Error(`Failed to upload image: ${uploadData.error?.message || 'Unknown error'}`)
+      }
+      faceImageUrl = uploadData.data.url
+      console.log('Image uploaded to ImgBB:', faceImageUrl)
+    }
+
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 30,
+      message: 'Creating face swap task with Magic Hour...'
+    })
+
+    // 创建 Magic Hour 任务
+    // 根据文档，Magic Hour 需要先上传文件或使用已上传的文件ID
+    // 我们尝试直接使用 URL，如果不支持，可能需要先上传
+    const requestBody = {
+      start_seconds: 0.0,
+      end_seconds: 15.0, // 限制15秒以加快处理
+      assets: {
+        face_mappings: [
+          {
+            new_face: faceImageUrl,  // 要替换的人脸图片 URL
+            original_face: "0-0",     // 使用第一个检测到的人脸（索引格式）
+          }
+        ],
+        face_swap_mode: "all-faces", // 替换所有人脸
+        video_file_path: targetImage, // 目标视频 URL
+        video_source: "url",          // 使用 URL 而不是已上传的文件
+      },
+      name: `Face Swap ${Date.now()}`,
+      style: {
+        version: "default"
+      }
+    }
+
+    console.log('Magic Hour request body:', JSON.stringify(requestBody, null, 2))
+
+    const createResponse = await fetch(`${MAGICHOUR_API_URL}/face-swap`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${MAGICHOUR_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    })
+
+    if (!createResponse.ok) {
+      const errorText = await createResponse.text()
+      
+      // 处理特定错误代码
+      if (createResponse.status === 401) {
+        throw new Error('Magic Hour API authentication failed. Please check your API key.')
+      } else if (createResponse.status === 422) {
+        throw new Error(`Magic Hour validation error: ${errorText.substring(0, 200)}`)
+      }
+      
+      throw new Error(`Magic Hour API error (${createResponse.status}): ${errorText.substring(0, 200)}`)
+    }
+
+    const createData = await createResponse.json()
+    console.log('Magic Hour task creation response:', JSON.stringify(createData, null, 2))
+    
+    const videoId = createData.id
+    if (!videoId) {
+      throw new Error(`Magic Hour error: No video ID in response. Response: ${JSON.stringify(createData)}`)
+    }
+    
+    console.log('Magic Hour task created successfully, video_id:', videoId)
+
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 40,
+      message: 'Magic Hour processing video...'
+    })
+
+    // 轮询任务状态（最多等待10分钟）
+    const maxAttempts = 600  // 10分钟 = 600次 * 1秒
+    let progress = 40
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 2000)) // 每2秒检查一次
+      
+      console.log(`[${new Date().toISOString()}] Magic Hour polling attempt ${attempt}/${maxAttempts}, video_id: ${videoId}`)
+
+      let statusResponse
+      try {
+        statusResponse = await fetch(`${MAGICHOUR_API_URL}/video/${videoId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${MAGICHOUR_API_KEY}`
+          }
+        })
+
+        if (!statusResponse.ok) {
+          const errorText = await statusResponse.text()
+          
+          // 处理特定错误代码
+          if (statusResponse.status === 404) {
+            console.warn('Magic Hour video not found, will retry...')
+            continue
+          } else if (statusResponse.status === 522 || statusResponse.status === 503 || statusResponse.status === 504) {
+            console.warn('Magic Hour service timeout, will retry...')
+            continue
+          }
+          
+          throw new Error(`Magic Hour status check failed: ${statusResponse.status} - ${errorText.substring(0, 200)}`)
+        }
+
+        let statusData
+        try {
+          const responseText = await statusResponse.text()
+          // 检查是否是 HTML 响应
+          if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+            console.warn('Magic Hour returned HTML instead of JSON, will retry...')
+            continue
+          }
+          statusData = JSON.parse(responseText)
+        } catch (parseError) {
+          console.error('Failed to parse Magic Hour response:', parseError)
+          if (attempt === maxAttempts) {
+            throw new Error('Magic Hour returned invalid response format')
+          }
+          continue
+        }
+        
+        // 添加详细日志
+        console.log(`Magic Hour status check [${attempt}]:`, JSON.stringify(statusData, null, 2))
+
+        // 更新进度
+        progress = Math.min(40 + Math.floor((attempt / maxAttempts) * 55), 95)
+        const elapsed = Math.floor(attempt * 2)
+        
+        taskStore.set(taskId, {
+          status: 'processing',
+          progress: progress,
+          message: `Magic Hour processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s elapsed)`
+        })
+
+        // 检查任务状态
+        const taskStatus = statusData.status || statusData.data?.status
+        
+        if (taskStatus === 'complete' || taskStatus === 'completed' || taskStatus === 'success') {
+          // 任务完成 - 获取输出URL
+          const outputUrl = statusData.output_url || 
+                          statusData.output?.url ||
+                          statusData.data?.output_url ||
+                          statusData.data?.output?.url ||
+                          statusData.video_url ||
+                          statusData.url
+
+          console.log('Magic Hour task completed! Status:', taskStatus, 'Output URL:', outputUrl)
+
+          if (!outputUrl) {
+            console.error('No video URL found in response:', JSON.stringify(statusData, null, 2))
+            throw new Error('No video URL in Magic Hour response. Response: ' + JSON.stringify(statusData))
+          }
+
+          taskStore.set(taskId, {
+            status: 'completed',
+            progress: 100,
+            message: `Face swap completed!`,
+            result: outputUrl
+          })
+          return
+        } else if (taskStatus === 'failed' || taskStatus === 'error' || taskStatus === 'failure') {
+          const errorMsg = statusData.message || statusData.error || 'Magic Hour processing failed'
+          console.error('Magic Hour task failed:', errorMsg)
+          throw new Error(`Magic Hour processing failed: ${errorMsg}`)
+        } else if (taskStatus === 'pending' || taskStatus === 'processing' || taskStatus === 'queued' || taskStatus === 'in_progress') {
+          console.log(`Magic Hour task still ${taskStatus}, continuing to poll...`)
+        } else {
+          console.warn(`Unknown Magic Hour status: "${taskStatus}", continuing to poll...`)
+        }
+
+      } catch (fetchError) {
+        console.error('Magic Hour status check error:', fetchError)
+        if (attempt === maxAttempts) {
+          throw new Error(`Failed to check Magic Hour status: ${fetchError.message}`)
+        }
+      }
+    }
+
+    // 超时
+    throw new Error('Magic Hour processing timeout (exceeded 10 minutes)')
+
+  } catch (error) {
+    console.error('Magic Hour processing error:', error)
+    taskStore.set(taskId, {
+      status: 'failed',
+      progress: 100,
+      error: error.message || 'Magic Hour processing failed'
     })
   }
 }
