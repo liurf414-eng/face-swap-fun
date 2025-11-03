@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     const PIAPI_API_KEY = process.env.PIAPI_API_KEY || 'a456b8f0b6cdc6e30e5b195eb66197740b8ca501da3d1051861dad4c2f6d8377'
     const MAGICHOUR_API_KEY = process.env.MAGICHOUR_API_KEY || 'mhk_live_6FBxHAfqe43imx12rAALt88Ux8j7s8HDfeezMinKCG7zh8Fv4QrfOd2Uh35Hb6c0MfBjhhOawc0EWBEk'
     const IMGBB_API_KEY = process.env.IMGBB_API_KEY
-    const FACESWAP_API = process.env.FACESWAP_API || 'piapi'  // 默认使用 PiAPI，可以改为 magichour 测试
+    const FACESWAP_API = process.env.FACESWAP_API || 'magichour'  // 默认使用 Magic Hour（更快）
 
     if (!IMGBB_API_KEY) {
       return res.status(500).json({
