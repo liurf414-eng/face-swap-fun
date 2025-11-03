@@ -215,10 +215,29 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
 
     if (!createResponse.ok) {
       const errorText = await createResponse.text()
-      throw new Error(`VModel API error: ${createResponse.status} - ${errorText}`)
+      let errorMessage = `VModel API error: ${createResponse.status} - ${errorText}`
+      
+      // 处理 402 错误（需要支付）
+      if (createResponse.status === 402) {
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = `Payment Required: ${errorData.message?.en || errorData.message?.zh || 'Your VModel account balance is insufficient. Please add credits to continue.'}`
+        } catch (e) {
+          errorMessage = 'Payment Required: Your VModel account balance is insufficient. Please add credits at https://vmodel.ai'
+        }
+      }
+      
+      throw new Error(errorMessage)
     }
 
     const createData = await createResponse.json()
+    
+    // 检查是否有错误代码
+    if (createData.code === 402 || createData.message) {
+      const errorMsg = createData.message?.en || createData.message?.zh || 'Payment Required'
+      throw new Error(`VModel Error: ${errorMsg}. Please check your account balance at https://vmodel.ai`)
+    }
+    
     const vmodelTaskId = createData.task_id || createData.id
 
     if (!vmodelTaskId) {
@@ -250,10 +269,20 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         })
 
         if (!statusResponse.ok) {
-          throw new Error(`VModel status check failed: ${statusResponse.status}`)
+          let errorMsg = `VModel status check failed: ${statusResponse.status}`
+          if (statusResponse.status === 402) {
+            errorMsg = 'Payment Required: Your VModel account balance is insufficient'
+          }
+          throw new Error(errorMsg)
         }
 
         const statusData = await statusResponse.json()
+        
+        // 检查响应中的错误代码
+        if (statusData.code === 402) {
+          const errorMsg = statusData.message?.en || statusData.message?.zh || 'Payment Required'
+          throw new Error(`VModel Error: ${errorMsg}`)
+        }
 
         // 更新进度
         progress = Math.min(40 + Math.floor((attempt / maxAttempts) * 50), 95)
