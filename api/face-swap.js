@@ -238,48 +238,73 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
       
       try {
         // 使用 Magic Hour 的 Upload Asset URLs API 上传视频
-        // 根据文档，可能需要先上传获取文件 ID
-        const uploadResponse = await fetch(`${MAGICHOUR_API_URL}/assets/upload-urls`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${MAGICHOUR_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            urls: [targetImage]  // 上传视频 URL
-          })
-        })
+        // 根据文档，端点应该是 /assets/upload-urls
+        // 尝试多个可能的端点
+        const uploadEndpoints = [
+          `${MAGICHOUR_API_URL}/assets/upload-urls`,
+          `${MAGICHOUR_API_URL}/upload-assets`,
+          `${MAGICHOUR_API_URL}/assets/upload`
+        ]
         
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text()
-          console.error('Magic Hour upload failed:', errorText)
-          // 如果上传失败，尝试直接使用 URL（可能会失败但至少会给出明确错误）
-          throw new Error(`Magic Hour upload failed: ${errorText.substring(0, 200)}. Magic Hour only supports YouTube URLs or pre-uploaded files.`)
+        let uploadData = null
+        let lastError = null
+        
+        for (const endpoint of uploadEndpoints) {
+          try {
+            console.log(`Trying upload endpoint: ${endpoint}`)
+            const uploadResponse = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${MAGICHOUR_API_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                urls: [targetImage]  // 上传视频 URL
+              })
+            })
+            
+            if (uploadResponse.ok) {
+              uploadData = await uploadResponse.json()
+              console.log(`Upload succeeded at ${endpoint}:`, JSON.stringify(uploadData, null, 2))
+              break
+            } else {
+              const errorText = await uploadResponse.text()
+              console.warn(`Upload endpoint ${endpoint} failed (${uploadResponse.status}):`, errorText.substring(0, 200))
+              lastError = errorText
+            }
+          } catch (fetchError) {
+            console.warn(`Upload endpoint ${endpoint} error:`, fetchError.message)
+            lastError = fetchError.message
+            continue
+          }
         }
         
-        const uploadData = await uploadResponse.json()
-        console.log('Magic Hour upload response:', JSON.stringify(uploadData, null, 2))
+        if (!uploadData) {
+          // 所有端点都失败了，可能是 API 不支持或端点不对
+          throw new Error(`Magic Hour upload failed: ${lastError || 'All upload endpoints failed'}. Magic Hour requires file upload. Consider using PiAPI which supports direct URLs.`)
+        }
         
         // 获取上传后的文件 ID
-        // 根据响应格式，可能是 uploadData.data[0].id 或类似格式
-        if (uploadData.data && uploadData.data.length > 0) {
-          videoPath = uploadData.data[0].id || uploadData.data[0].file_id || uploadData.data[0].path
+        // 根据文档示例，格式可能是 "api-assets/id/xxx" 或类似
+        if (uploadData.data && Array.isArray(uploadData.data) && uploadData.data.length > 0) {
+          videoPath = uploadData.data[0].id || 
+                     uploadData.data[0].file_id || 
+                     uploadData.data[0].path ||
+                     uploadData.data[0].asset_id
+          videoSource = "file"
+          console.log('Video uploaded successfully, file ID:', videoPath)
+        } else if (uploadData.id || uploadData.file_id || uploadData.path || uploadData.asset_id) {
+          videoPath = uploadData.id || uploadData.file_id || uploadData.path || uploadData.asset_id
           videoSource = "file"
           console.log('Video uploaded successfully, file ID:', videoPath)
         } else {
-          // 如果响应格式不同，尝试其他字段
-          videoPath = uploadData.id || uploadData.file_id || uploadData.path
-          if (videoPath) {
-            videoSource = "file"
-            console.log('Video uploaded successfully, file ID:', videoPath)
-          } else {
-            throw new Error(`Magic Hour upload response format not recognized. Response: ${JSON.stringify(uploadData)}`)
-          }
+          // 如果上传 API 返回成功但没有文件 ID，记录完整响应以便调试
+          console.error('Upload succeeded but no file ID found. Response:', JSON.stringify(uploadData, null, 2))
+          throw new Error(`Magic Hour upload response format not recognized. Response: ${JSON.stringify(uploadData)}. Please check Magic Hour documentation.`)
         }
       } catch (uploadError) {
         console.error('Magic Hour upload error:', uploadError)
-        // 如果上传 API 不存在或失败，给出明确提示
-        throw new Error(`Magic Hour requires video upload. Upload failed: ${uploadError.message}. Magic Hour only supports YouTube URLs or uploaded files. Consider using PiAPI instead.`)
+        throw new Error(`Magic Hour requires video upload. Upload failed: ${uploadError.message}. Magic Hour only supports YouTube URLs or uploaded files. Consider switching to PiAPI which supports direct video URLs.`)
       }
     }
     
@@ -289,13 +314,14 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
       assets: {
         face_mappings: [
           {
-            new_face: faceImageUrl,  // 要替换的人脸图片 URL
-            original_face: "0-0",     // 使用第一个检测到的人脸（索引格式）
+            new_face: faceImageUrl,  // 要替换的人脸图片（可能是 URL 或文件 ID）
+            original_face: "0-0",     // 使用第一个检测到的人脸（索引格式：人脸索引-帧索引）
           }
         ],
         face_swap_mode: "all-faces", // 替换所有人脸
         video_file_path: videoPath,
         video_source: videoSource,    // "file" 或 "youtube"
+        // 注意：根据文档示例，可能还需要 image_file_path（如果图片也需要上传）
       },
       name: `Face Swap ${Date.now()}`,
       style: {
