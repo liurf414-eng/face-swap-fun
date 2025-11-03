@@ -257,8 +257,19 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
       // 处理特定错误代码
       if (createResponse.status === 401) {
         throw new Error('Magic Hour API authentication failed. Please check your API key.')
+      } else if (createResponse.status === 502 || createResponse.status === 503 || createResponse.status === 504) {
+        throw new Error('Magic Hour server is temporarily unavailable (502/503/504). Please try again in a moment or switch to another API.')
       } else if (createResponse.status === 422) {
+        // 检查是否是 HTML 响应（服务器错误页面）
+        if (errorText.trim().startsWith('<!DOCTYPE') || errorText.trim().startsWith('<html')) {
+          throw new Error(`Magic Hour server returned HTML error page (${createResponse.status}). The service may be temporarily unavailable.`)
+        }
         throw new Error(`Magic Hour validation error: ${errorText.substring(0, 200)}`)
+      }
+      
+      // 检查是否是 HTML 响应（通常表示服务器错误）
+      if (errorText.trim().startsWith('<!DOCTYPE') || errorText.trim().startsWith('<html')) {
+        throw new Error(`Magic Hour server returned HTML instead of JSON (status ${createResponse.status}). The service may be temporarily unavailable.`)
       }
       
       throw new Error(`Magic Hour API error (${createResponse.status}): ${errorText.substring(0, 200)}`)
@@ -305,8 +316,8 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
           if (statusResponse.status === 404) {
             console.warn('Magic Hour video not found, will retry...')
             continue
-          } else if (statusResponse.status === 522 || statusResponse.status === 503 || statusResponse.status === 504) {
-            console.warn('Magic Hour service timeout, will retry...')
+          } else if (statusResponse.status === 502 || statusResponse.status === 503 || statusResponse.status === 504 || statusResponse.status === 522) {
+            console.warn(`Magic Hour service error (${statusResponse.status}), will retry...`)
             continue
           }
           
