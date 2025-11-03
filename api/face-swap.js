@@ -228,7 +228,22 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
 
     if (!createResponse.ok) {
       const errorText = await createResponse.text()
-      throw new Error(`PiAPI API error: ${createResponse.status} - ${errorText}`)
+      
+      // 处理特定错误代码
+      if (createResponse.status === 522) {
+        throw new Error('PiAPI server timeout (522). The server may be overloaded or temporarily unavailable. Please try again later.')
+      } else if (createResponse.status === 503 || createResponse.status === 504) {
+        throw new Error('PiAPI service temporarily unavailable. Please try again in a moment.')
+      } else if (createResponse.status === 429) {
+        throw new Error('PiAPI rate limit exceeded. Please wait a moment and try again.')
+      }
+      
+      // 检查是否是 HTML 响应（通常表示服务器错误）
+      if (errorText.trim().startsWith('<!DOCTYPE') || errorText.trim().startsWith('<html')) {
+        throw new Error(`PiAPI server returned HTML instead of JSON (status ${createResponse.status}). The service may be temporarily unavailable.`)
+      }
+      
+      throw new Error(`PiAPI API error (${createResponse.status}): ${errorText.substring(0, 200)}`)
     }
 
     const createData = await createResponse.json()
@@ -278,10 +293,39 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
         })
 
         if (!statusResponse.ok) {
-          throw new Error(`PiAPI status check failed: ${statusResponse.status}`)
+          const errorText = await statusResponse.text()
+          
+          // 处理特定错误代码
+          if (statusResponse.status === 522) {
+            console.warn('PiAPI status check timeout (522), will retry...')
+            // 不立即失败，继续重试
+            continue
+          } else if (statusResponse.status === 503 || statusResponse.status === 504) {
+            console.warn('PiAPI service unavailable, will retry...')
+            continue
+          }
+          
+          throw new Error(`PiAPI status check failed: ${statusResponse.status} - ${errorText.substring(0, 200)}`)
         }
 
-        const statusData = await statusResponse.json()
+        let statusData
+        try {
+          const responseText = await statusResponse.text()
+          // 检查是否是 HTML 响应
+          if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+            console.warn('PiAPI returned HTML instead of JSON, will retry...')
+            continue
+          }
+          statusData = JSON.parse(responseText)
+        } catch (parseError) {
+          console.error('Failed to parse PiAPI response:', parseError)
+          // 如果是最后一次尝试，抛出错误
+          if (attempt === maxAttempts) {
+            throw new Error('PiAPI returned invalid response format')
+          }
+          // 否则继续重试
+          continue
+        }
         
         // 添加详细日志
         console.log(`PiAPI status check [${attempt}]:`, JSON.stringify(statusData, null, 2))
