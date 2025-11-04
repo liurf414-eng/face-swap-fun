@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import './App.css'
 
 // 默认模板（回退方案）
@@ -47,6 +47,7 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [result, setResult] = useState(null)
   const [processingStatus, setProcessingStatus] = useState('')
+  const videoRef = useRef(null)
   const [progress, setProgress] = useState(0)  // 新增：进度百分比
   const [searchQuery, setSearchQuery] = useState('')
   const [generationCount, setGenerationCount] = useState(0)  // 新增：用户今日已生成次数
@@ -448,6 +449,15 @@ function App() {
               setShowCelebration(true)
               setTimeout(() => setShowCelebration(false), 3000)
 
+              // 确保视频在加载后自动播放
+              setTimeout(() => {
+                if (videoRef.current && isVideoUrl(result.url)) {
+                  videoRef.current.play().catch(err => {
+                    console.warn('视频自动播放被阻止:', err)
+                  })
+                }
+              }, 100)
+
               // 成功完成后增加生成次数
               const newCount = generationCount + 1
               setGenerationCount(newCount)
@@ -492,6 +502,15 @@ function App() {
         
         setShowCelebration(true)
         setTimeout(() => setShowCelebration(false), 3000)
+
+        // 确保视频在加载后自动播放
+        setTimeout(() => {
+          if (videoRef.current && isVideoUrl(result.url)) {
+            videoRef.current.play().catch(err => {
+              console.warn('视频自动播放被阻止:', err)
+            })
+          }
+        }, 100)
 
         const newCount = generationCount + 1
         setGenerationCount(newCount)
@@ -848,13 +867,32 @@ function App() {
                 <div className="result-preview">
                   {isVideoUrl(result.url) ? (
                     <video
+                      ref={videoRef}
                       src={result.url}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
+                      autoPlay={true}
+                      loop={true}
+                      muted={true}
+                      playsInline={true}
                       controls
                       style={{ width: '100%', objectFit: 'contain' }}
+                      onLoadedData={(e) => {
+                        // 视频数据加载完成后，确保自动播放
+                        const video = e.target
+                        if (video.paused) {
+                          video.play().catch(err => {
+                            console.warn('自动播放被阻止，需要用户交互:', err)
+                          })
+                        }
+                      }}
+                      onCanPlay={(e) => {
+                        // 视频可以播放时，确保自动播放
+                        const video = e.target
+                        if (video.paused) {
+                          video.play().catch(err => {
+                            console.warn('自动播放被阻止:', err)
+                          })
+                        }
+                      }}
                       onError={(e) => {
                         console.error('视频加载失败:', result.url)
                       }}
