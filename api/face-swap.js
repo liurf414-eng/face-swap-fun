@@ -918,19 +918,63 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
 
       let statusResponse
       try {
-        statusResponse = await fetch(`${VMODEL_API_URL}/${vmodelTaskId}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${VMODEL_API_TOKEN}`
+        // 根据 VModel API 文档，查询任务状态的端点可能是：
+        // GET /api/tasks/v1/{task_id} 或 GET /api/tasks/v1/task/{task_id}
+        // 尝试多个可能的端点
+        const statusEndpoints = [
+          `${VMODEL_API_URL}/${vmodelTaskId}`,              // /api/tasks/v1/{task_id}
+          `${VMODEL_API_URL}/task/${vmodelTaskId}`,        // /api/tasks/v1/task/{task_id}
+          `https://api.vmodel.ai/api/tasks/v1/${vmodelTaskId}`,  // 完整路径
+        ]
+        
+        let lastError = null
+        statusResponse = null
+        
+        for (const endpoint of statusEndpoints) {
+          try {
+            console.log(`Trying status endpoint: ${endpoint}`)
+            statusResponse = await fetch(endpoint, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${VMODEL_API_TOKEN}`
+              }
+            })
+            
+            if (statusResponse.ok) {
+              console.log(`✅ Status endpoint succeeded: ${endpoint}`)
+              break
+            } else {
+              const errorText = await statusResponse.text()
+              console.warn(`Status endpoint ${endpoint} failed (${statusResponse.status}):`, errorText.substring(0, 200))
+              lastError = errorText
+              statusResponse = null
+            }
+          } catch (fetchError) {
+            console.warn(`Status endpoint ${endpoint} error:`, fetchError.message)
+            lastError = fetchError.message
+            continue
           }
-        })
-
+        }
+        
+        if (!statusResponse) {
+          throw new Error(`All VModel status endpoints failed. Last error: ${lastError || 'Unknown'}. Task ID: ${vmodelTaskId}`)
+        }
+        
         if (!statusResponse.ok) {
+          const errorText = await statusResponse.text()
           let errorMsg = `VModel status check failed: ${statusResponse.status}`
-          if (statusResponse.status === 402) {
+          
+          if (statusResponse.status === 404) {
+            errorMsg = `Task not found (404). Task ID: ${vmodelTaskId}. This might be a temporary issue, will retry...`
+            console.warn(errorMsg)
+            // 404 不立即失败，继续重试
+            continue
+          } else if (statusResponse.status === 402) {
             errorMsg = 'Payment Required: Your VModel account balance is insufficient'
+            throw new Error(errorMsg)
           }
-          throw new Error(errorMsg)
+          
+          throw new Error(`${errorMsg} - ${errorText.substring(0, 200)}`)
         }
 
         const statusData = await statusResponse.json()
