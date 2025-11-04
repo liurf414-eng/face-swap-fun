@@ -832,6 +832,12 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
     })
 
     // 创建 VModel 任务
+    // 对视频 URL 进行编码，确保特殊字符（如空格、括号）被正确处理
+    const encodedVideoUrl = encodeURI(targetImage)
+    
+    console.log('Original video URL:', targetImage)
+    console.log('Encoded video URL:', encodedVideoUrl)
+    
     const createResponse = await fetch(`${VMODEL_API_URL}/create`, {
       method: 'POST',
       headers: {
@@ -842,7 +848,7 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         version: MODEL_VERSION,
         input: {
           target: faceImageUrl,  // 要替换的人脸图片
-          source: targetImage,   // 原始视频
+          source: encodedVideoUrl,   // 原始视频（已编码）
           disable_safety_checker: false
         }
       })
@@ -912,11 +918,23 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         }
 
         const statusData = await statusResponse.json()
+        console.log('VModel status check response:', JSON.stringify(statusData, null, 2))
         
-        // 检查响应中的错误代码
+        // 检查任务是否失败
+        if (statusData.status === 'failed' || statusData.error) {
+          const errorMsg = statusData.error?.message || 
+                          statusData.message?.en || 
+                          statusData.message?.zh || 
+                          statusData.message ||
+                          'Task failed'
+          const errorCode = statusData.error?.code || statusData.code
+          throw new Error(`VModel task failed (${errorCode || 'unknown'}): ${errorMsg}`)
+        }
+        
+        // 检查响应中的错误代码（402 是支付错误）
         if (statusData.code === 402) {
           const errorMsg = statusData.message?.en || statusData.message?.zh || 'Payment Required'
-          throw new Error(`VModel Error: ${errorMsg}`)
+          throw new Error(`VModel Payment Required: ${errorMsg}. Please check your account balance at https://vmodel.ai`)
         }
 
         // 更新进度
