@@ -1082,11 +1082,20 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         }
 
       } catch (fetchError) {
-        console.error('VModel status check error:', fetchError)
-        // 继续重试，不要立即失败
+        console.error(`VModel status check error on attempt ${attempt}:`, fetchError)
+        
+        // 如果是网络错误或解析错误，继续重试（可能是临时问题）
+        // 只在最后一次尝试时抛出错误
         if (attempt === maxAttempts) {
-          throw new Error(`Failed to check VModel status: ${fetchError.message}`)
+          // 检查是否是 404 错误（任务可能还没准备好）
+          if (fetchError.message && fetchError.message.includes('404')) {
+            throw new Error('VModel task not found after multiple attempts. The task may not exist or may have been deleted. Task ID: ' + vmodelTaskId)
+          }
+          throw new Error(`Failed to check VModel status after ${maxAttempts} attempts: ${fetchError.message}`)
         }
+        
+        // 不是最后一次尝试，继续重试
+        console.log(`Will retry on next attempt (${attempt + 1}/${maxAttempts})...`)
       }
     }
 
