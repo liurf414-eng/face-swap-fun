@@ -972,20 +972,37 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         })
 
         // 检查任务状态（支持多种成功状态值）
-        // VModel 可能返回：'succeeded', 'success', 'completed', 'Succeeded'（大小写敏感）
-        if (taskStatus === 'succeeded' || taskStatus === 'success' || taskStatus === 'completed' || 
-            taskStatus === 'Succeeded' || taskStatus === 'Success' || taskStatus === 'Completed') {
-          
+        // 根据 VModel 后台显示，状态可能是 'Succeeded'（首字母大写）
+        // 根据文档，状态值可能是：'succeeded', 'Succeeded', 'success', 'completed', 'processing', 'pending', 'failed'
+        const isSuccessStatus = taskStatus && (
+          taskStatus.toLowerCase() === 'succeeded' || 
+          taskStatus.toLowerCase() === 'success' || 
+          taskStatus.toLowerCase() === 'completed' ||
+          taskStatus === 'succeeded' ||
+          taskStatus === 'Succeeded' ||
+          taskStatus === 'success' ||
+          taskStatus === 'completed'
+        )
+        
+        if (isSuccessStatus) {
           // 任务完成 - 尝试多种方式获取输出 URL
-          // 根据 VModel 实际响应格式，输出可能在 result.output 中
+          // 根据 VModel API 文档和实际响应，输出可能在：
+          // - result.output (数组或字符串)
+          // - result.output_url
+          // - output (顶层)
           const outputUrl = statusData.result?.output?.[0] ||
                           statusData.result?.output ||
+                          statusData.result?.output_url ||
                           statusData.result?.video_url ||
+                          statusData.result?.video ||
                           statusData.output?.[0] || 
                           statusData.output || 
+                          statusData.output_url ||
                           statusData.video_url ||
+                          statusData.video ||
                           statusData.data?.output?.[0] ||
                           statusData.data?.output ||
+                          statusData.data?.output_url ||
                           statusData.data?.video_url
 
           console.log('✅ VModel task succeeded!')
@@ -1005,14 +1022,22 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
             result: outputUrl
           })
           return
-        } else if (taskStatus === 'failed' || taskStatus === 'error') {
+        } else if (taskStatus && (taskStatus.toLowerCase() === 'failed' || taskStatus.toLowerCase() === 'error')) {
           const errorObj = statusData.error || statusData.result?.error || {}
           throw new Error(errorObj.message || statusData.message || 'VModel processing failed')
         }
         
-        // 如果状态是 'processing' 或 'pending' 或其他未知状态，继续轮询
-        console.log(`Task status is "${taskStatus}", continuing to poll...`)
-        // 如果状态是 'processing' 或 'pending'，继续轮询
+        // 如果状态是 'processing'、'pending'、'running' 或其他处理中状态，继续轮询
+        if (!taskStatus || 
+            taskStatus.toLowerCase() === 'processing' || 
+            taskStatus.toLowerCase() === 'pending' || 
+            taskStatus.toLowerCase() === 'running' ||
+            taskStatus.toLowerCase() === 'queued') {
+          console.log(`Task status is "${taskStatus}", continuing to poll...`)
+        } else {
+          // 未知状态，记录但继续轮询
+          console.warn(`Unknown task status: "${taskStatus}", continuing to poll...`)
+        }
 
       } catch (fetchError) {
         console.error('VModel status check error:', fetchError)
