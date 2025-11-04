@@ -1133,7 +1133,7 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         taskStore.set(taskId, {
           status: 'processing',
           progress: progress,
-          message: `Processing... (${elapsed}s elapsed)`
+          message: `Processing... (${elapsed}s)`
         })
 
         // 检查任务是否完成
@@ -1572,7 +1572,7 @@ async function processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLIC
       taskStore.set(taskId, {
         status: 'processing',
         progress: estimatedProgress,
-        message: `Processing... (${minutes}m ${seconds}s elapsed)`
+        message: `Processing... (${minutes}m ${seconds}s)`
       })
     }, 10000) // 每10秒更新一次
 

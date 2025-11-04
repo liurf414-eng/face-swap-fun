@@ -1511,10 +1511,12 @@ body {
   position: relative;
   display: flex;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .progress-bar {
   height: 100%;
+  max-height: 32px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 16px;
   transition: width 0.5s ease;
@@ -1523,6 +1525,7 @@ body {
   top: 0;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
   animation: progressShine 2s ease-in-out infinite;
+  box-sizing: border-box;
 }
 
 @keyframes progressShine {
