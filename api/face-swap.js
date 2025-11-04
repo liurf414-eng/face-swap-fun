@@ -917,82 +917,72 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
       await new Promise(resolve => setTimeout(resolve, 1000)) // 每秒检查一次
 
       let statusResponse
+      let statusData = null
+      
       try {
-        // 根据 VModel API 文档，查询任务状态的端点可能是：
-        // GET /api/tasks/v1/{task_id} 或 GET /api/tasks/v1/task/{task_id}
-        // 尝试多个可能的端点
-        const statusEndpoints = [
-          `${VMODEL_API_URL}/${vmodelTaskId}`,              // /api/tasks/v1/{task_id}
-          `${VMODEL_API_URL}/task/${vmodelTaskId}`,        // /api/tasks/v1/task/{task_id}
-          `https://api.vmodel.ai/api/tasks/v1/${vmodelTaskId}`,  // 完整路径
-        ]
+        // 根据 VModel API 文档和实际响应，查询任务状态
+        // 端点：GET https://api.vmodel.ai/api/tasks/v1/{task_id}
+        const statusEndpoint = `${VMODEL_API_URL}/${vmodelTaskId}`
         
-        let lastError = null
-        statusResponse = null
+        console.log(`[Attempt ${attempt}] Querying VModel task status: ${statusEndpoint}`)
         
-        for (const endpoint of statusEndpoints) {
-          try {
-            console.log(`Trying status endpoint: ${endpoint}`)
-            statusResponse = await fetch(endpoint, {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${VMODEL_API_TOKEN}`
-              }
-            })
-            
-            if (statusResponse.ok) {
-              console.log(`✅ Status endpoint succeeded: ${endpoint}`)
-              break
-            } else {
-              const errorText = await statusResponse.text()
-              console.warn(`Status endpoint ${endpoint} failed (${statusResponse.status}):`, errorText.substring(0, 200))
-              lastError = errorText
-              statusResponse = null
-            }
-          } catch (fetchError) {
-            console.warn(`Status endpoint ${endpoint} error:`, fetchError.message)
-            lastError = fetchError.message
-            continue
+        statusResponse = await fetch(statusEndpoint, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${VMODEL_API_TOKEN}`
           }
+        })
+        
+        // 处理 404 - 任务可能刚创建，需要等待
+        if (statusResponse.status === 404) {
+          console.warn(`Task not found (404) on attempt ${attempt}. Task ID: ${vmodelTaskId}. This is normal for newly created tasks, will retry...`)
+          // 继续轮询，不抛出错误
+          continue
         }
         
-        if (!statusResponse) {
-          throw new Error(`All VModel status endpoints failed. Last error: ${lastError || 'Unknown'}. Task ID: ${vmodelTaskId}`)
-        }
-        
+        // 处理其他错误
         if (!statusResponse.ok) {
           const errorText = await statusResponse.text()
-          let errorMsg = `VModel status check failed: ${statusResponse.status}`
           
-          if (statusResponse.status === 404) {
-            errorMsg = `Task not found (404). Task ID: ${vmodelTaskId}. This might be a temporary issue, will retry...`
-            console.warn(errorMsg)
-            // 404 不立即失败，继续重试
-            continue
-          } else if (statusResponse.status === 402) {
-            errorMsg = 'Payment Required: Your VModel account balance is insufficient'
-            throw new Error(errorMsg)
+          if (statusResponse.status === 402) {
+            throw new Error('Payment Required: Your VModel account balance is insufficient. Please check your account at https://vmodel.ai')
           }
           
-          throw new Error(`${errorMsg} - ${errorText.substring(0, 200)}`)
+          // 其他错误也记录但继续重试（可能是临时问题）
+          console.warn(`VModel status check failed (${statusResponse.status}):`, errorText.substring(0, 200))
+          
+          // 如果不是最后一次尝试，继续重试
+          if (attempt < maxAttempts) {
+            continue
+          } else {
+            throw new Error(`VModel status check failed: ${statusResponse.status} - ${errorText.substring(0, 200)}`)
+          }
         }
+        
+        // 解析响应
+        statusData = await statusResponse.json()
+        console.log(`[Attempt ${attempt}] VModel status response:`, JSON.stringify(statusData, null, 2))
 
-        const statusData = await statusResponse.json()
-        console.log(`[Attempt ${attempt}] VModel status check response:`, JSON.stringify(statusData, null, 2))
+        // 检查响应数据是否存在
+        if (!statusData) {
+          console.warn(`No status data received on attempt ${attempt}, will retry...`)
+          continue
+        }
         
         // 获取任务状态（可能在多个位置）
-        // 根据实际响应，可能直接在顶层，也可能在 result 中
+        // 根据实际响应格式：{"id":"xxx","completed_at":"...","error":null,"output":["url"]}
         const taskStatus = statusData.result?.status || 
                           statusData.status || 
                           statusData.data?.status
         
-        // 如果任务有 completed_at 且没有 error，说明已完成
+        // 如果任务有 completed_at 且没有 error，说明已完成（这是最可靠的判断方式）
         const isCompleted = statusData.completed_at && !statusData.error
         
         console.log(`Task status: "${taskStatus}"`)
         console.log(`Completed at: ${statusData.completed_at || 'N/A'}`)
         console.log(`Error: ${statusData.error || 'null'}`)
         console.log(`Is completed: ${isCompleted}`)
+        console.log(`Output:`, statusData.output)
         
         // 检查任务是否失败
         if (taskStatus === 'failed' || statusData.error || (statusData.result && statusData.result.error)) {
