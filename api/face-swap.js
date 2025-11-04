@@ -12,13 +12,73 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET' && req.query?.taskId) {
-    const task = taskStore.get(req.query.taskId)
+    let task = taskStore.get(req.query.taskId)
+    
+    // 如果内存中找不到任务（可能是 serverless 实例隔离），尝试从 VModel API 查询
+    if (!task && req.query?.vmodelTaskId) {
+      console.log(`Task not found in memory, trying VModel API with task ID: ${req.query.vmodelTaskId}`)
+      try {
+        const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN || '3RqdT2vcZj3EB3WWJD-3M6O505kUnd6Q3HtUEoagnbJP96lL_c6AXQp8YdxaL82Q6KKpgm4Y3VBY0fYwL5uZKQ=='
+        const VMODEL_API_URL = 'https://api.vmodel.ai/api/tasks/v1'
+        const statusEndpoints = [
+          `${VMODEL_API_URL}/${req.query.vmodelTaskId}`,
+          `https://api.vmodel.ai/api/tasks/${req.query.vmodelTaskId}`,
+          `https://api.vmodel.ai/tasks/${req.query.vmodelTaskId}`,
+        ]
+        
+        for (const endpoint of statusEndpoints) {
+          try {
+            const statusResponse = await fetch(endpoint, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${VMODEL_API_TOKEN}`
+              }
+            })
+            
+            if (statusResponse.ok) {
+              const statusData = await statusResponse.json()
+              // 检查任务是否完成
+              if (statusData.completed_at && !statusData.error && statusData.output?.[0]) {
+                task = {
+                  status: 'completed',
+                  progress: 100,
+                  message: 'Face swap completed!',
+                  result: statusData.output[0],
+                  vmodelTaskId: req.query.vmodelTaskId
+                }
+                // 更新内存中的 taskStore（可能在其他实例中，但至少这次能返回）
+                taskStore.set(req.query.taskId, task)
+                console.log(`✅ Retrieved task from VModel API: ${req.query.vmodelTaskId}`)
+                break
+              } else if (!statusData.error) {
+                // 任务还在处理中
+                task = {
+                  status: 'processing',
+                  progress: statusData.progress || 50,
+                  message: statusData.message || 'Processing...',
+                  vmodelTaskId: req.query.vmodelTaskId
+                }
+                taskStore.set(req.query.taskId, task)
+                break
+              }
+            }
+          } catch (fetchError) {
+            console.warn(`Failed to fetch from ${endpoint}:`, fetchError.message)
+            continue
+          }
+        }
+      } catch (error) {
+        console.error('Error querying VModel API:', error)
+      }
+    }
+    
     if (!task) {
       return res.status(404).json({
         success: false,
-        error: 'Task not found'
+        error: 'Task not found. If you have the VModel task ID, please include it as ?vmodelTaskId=xxx'
       })
     }
+    
     return res.json({
       success: true,
       ...task
@@ -906,12 +966,14 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
     taskStore.set(taskId, {
       status: 'processing',
       progress: 40,
-      message: 'VModel processing video (usually completes in ~15 seconds)...'
+      message: 'VModel processing video (usually completes in ~15 seconds)...',
+      vmodelTaskId: vmodelTaskId  // 存储 VModel task ID，用于备用查询
     })
 
-    // 轮询任务状态（最多等待2分钟）
-    const maxAttempts = 120  // 2分钟 = 120次 * 1秒
+    // 轮询任务状态（最多等待5分钟，因为任务创建后可能需要时间才能查询）
+    const maxAttempts = 300  // 5分钟 = 300次 * 1秒
     let progress = 40
+    let consecutive404Count = 0  // 记录连续 404 的次数
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       await new Promise(resolve => setTimeout(resolve, 1000)) // 每秒检查一次
@@ -921,24 +983,74 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
       
       try {
         // 根据 VModel API 文档和实际响应，查询任务状态
-        // 端点：GET https://api.vmodel.ai/api/tasks/v1/{task_id}
-        const statusEndpoint = `${VMODEL_API_URL}/${vmodelTaskId}`
+        // 尝试多个可能的端点格式（根据 VModel 后台截图，任务 ID 是 ddzy5ahiffvegsxwjm）
+        // 可能需要不同的路径格式
+        const statusEndpoints = [
+          `${VMODEL_API_URL}/${vmodelTaskId}`,  // 标准格式：/api/tasks/v1/{task_id}
+          `https://api.vmodel.ai/api/tasks/${vmodelTaskId}`,  // 备选：/api/tasks/{task_id}
+          `https://api.vmodel.ai/tasks/${vmodelTaskId}`,  // 备选：/tasks/{task_id}
+          `https://api.vmodel.ai/api/v1/tasks/${vmodelTaskId}`,  // 备选：/api/v1/tasks/{task_id}
+          `https://api.vmodel.ai/v1/tasks/${vmodelTaskId}`,  // 备选：/v1/tasks/{task_id}
+        ]
         
-        console.log(`[Attempt ${attempt}] Querying VModel task status: ${statusEndpoint}`)
-        
-        statusResponse = await fetch(statusEndpoint, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${VMODEL_API_TOKEN}`
+        let lastError = null
+        for (const statusEndpoint of statusEndpoints) {
+          try {
+            console.log(`[Attempt ${attempt}] Querying VModel task status: ${statusEndpoint}`)
+            
+            statusResponse = await fetch(statusEndpoint, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${VMODEL_API_TOKEN}`
+              }
+            })
+            
+            // 如果成功（包括 200 和其他非 404 状态），使用这个端点
+            if (statusResponse.status !== 404) {
+              console.log(`✅ Found working endpoint: ${statusEndpoint} (status: ${statusResponse.status})`)
+              break
+            }
+            
+            // 如果是 404，尝试下一个端点
+            lastError = new Error(`404 Not Found from ${statusEndpoint}`)
+            console.warn(`⚠️ 404 from ${statusEndpoint}, trying next endpoint...`)
+            
+            // 如果是最后一个端点也返回 404，记录详细信息
+            if (statusEndpoint === statusEndpoints[statusEndpoints.length - 1]) {
+              console.error(`❌ All endpoints returned 404 for task ID: ${vmodelTaskId}`)
+              console.error(`   Task should exist in VModel dashboard. Please verify the task ID is correct.`)
+            }
+          } catch (endpointError) {
+            lastError = endpointError
+            console.warn(`⚠️ Error from ${statusEndpoint}:`, endpointError.message)
+            continue
           }
-        })
+        }
+        
+        // 如果所有端点都失败，使用最后一个响应
+        // 注意：如果 statusResponse 未定义，说明所有端点都抛出了异常
+        if (!statusResponse) {
+          // 如果所有端点都失败，创建一个模拟的 404 响应
+          statusResponse = { status: 404, ok: false }
+        }
         
         // 处理 404 - 任务可能刚创建，需要等待
         if (statusResponse.status === 404) {
-          console.warn(`Task not found (404) on attempt ${attempt}. Task ID: ${vmodelTaskId}. This is normal for newly created tasks, will retry...`)
+          consecutive404Count++
+          console.warn(`Task not found (404) on attempt ${attempt}/${maxAttempts}. Task ID: ${vmodelTaskId}. Consecutive 404s: ${consecutive404Count}. This is normal for newly created tasks, will retry...`)
+          
+          // 如果连续多次 404（超过 60 次，即 1 分钟），可能是端点不对或任务 ID 有问题
+          // 但仍然继续尝试，因为 VModel 可能需要更长时间
+          if (consecutive404Count > 60 && attempt % 30 === 0) {
+            console.warn(`⚠️ Still getting 404 after ${consecutive404Count} attempts. Task ID: ${vmodelTaskId}. Please verify the task exists in VModel dashboard.`)
+          }
+          
           // 继续轮询，不抛出错误
           continue
         }
+        
+        // 如果成功获取到响应，重置 404 计数
+        consecutive404Count = 0
         
         // 处理其他错误
         if (!statusResponse.ok) {
@@ -976,7 +1088,9 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
                           statusData.data?.status
         
         // 如果任务有 completed_at 且没有 error，说明已完成（这是最可靠的判断方式）
-        const isCompleted = statusData.completed_at && !statusData.error
+        // 根据 VModel 后台截图，响应格式：{"id":"xxx","completed_at":"2025/11/4 21:32:27","error":null,"output":["url"]}
+        // error 为 null 表示成功，error 存在表示失败
+        const isCompleted = statusData.completed_at && (statusData.error === null || !statusData.error)
         
         console.log(`Task status: "${taskStatus}"`)
         console.log(`Completed at: ${statusData.completed_at || 'N/A'}`)
@@ -1026,7 +1140,15 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
           taskStatus === 'completed'
         ))
         
-        if (isSuccessStatus || (statusData.completed_at && !statusData.error)) {
+        // 根据 VModel 后台截图，完成判断：completed_at 存在 && error 为 null && output 数组有值
+        // 注意：error 为 null 表示成功，error 存在（非 null）表示失败
+        const hasCompletedAt = !!statusData.completed_at
+        const hasNoError = statusData.error === null || statusData.error === undefined
+        const hasOutput = !!statusData.output && (Array.isArray(statusData.output) ? statusData.output.length > 0 : !!statusData.output)
+        
+        console.log(`Completion check: hasCompletedAt=${hasCompletedAt}, hasNoError=${hasNoError}, hasOutput=${hasOutput}`)
+        
+        if (isSuccessStatus || (hasCompletedAt && hasNoError && hasOutput)) {
           // 任务完成 - 尝试多种方式获取输出 URL
           // 根据实际响应格式：{"output": ["https://cdn.vmimgs.com/..."]}
           // 输出在顶层的 output 数组中
@@ -1061,7 +1183,8 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
             status: 'completed',
             progress: 100,
             message: `Face swap completed in ${elapsed}s!`,
-            result: outputUrl
+            result: outputUrl,
+            vmodelTaskId: vmodelTaskId  // 保持存储 VModel task ID
           })
           return
         } else if (taskStatus && (taskStatus.toLowerCase() === 'failed' || taskStatus.toLowerCase() === 'error')) {
