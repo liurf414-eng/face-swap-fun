@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   try {
     const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN
     const AIFACESWAP_API_KEY = process.env.AIFACESWAP_API_KEY
-    const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN
+    const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN || '3RqdT2vcZj3EB3WWJD-3M6O505kUnd6Q3HtUEoagnbJP96lL_c6AXQp8YdxaL82Q6KKpgm4Y3VBY0fYwL5uZKQ=='
     const PIAPI_API_KEY = process.env.PIAPI_API_KEY || 'a456b8f0b6cdc6e30e5b195eb66197740b8ca501da3d1051861dad4c2f6d8377'
     const MAGICHOUR_API_KEY = process.env.MAGICHOUR_API_KEY || 'mhk_live_6FBxHAfqe43imx12rAALt88Ux8j7s8HDfeezMinKCG7zh8Fv4QrfOd2Uh35Hb6c0MfBjhhOawc0EWBEk'
     const IMGBB_API_KEY = process.env.IMGBB_API_KEY
