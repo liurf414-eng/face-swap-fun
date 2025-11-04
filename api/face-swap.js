@@ -887,10 +887,13 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
     }
     
     // 获取任务 ID（可能有多种格式）
-    const vmodelTaskId = createData.task_id || 
+    // 根据实际响应格式：{"code":200,"result":{"task_id":"xxx"},"message":{"en":"Task created successfully"}}
+    const vmodelTaskId = createData.result?.task_id ||
+                         createData.task_id || 
                          createData.id || 
                          createData.data?.task_id ||
-                         createData.data?.id
+                         createData.data?.id ||
+                         createData.result?.id
 
     if (!vmodelTaskId) {
       // 如果响应中有消息但没有 task_id，记录完整响应以便调试
