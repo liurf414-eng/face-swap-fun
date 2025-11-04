@@ -872,17 +872,30 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
     }
 
     const createData = await createResponse.json()
+    console.log('VModel task creation response:', JSON.stringify(createData, null, 2))
     
-    // 检查是否有错误代码
-    if (createData.code === 402 || createData.message) {
-      const errorMsg = createData.message?.en || createData.message?.zh || 'Payment Required'
-      throw new Error(`VModel Error: ${errorMsg}. Please check your account balance at https://vmodel.ai`)
+    // 检查是否有错误代码（402 是支付错误）
+    if (createData.code === 402) {
+      const errorMsg = createData.message?.en || createData.message?.zh || createData.message || 'Payment Required'
+      throw new Error(`VModel Payment Required: ${errorMsg}. Please check your account balance at https://vmodel.ai`)
     }
     
-    const vmodelTaskId = createData.task_id || createData.id
+    // 检查是否有其他错误代码（但不包括成功消息）
+    if (createData.code && createData.code !== 200 && createData.code !== '200') {
+      const errorMsg = createData.message?.en || createData.message?.zh || createData.message || 'Unknown error'
+      throw new Error(`VModel Error (code ${createData.code}): ${errorMsg}`)
+    }
+    
+    // 获取任务 ID（可能有多种格式）
+    const vmodelTaskId = createData.task_id || 
+                         createData.id || 
+                         createData.data?.task_id ||
+                         createData.data?.id
 
     if (!vmodelTaskId) {
-      throw new Error(`Invalid VModel response: ${JSON.stringify(createData)}`)
+      // 如果响应中有消息但没有 task_id，记录完整响应以便调试
+      console.error('VModel response has no task_id:', JSON.stringify(createData, null, 2))
+      throw new Error(`VModel task created but no task_id in response. Response: ${JSON.stringify(createData)}`)
     }
 
     console.log('VModel task created:', vmodelTaskId)
@@ -947,12 +960,22 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
           message: `VModel processing... (${elapsed}s elapsed, usually ~15s)`
         })
 
-        if (statusData.status === 'succeeded') {
-          // 任务完成
-          const outputUrl = statusData.output && statusData.output[0] ? statusData.output[0] : statusData.output
+        // 检查任务状态（支持多种成功状态值）
+        if (statusData.status === 'succeeded' || statusData.status === 'success' || statusData.status === 'completed') {
+          // 任务完成 - 尝试多种方式获取输出 URL
+          const outputUrl = statusData.output?.[0] || 
+                          statusData.output || 
+                          statusData.result?.output?.[0] ||
+                          statusData.result?.output ||
+                          statusData.data?.output?.[0] ||
+                          statusData.data?.output
+
+          console.log('VModel task succeeded, output URL:', outputUrl)
+          console.log('Full status response:', JSON.stringify(statusData, null, 2))
 
           if (!outputUrl) {
-            throw new Error('No output URL in VModel response')
+            console.error('No output URL found in VModel response:', JSON.stringify(statusData, null, 2))
+            throw new Error('No output URL in VModel response. Response: ' + JSON.stringify(statusData))
           }
 
           taskStore.set(taskId, {
