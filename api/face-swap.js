@@ -19,11 +19,12 @@ export default async function handler(req, res) {
       console.log(`Task not found in memory, trying VModel API with task ID: ${req.query.vmodelTaskId}`)
       try {
         const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN || '3RqdT2vcZj3EB3WWJD-3M6O505kUnd6Q3HtUEoagnbJP96lL_c6AXQp8YdxaL82Q6KKpgm4Y3VBY0fYwL5uZKQ=='
+        // 根据 VModel 官方文档：https://vmodel.ai/docs/api/guides/tasks.html
+        // 正确的查询端点是：GET https://api.vmodel.ai/api/tasks/v1/get/{task_id}
         const VMODEL_API_URL = 'https://api.vmodel.ai/api/tasks/v1'
         const statusEndpoints = [
-          `${VMODEL_API_URL}/${req.query.vmodelTaskId}`,
-          `https://api.vmodel.ai/api/tasks/${req.query.vmodelTaskId}`,
-          `https://api.vmodel.ai/tasks/${req.query.vmodelTaskId}`,
+          `${VMODEL_API_URL}/get/${req.query.vmodelTaskId}`,  // 官方文档格式
+          `${VMODEL_API_URL}/${req.query.vmodelTaskId}`,  // 备选格式
         ]
         
         for (const endpoint of statusEndpoints) {
@@ -36,30 +37,35 @@ export default async function handler(req, res) {
             })
             
             if (statusResponse.ok) {
-              const statusData = await statusResponse.json()
-              // 检查任务是否完成
-              if (statusData.completed_at && !statusData.error && statusData.output?.[0]) {
-                task = {
-                  status: 'completed',
-                  progress: 100,
-                  message: 'Face swap completed!',
-                  result: statusData.output[0],
-                  vmodelTaskId: req.query.vmodelTaskId
+              const responseData = await statusResponse.json()
+              
+              // 根据 VModel 官方文档，检查 code 字段
+              if (responseData.code === 200 && responseData.result) {
+                const result = responseData.result
+                
+                // 检查任务是否完成：status 为 "succeeded" 或 completed_at 存在且 error 为 null
+                if (result.status === 'succeeded' || (result.completed_at && (result.error === null || result.error === ''))) {
+                  task = {
+                    status: 'completed',
+                    progress: 100,
+                    message: 'Face swap completed!',
+                    result: result.output?.[0] || result.output,
+                    vmodelTaskId: req.query.vmodelTaskId
+                  }
+                  taskStore.set(req.query.taskId, task)
+                  console.log(`✅ Retrieved completed task from VModel API: ${req.query.vmodelTaskId}`)
+                  break
+                } else if (result.status === 'processing' || result.status === 'starting') {
+                  // 任务还在处理中
+                  task = {
+                    status: 'processing',
+                    progress: 50,
+                    message: `Processing... (status: ${result.status})`,
+                    vmodelTaskId: req.query.vmodelTaskId
+                  }
+                  taskStore.set(req.query.taskId, task)
+                  break
                 }
-                // 更新内存中的 taskStore（可能在其他实例中，但至少这次能返回）
-                taskStore.set(req.query.taskId, task)
-                console.log(`✅ Retrieved task from VModel API: ${req.query.vmodelTaskId}`)
-                break
-              } else if (!statusData.error) {
-                // 任务还在处理中
-                task = {
-                  status: 'processing',
-                  progress: statusData.progress || 50,
-                  message: statusData.message || 'Processing...',
-                  vmodelTaskId: req.query.vmodelTaskId
-                }
-                taskStore.set(req.query.taskId, task)
-                break
               }
             }
           } catch (fetchError) {
@@ -982,15 +988,12 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
       let statusData = null
       
       try {
-        // 根据 VModel API 文档和实际响应，查询任务状态
-        // 尝试多个可能的端点格式（根据 VModel 后台截图，任务 ID 是 ddzy5ahiffvegsxwjm）
-        // 可能需要不同的路径格式
+        // 根据 VModel 官方文档：https://vmodel.ai/docs/api/guides/tasks.html
+        // 正确的查询端点是：GET https://api.vmodel.ai/api/tasks/v1/get/{task_id}
         const statusEndpoints = [
-          `${VMODEL_API_URL}/${vmodelTaskId}`,  // 标准格式：/api/tasks/v1/{task_id}
+          `${VMODEL_API_URL}/get/${vmodelTaskId}`,  // 官方文档格式：/api/tasks/v1/get/{task_id}
+          `${VMODEL_API_URL}/${vmodelTaskId}`,  // 备选：/api/tasks/v1/{task_id}（向后兼容）
           `https://api.vmodel.ai/api/tasks/${vmodelTaskId}`,  // 备选：/api/tasks/{task_id}
-          `https://api.vmodel.ai/tasks/${vmodelTaskId}`,  // 备选：/tasks/{task_id}
-          `https://api.vmodel.ai/api/v1/tasks/${vmodelTaskId}`,  // 备选：/api/v1/tasks/{task_id}
-          `https://api.vmodel.ai/v1/tasks/${vmodelTaskId}`,  // 备选：/v1/tasks/{task_id}
         ]
         
         let lastError = null
@@ -1072,25 +1075,44 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         }
         
         // 解析响应
-        statusData = await statusResponse.json()
-        console.log(`[Attempt ${attempt}] VModel status response:`, JSON.stringify(statusData, null, 2))
+        const responseData = await statusResponse.json()
+        console.log(`[Attempt ${attempt}] VModel status response:`, JSON.stringify(responseData, null, 2))
 
+        // 根据 VModel 官方文档：https://vmodel.ai/docs/api/guides/tasks.html
+        // 响应格式：{"code": 200, "result": {...}, "message": {}}
+        // 需要检查 code 字段，而不是只检查 HTTP 状态码
+        if (responseData.code !== 200) {
+          const errorMsg = responseData.message?.en || responseData.message?.zh || responseData.message || 'Unknown error'
+          
+          if (responseData.code === 402) {
+            throw new Error(`VModel Payment Required: ${errorMsg}. Please check your account balance at https://vmodel.ai`)
+          }
+          
+          if (responseData.code === 404) {
+            // 404 可能是任务还没准备好，继续重试
+            console.warn(`VModel API returned code 404: ${errorMsg}. Task may not be ready yet, will retry...`)
+            continue
+          }
+          
+          throw new Error(`VModel API error (code ${responseData.code}): ${errorMsg}`)
+        }
+
+        // 实际数据在 result 对象中
+        statusData = responseData.result
+        
         // 检查响应数据是否存在
         if (!statusData) {
-          console.warn(`No status data received on attempt ${attempt}, will retry...`)
+          console.warn(`No result data in response on attempt ${attempt}, will retry...`)
           continue
         }
         
-        // 获取任务状态（可能在多个位置）
-        // 根据实际响应格式：{"id":"xxx","completed_at":"...","error":null,"output":["url"]}
-        const taskStatus = statusData.result?.status || 
-                          statusData.status || 
-                          statusData.data?.status
+        // 根据官方文档，响应格式：
+        // {"code": 200, "result": {"task_id": "...", "status": "succeeded", "output": ["url"], "completed_at": 1746497131, "error": null}}
+        const taskStatus = statusData.status  // status 在 result 中
         
-        // 如果任务有 completed_at 且没有 error，说明已完成（这是最可靠的判断方式）
-        // 根据 VModel 后台截图，响应格式：{"id":"xxx","completed_at":"2025/11/4 21:32:27","error":null,"output":["url"]}
-        // error 为 null 表示成功，error 存在表示失败
-        const isCompleted = statusData.completed_at && (statusData.error === null || !statusData.error)
+        // 如果任务有 completed_at 且没有 error，说明已完成
+        // error 为 null 或空字符串表示成功，error 存在表示失败
+        const isCompleted = statusData.completed_at && (statusData.error === null || statusData.error === '' || !statusData.error)
         
         console.log(`Task status: "${taskStatus}"`)
         console.log(`Completed at: ${statusData.completed_at || 'N/A'}`)
@@ -1099,21 +1121,9 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         console.log(`Output:`, statusData.output)
         
         // 检查任务是否失败
-        if (taskStatus === 'failed' || statusData.error || (statusData.result && statusData.result.error)) {
-          const errorObj = statusData.error || statusData.result?.error || {}
-          const errorMsg = errorObj.message || 
-                          statusData.message?.en || 
-                          statusData.message?.zh || 
-                          statusData.message ||
-                          'Task failed'
-          const errorCode = errorObj.code || statusData.code
-          throw new Error(`VModel task failed (${errorCode || 'unknown'}): ${errorMsg}`)
-        }
-        
-        // 检查响应中的错误代码（402 是支付错误）
-        if (statusData.code === 402) {
-          const errorMsg = statusData.message?.en || statusData.message?.zh || 'Payment Required'
-          throw new Error(`VModel Payment Required: ${errorMsg}. Please check your account balance at https://vmodel.ai`)
+        if (taskStatus === 'failed' || (statusData.error && statusData.error !== null && statusData.error !== '')) {
+          const errorMsg = statusData.error || statusData.message?.en || statusData.message?.zh || 'Task failed'
+          throw new Error(`VModel task failed: ${errorMsg}`)
         }
 
         // 更新进度
@@ -1127,45 +1137,24 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         })
 
         // 检查任务是否完成
-        // 根据实际响应格式：{"completed_at": "...", "error": null, "output": ["url"]}
-        // 1. 如果有 completed_at 且没有 error，说明已完成
-        // 2. 或者检查状态值
-        const isSuccessStatus = isCompleted || (taskStatus && (
-          taskStatus.toLowerCase() === 'succeeded' || 
-          taskStatus.toLowerCase() === 'success' || 
-          taskStatus.toLowerCase() === 'completed' ||
-          taskStatus === 'succeeded' ||
-          taskStatus === 'Succeeded' ||
-          taskStatus === 'success' ||
-          taskStatus === 'completed'
-        ))
+        // 根据 VModel 官方文档：status 可能的值：starting, processing, succeeded, failed, canceled
+        // 根据官方文档响应格式：{"code": 200, "result": {"status": "succeeded", "output": ["url"], "completed_at": 1746497131, "error": null}}
+        const isSuccessStatus = taskStatus === 'succeeded' || 
+                               (taskStatus && taskStatus.toLowerCase() === 'succeeded')
         
-        // 根据 VModel 后台截图，完成判断：completed_at 存在 && error 为 null && output 数组有值
-        // 注意：error 为 null 表示成功，error 存在（非 null）表示失败
+        // 完成判断：status 为 "succeeded" 或者 completed_at 存在且 error 为 null
         const hasCompletedAt = !!statusData.completed_at
-        const hasNoError = statusData.error === null || statusData.error === undefined
+        const hasNoError = statusData.error === null || statusData.error === '' || !statusData.error
         const hasOutput = !!statusData.output && (Array.isArray(statusData.output) ? statusData.output.length > 0 : !!statusData.output)
         
-        console.log(`Completion check: hasCompletedAt=${hasCompletedAt}, hasNoError=${hasNoError}, hasOutput=${hasOutput}`)
+        console.log(`Completion check: isSuccessStatus=${isSuccessStatus}, hasCompletedAt=${hasCompletedAt}, hasNoError=${hasNoError}, hasOutput=${hasOutput}`)
         
         if (isSuccessStatus || (hasCompletedAt && hasNoError && hasOutput)) {
-          // 任务完成 - 尝试多种方式获取输出 URL
-          // 根据实际响应格式：{"output": ["https://cdn.vmimgs.com/..."]}
-          // 输出在顶层的 output 数组中
-          const outputUrl = statusData.output?.[0] ||  // 优先：顶层 output 数组的第一个元素
+          // 任务完成 - 根据官方文档，输出在 result.output 数组中
+          const outputUrl = statusData.output?.[0] ||  // 优先：result.output 数组的第一个元素
                           statusData.output ||            // 如果 output 是字符串
-                          statusData.result?.output?.[0] ||
-                          statusData.result?.output ||
-                          statusData.result?.output_url ||
-                          statusData.result?.video_url ||
-                          statusData.result?.video ||
-                          statusData.output_url ||
-                          statusData.video_url ||
-                          statusData.video ||
-                          statusData.data?.output?.[0] ||
-                          statusData.data?.output ||
-                          statusData.data?.output_url ||
-                          statusData.data?.video_url
+                          statusData.result?.output?.[0] ||  // 备用路径
+                          statusData.result?.output
 
           console.log('✅ VModel task succeeded!')
           console.log('Task status:', taskStatus)
