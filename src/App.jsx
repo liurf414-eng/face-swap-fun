@@ -342,6 +342,18 @@ function App() {
     }
   }
 
+  // 检查 URL 是否为视频（去除查询参数后检查扩展名）
+  const isVideoUrl = (url) => {
+    if (!url) return false
+    const urlWithoutQuery = url.split('?')[0]
+    return urlWithoutQuery.endsWith('.mp4') || 
+           urlWithoutQuery.endsWith('.webm') || 
+           urlWithoutQuery.endsWith('.mov') ||
+           url.includes('video') ||
+           url.includes('.mp4') ||
+           url.includes('.webm')
+  }
+
   const handleGenerate = async () => {
     if (!selectedTemplate || !uploadedImage) {
       alert('请先选择模板并上传照片！')
@@ -834,7 +846,7 @@ function App() {
               <div className="result-container">
                 <h3>🎉 Complete!</h3>
                 <div className="result-preview">
-                  {result.url.endsWith('.mp4') || result.url.endsWith('.webm') ? (
+                  {isVideoUrl(result.url) ? (
                     <video
                       src={result.url}
                       autoPlay
@@ -861,7 +873,7 @@ function App() {
                   )}
                 </div>
                 <button className="download-button" onClick={handleDownload}>
-                  💾 下载{result.url.endsWith('.mp4') || result.url.endsWith('.webm') ? '视频' : 'GIF'}
+                  💾 下载{isVideoUrl(result.url) ? '视频' : 'GIF'}
                 </button>
               </div>
             )}
