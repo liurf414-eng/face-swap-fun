@@ -374,7 +374,7 @@ function App() {
 
     setIsProcessing(true)
     setResult(null) // 清除之前的结果
-    setProcessingStatus('正在抓紧处理中，请耐心等候...')
+    setProcessingStatus('Processing your video...')
 
     try {
       // 提交换脸任务
@@ -430,7 +430,7 @@ function App() {
 
             if (statusData.status === 'completed') {
               // 任务完成
-              setProcessingStatus('✅ 换脸完成！')
+              setProcessingStatus('Complete!')
               setProgress(100)
               const result = {
                 url: statusData.result,
@@ -486,7 +486,7 @@ function App() {
         // 同步返回结果（兼容旧代码）
         console.log('✅ Face swap completed:', data)
 
-        setProcessingStatus('✅ 换脸完成！')
+        setProcessingStatus('Complete!')
         setProgress(100)
         const result = {
           url: data.result,
@@ -817,9 +817,8 @@ function App() {
               <div className="processing-status">
                 <div className="status-text">{processingStatus}</div>
                 <div className="progress-bar-container">
-                  <div className="progress-bar" style={{ width: `${progress}%` }}>
-                    <span className="progress-text">{progress}%</span>
-                  </div>
+                  <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+                  <span className="progress-text">{progress}%</span>
                 </div>
                 <div className="progress-spinner"></div>
               </div>

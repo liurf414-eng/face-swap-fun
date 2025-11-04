@@ -280,7 +280,7 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
     taskStore.set(taskId, {
       status: 'processing',
       progress: 30,
-      message: 'Creating face swap task with Magic Hour...'
+      message: 'Creating face swap task...'
     })
 
     // 创建 Magic Hour 任务
@@ -299,7 +299,7 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
       taskStore.set(taskId, {
         status: 'processing',
         progress: 35,
-        message: 'Uploading video to Magic Hour...'
+        message: 'Uploading video...'
       })
       
       try {
@@ -452,7 +452,7 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
     taskStore.set(taskId, {
       status: 'processing',
       progress: 40,
-      message: 'Magic Hour processing video...'
+      message: 'Processing video...'
     })
 
     // 轮询任务状态（最多等待10分钟）
@@ -515,7 +515,7 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
         taskStore.set(taskId, {
           status: 'processing',
           progress: progress,
-          message: `Magic Hour processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s elapsed)`
+          message: `Processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s elapsed)`
         })
 
         // 检查任务状态
@@ -611,7 +611,7 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
     taskStore.set(taskId, {
       status: 'processing',
       progress: 30,
-      message: 'Creating face swap task with PiAPI...'
+      message: 'Creating face swap task...'
     })
 
     // 创建 PiAPI 任务
@@ -677,7 +677,7 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
     taskStore.set(taskId, {
       status: 'processing',
       progress: 40,
-      message: 'PiAPI processing video...'
+      message: 'Processing video...'
     })
 
     // 轮询任务状态（最多等待10分钟，因为视频处理可能需要更长时间）
@@ -744,7 +744,7 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
         taskStore.set(taskId, {
           status: 'processing',
           progress: progress,
-          message: `PiAPI processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s elapsed)`
+          message: `Processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s elapsed)`
         })
 
         // 检查响应格式（可能有多种格式）
@@ -894,7 +894,7 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
     taskStore.set(taskId, {
       status: 'processing',
       progress: 30,
-      message: 'Creating face swap task with VModel (usually ~15 seconds)...'
+      message: 'Creating face swap task...'
     })
 
     // 创建 VModel 任务
@@ -972,7 +972,7 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
     taskStore.set(taskId, {
       status: 'processing',
       progress: 40,
-      message: 'VModel processing video (usually completes in ~15 seconds)...',
+      message: 'Processing video...',
       vmodelTaskId: vmodelTaskId  // 存储 VModel task ID，用于备用查询
     })
 
@@ -1133,7 +1133,7 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         taskStore.set(taskId, {
           status: 'processing',
           progress: progress,
-          message: `VModel processing... (${elapsed}s elapsed, usually ~15s)`
+          message: `Processing... (${elapsed}s elapsed)`
         })
 
         // 检查任务是否完成
@@ -1294,7 +1294,7 @@ async function processFaceSwapAIFaceSwap(taskId, targetImage, sourceImage, API_K
     taskStore.set(taskId, {
       status: 'processing',
       progress: 20,
-      message: 'Submitting to AIFaceSwap API...'
+      message: 'Submitting task...'
     })
 
     // 提交换脸任务
@@ -1554,7 +1554,7 @@ async function processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLIC
     taskStore.set(taskId, {
       status: 'processing',
       progress: 30,
-      message: 'Calling Replicate API (optimized: 2-4 minutes with fast mode)...'
+      message: 'Processing video...'
     })
 
     const replicate = new Replicate({ auth: REPLICATE_API_TOKEN })
@@ -1572,7 +1572,7 @@ async function processFaceSwapReplicate(taskId, targetImage, sourceImage, REPLIC
       taskStore.set(taskId, {
         status: 'processing',
         progress: estimatedProgress,
-        message: `Processing with Replicate API (optimized: 2-4 min)... (${minutes}m ${seconds}s elapsed)`
+        message: `Processing... (${minutes}m ${seconds}s elapsed)`
       })
     }, 10000) // 每10秒更新一次
 
