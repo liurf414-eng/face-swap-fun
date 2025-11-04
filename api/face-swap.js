@@ -515,7 +515,7 @@ async function processFaceSwapMagicHour(taskId, targetImage, sourceImage, MAGICH
         taskStore.set(taskId, {
           status: 'processing',
           progress: progress,
-          message: `Processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s elapsed)`
+          message: `Processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s)`
         })
 
         // 检查任务状态
@@ -744,7 +744,7 @@ async function processFaceSwapPiAPI(taskId, targetImage, sourceImage, PIAPI_API_
         taskStore.set(taskId, {
           status: 'processing',
           progress: progress,
-          message: `Processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s elapsed)`
+          message: `Processing... (${Math.floor(elapsed / 60)}m ${elapsed % 60}s)`
         })
 
         // 检查响应格式（可能有多种格式）
