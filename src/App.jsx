@@ -49,6 +49,8 @@ function App() {
   const [processingStatus, setProcessingStatus] = useState('')
   const videoRef = useRef(null)
   const [progress, setProgress] = useState(0)  // 新增：进度百分比
+  const [elapsedTime, setElapsedTime] = useState(0)  // 已用时间（秒）
+  const [estimatedTotalTime, setEstimatedTotalTime] = useState(20)  // 预计总时间（秒）
   const [searchQuery, setSearchQuery] = useState('')
   const [generationCount, setGenerationCount] = useState(0)  // 新增：用户今日已生成次数
   const [isLoading, setIsLoading] = useState(true)  // 新增：模板加载状态
@@ -427,6 +429,8 @@ function App() {
             // 更新进度
             setProcessingStatus(statusData.message || 'Processing...')
             setProgress(statusData.progress || 0)
+            setElapsedTime(statusData.elapsedTime || 0)
+            setEstimatedTotalTime(statusData.estimatedTotalTime || 20)
 
             if (statusData.status === 'completed') {
               // 任务完成
@@ -815,12 +819,50 @@ function App() {
             {/* 进度提示 */}
             {isProcessing && processingStatus && (
               <div className="processing-status">
-                <div className="status-text">{processingStatus}</div>
-                <div className="progress-bar-container">
-                  <div className="progress-bar" style={{ width: `${progress}%` }}></div>
-                  <span className="progress-text">{progress}%</span>
+                <div className="circular-progress-container">
+                  <svg className="circular-progress" viewBox="0 0 120 120">
+                    {/* 背景圆环 */}
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      fill="none"
+                      stroke="rgba(102, 126, 234, 0.1)"
+                      strokeWidth="8"
+                    />
+                    {/* 进度圆环 */}
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="50"
+                      fill="none"
+                      stroke="url(#gradient)"
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      strokeDasharray={`${2 * Math.PI * 50}`}
+                      strokeDashoffset={`${2 * Math.PI * 50 * (1 - progress / 100)}`}
+                      transform="rotate(-90 60 60)"
+                      style={{
+                        transition: 'stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                        animation: 'progressPulse 2s ease-in-out infinite'
+                      }}
+                    />
+                    <defs>
+                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#667eea" />
+                        <stop offset="100%" stopColor="#764ba2" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="circular-progress-content">
+                    <div className="progress-percentage">{progress.toFixed(1)}%</div>
+                    <div className="progress-time">
+                      {estimatedTotalTime > 0 && elapsedTime >= 0
+                        ? `${Math.max(0, (estimatedTotalTime - elapsedTime)).toFixed(1)}s`
+                        : '...'}
+                    </div>
+                  </div>
                 </div>
-                <div className="progress-spinner"></div>
               </div>
             )}
 
