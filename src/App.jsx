@@ -667,24 +667,6 @@ function App() {
 
         {currentPage === 'home' && (
       <main className="main">
-        {/* 步骤指示器 */}
-        <div className="steps-indicator">
-          <div className={`step-item ${selectedTemplate ? 'completed' : 'active'}`}>
-            <div className="step-number">{selectedTemplate ? '✓' : '1'}</div>
-            <div className="step-label">Choose Template</div>
-          </div>
-          <div className={`step-connector ${selectedTemplate ? 'completed' : ''}`}></div>
-          <div className={`step-item ${uploadedImage ? 'completed' : selectedTemplate ? 'active' : ''}`}>
-            <div className="step-number">{uploadedImage ? '✓' : '2'}</div>
-            <div className="step-label">Upload Photo</div>
-          </div>
-          <div className={`step-connector ${uploadedImage ? 'completed' : ''}`}></div>
-          <div className={`step-item ${result ? 'completed' : uploadedImage && selectedTemplate && !isProcessing ? 'active' : isProcessing ? 'processing' : ''}`}>
-            <div className="step-number">{result ? '✓' : isProcessing ? '⟳' : '3'}</div>
-            <div className="step-label">Generate Video</div>
-          </div>
-        </div>
-
         <div className="content-wrapper">
           {/* 左侧：模板选择区 */}
           <section className="templates-section">
