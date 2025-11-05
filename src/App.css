@@ -439,12 +439,70 @@ body {
 /* ============ 内容布局 ============ */
 .content-wrapper {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr 0;
   gap: 2rem;
   align-items: stretch;
   max-width: 1800px;
   margin: 0 auto;
   padding: 2rem;
+  transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 选择模板后：左侧60%，右侧40% */
+.content-wrapper.template-selected {
+  grid-template-columns: 1.5fr 1fr;
+}
+
+/* 上传照片后：左侧50%，右侧50% */
+.content-wrapper.photo-uploaded {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* 处理中或完成：左侧30%，右侧70% */
+.content-wrapper.processing,
+.content-wrapper.completed {
+  grid-template-columns: 0.43fr 1fr;
+}
+
+/* 初始状态：隐藏右侧面板 */
+.content-wrapper:not(.template-selected):not(.photo-uploaded):not(.processing):not(.completed) .action-panel {
+  display: none;
+}
+
+/* 响应式布局 */
+@media (max-width: 1200px) {
+  .content-wrapper.template-selected {
+    grid-template-columns: 1fr 0.9fr;
+  }
+  
+  .content-wrapper.photo-uploaded {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .content-wrapper.processing,
+  .content-wrapper.completed {
+    grid-template-columns: 0.5fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+  
+  .content-wrapper:not(.template-selected):not(.photo-uploaded):not(.processing):not(.completed) .action-panel {
+    display: flex;
+  }
+  
+  .action-panel {
+    position: relative;
+    top: 0;
+  }
+  
+  .templates-section {
+    max-height: none;
+  }
 }
 
 /* ============ 模板选择区 ============ */
@@ -460,6 +518,30 @@ body {
   animation: fadeInLeft 0.6s ease-out;
   display: flex;
   flex-direction: column;
+  transition: opacity 0.3s ease;
+}
+
+.content-wrapper.processing .templates-section,
+.content-wrapper.completed .templates-section {
+  opacity: 0.6;
+}
+
+.clear-selection-btn {
+  padding: 0.5rem 1rem;
+  background: var(--bg-accent);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-selection-btn:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
 }
 
 @keyframes fadeInLeft {
@@ -958,6 +1040,60 @@ body {
   animation: fadeInRight 0.6s ease-out;
   min-height: 600px;
   align-self: stretch;
+  overflow: hidden;
+}
+
+/* 欢迎面板 */
+.welcome-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 600px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  animation: fadeInRight 0.6s ease-out;
+}
+
+.welcome-content {
+  text-align: center;
+  padding: 3rem;
+}
+
+.welcome-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.welcome-content p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.welcome-icon {
+  font-size: 4rem;
+  opacity: 0.6;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* 操作面板内容 */
+.action-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeInRight 0.6s ease-out;
 }
 
 @keyframes fadeInRight {
@@ -989,6 +1125,87 @@ body {
 .action-card h3 {
   margin-top: 0;
   margin-bottom: 1rem;
+}
+
+/* 模板预览大图 */
+.template-preview-large {
+  margin-bottom: 1rem;
+}
+
+.template-preview-large video {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.template-name {
+  text-align: center;
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 照片预览大图 */
+.photo-preview-large {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.photo-preview-large img {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.change-photo-btn {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-accent);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.change-photo-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--border-hover);
+}
+
+/* 创建新视频按钮 */
+.create-new-btn {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-accent);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.create-new-btn:hover {
+  background: var(--accent-gradient);
+  border-color: var(--accent-blue);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* 处理状态文本 */
+.processing-text {
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
 /* ============ 引导提示 ============ */
@@ -1336,6 +1553,14 @@ body {
   border: 2px dashed var(--accent-blue);
   animation: processingPulse 2s ease-in-out infinite;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.processing-status h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 @keyframes processingPulse {
