@@ -436,12 +436,125 @@ body {
   z-index: 1;
 }
 
+/* ============ 步骤指示器 ============ */
+.steps-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem auto;
+  padding: 1.5rem 2rem;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  max-width: 800px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  position: relative;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: var(--bg-accent);
+  color: var(--text-secondary);
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.step-item.active .step-number {
+  background: var(--accent-gradient);
+  color: var(--text-primary);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  transform: scale(1.1);
+}
+
+.step-item.completed .step-number {
+  background: var(--accent-gradient);
+  color: var(--text-primary);
+  border-color: var(--accent-blue);
+}
+
+.step-item.processing .step-number {
+  animation: spin 1s linear infinite;
+}
+
+.step-item.processing .step-number::before {
+  content: '';
+}
+
+.step-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.step-item.active .step-label {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.step-item.completed .step-label {
+  color: var(--text-primary);
+}
+
+.step-connector {
+  flex: 1;
+  height: 2px;
+  background: var(--border-color);
+  margin: 0 0.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  top: -20px;
+}
+
+.step-connector.completed {
+  background: var(--accent-gradient);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
+/* 步骤指示器响应式 */
+@media (max-width: 768px) {
+  .steps-indicator {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .step-connector {
+    width: 2px;
+    height: 30px;
+    margin: 0.25rem 0;
+    top: 0;
+  }
+  
+  .step-label {
+    font-size: 0.75rem;
+  }
+}
+
 /* ============ 内容布局 ============ */
 .content-wrapper {
   display: grid;
   grid-template-columns: 1fr 400px;
   gap: 2rem;
-  align-items: start;
+  align-items: stretch;
   max-width: 1800px;
   margin: 0 auto;
   padding: 2rem;
@@ -454,9 +567,12 @@ body {
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-color);
-  max-height: calc(100vh - 250px);
+  min-height: 600px;
+  max-height: calc(100vh - 350px);
   overflow-y: auto;
   animation: fadeInLeft 0.6s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes fadeInLeft {
@@ -953,6 +1069,8 @@ body {
   flex-direction: column;
   gap: 1.5rem;
   animation: fadeInRight 0.6s ease-out;
+  min-height: 600px;
+  align-self: stretch;
 }
 
 @keyframes fadeInRight {
@@ -972,6 +1090,53 @@ body {
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-color);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.action-card:last-child {
+  flex-grow: 0;
+}
+
+.action-card h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* ============ 引导提示 ============ */
+.guide-tip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.guide-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.guide-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ============ 模板网格 ============ */

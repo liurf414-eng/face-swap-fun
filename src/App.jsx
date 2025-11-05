@@ -283,7 +283,7 @@ function App() {
     const query = searchQuery.toLowerCase()
     return templates.filter(template => 
       template.name.toLowerCase().includes(query) ||
-      template.category.toLowerCase().includes(query)
+           template.category.toLowerCase().includes(query)
     )
   }, [templates, searchQuery])
 
@@ -413,7 +413,7 @@ function App() {
       // 如果是异步任务，开始轮询
       if (data.taskId) {
         console.log('Task created:', data.taskId)
-        const taskId = data.taskId
+      const taskId = data.taskId
 
         // 轮询任务状态
         const pollTask = async () => {
@@ -432,12 +432,12 @@ function App() {
             setEstimatedTotalTime(statusData.estimatedTotalTime || 20)
 
             if (statusData.status === 'completed') {
-              // 任务完成
+            // 任务完成
               setProcessingStatus('Complete!')
-              setProgress(100)
+            setProgress(100)
               const result = {
                 url: statusData.result,
-                template: selectedTemplate
+              template: selectedTemplate
               }
               setResult(result)
               
@@ -446,7 +446,7 @@ function App() {
                 saveVideoToMyList(result)
               }
               
-              setIsProcessing(false)
+            setIsProcessing(false)
               
               // 触发庆祝动画
               setShowCelebration(true)
@@ -461,24 +461,24 @@ function App() {
                 }
               }, 100)
 
-              // 成功完成后增加生成次数
-              const newCount = generationCount + 1
-              setGenerationCount(newCount)
-              localStorage.setItem('faceSwapGenerationCount', newCount.toString())
+            // 成功完成后增加生成次数
+            const newCount = generationCount + 1
+            setGenerationCount(newCount)
+            localStorage.setItem('faceSwapGenerationCount', newCount.toString())
               localStorage.setItem('faceSwapLastDate', getTodayDateString())
-              console.log(`✅ 生成成功！今日已使用次数: ${newCount}/${MAX_GENERATIONS}`)
+            console.log(`✅ 生成成功！今日已使用次数: ${newCount}/${MAX_GENERATIONS}`)
             } else if (statusData.status === 'failed') {
-              // 任务失败
+            // 任务失败
               throw new Error(statusData.error || 'Face swap failed')
-            } else {
-              // 继续轮询
+          } else {
+            // 继续轮询
               setTimeout(pollTask, 1000)
-            }
-          } catch (error) {
+          }
+        } catch (error) {
             console.error('Polling error:', error)
-            setProcessingStatus('')
-            setProgress(0)
-            setIsProcessing(false)
+          setProcessingStatus('')
+          setProgress(0)
+          setIsProcessing(false)
             alert(`❌ Face swap failed: ${error.message}`)
           }
         }
@@ -541,6 +541,36 @@ function App() {
 
       // 根据结果URL的扩展名确定文件类型
       const fileExtension = result.url.split('.').pop().split('?')[0] // 去除查询参数
+      const fileName = `face-swap-${Date.now()}.${fileExtension}`
+
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      // 释放 blob URL
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('下载失败:', error)
+      alert('下载失败，请稍后重试')
+    }
+  }
+
+  // 处理"My Created Videos"中的视频下载
+  const handleVideoDownload = async (videoUrl) => {
+    try {
+      // 通过 fetch 获取文件数据，然后创建本地下载链接
+      const response = await fetch(videoUrl)
+      if (!response.ok) {
+        throw new Error('Failed to fetch video')
+      }
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+
+      // 根据结果URL的扩展名确定文件类型
+      const fileExtension = videoUrl.split('.').pop().split('?')[0] // 去除查询参数
       const fileName = `face-swap-${Date.now()}.${fileExtension}`
 
       const link = document.createElement('a')
@@ -637,6 +667,24 @@ function App() {
 
         {currentPage === 'home' && (
       <main className="main">
+        {/* 步骤指示器 */}
+        <div className="steps-indicator">
+          <div className={`step-item ${selectedTemplate ? 'completed' : 'active'}`}>
+            <div className="step-number">{selectedTemplate ? '✓' : '1'}</div>
+            <div className="step-label">Choose Template</div>
+          </div>
+          <div className={`step-connector ${selectedTemplate ? 'completed' : ''}`}></div>
+          <div className={`step-item ${uploadedImage ? 'completed' : selectedTemplate ? 'active' : ''}`}>
+            <div className="step-number">{uploadedImage ? '✓' : '2'}</div>
+            <div className="step-label">Upload Photo</div>
+          </div>
+          <div className={`step-connector ${uploadedImage ? 'completed' : ''}`}></div>
+          <div className={`step-item ${result ? 'completed' : uploadedImage && selectedTemplate && !isProcessing ? 'active' : isProcessing ? 'processing' : ''}`}>
+            <div className="step-number">{result ? '✓' : isProcessing ? '⟳' : '3'}</div>
+            <div className="step-label">Generate Video</div>
+          </div>
+        </div>
+
         <div className="content-wrapper">
           {/* 左侧：模板选择区 */}
           <section className="templates-section">
@@ -714,22 +762,22 @@ function App() {
             .map(([category, templates]) => (
               <div key={category} className="category-section">
                 <h3 className="category-title">{category}</h3>
-                <div className="templates-grid">
+            <div className="templates-grid">
                   {templates.map((template) => (
-                    <div
-                      key={template.id}
-                      className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedTemplate(template)}
-                    >
-                      <video
-                        src={template.gifUrl}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
+                <div
+                  key={template.id}
+                  className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedTemplate(template)}
+                >
+                  <video
+                    src={template.gifUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
                         preload="none"
                         loading="lazy"
-                        style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                         onError={(e) => {
                           console.warn('Video failed to load:', template.name);
                           e.target.style.display = 'none';
@@ -745,9 +793,9 @@ function App() {
                       />
                     </div>
                   ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </section>
 
           {/* 右侧：操作区 */}
@@ -755,6 +803,12 @@ function App() {
             {/* 上传照片 */}
             <div className="action-card">
               <h3><span className="step-badge">Step 2</span>Upload Your Photo</h3>
+              {!selectedTemplate && (
+                <div className="guide-tip">
+                  <span className="guide-icon">💡</span>
+                  <span className="guide-text">Please select a template first</span>
+                </div>
+              )}
                 <div 
                   className="upload-container"
                   onDragOver={handleDragOver}
@@ -767,9 +821,9 @@ function App() {
                   onChange={handleImageUpload}
                   style={{ display: 'none' }}
                 />
-                  <label htmlFor="file-upload" className="upload-button">
+                <label htmlFor="file-upload" className="upload-button">
                     {uploadedImage ? '✅ Change Photo' : '📤 Click to Upload or Drag & Drop'}
-                  </label>
+                </label>
                 {uploadedImage && (
                   <div className="preview">
                     <img src={uploadedImage} alt="Uploaded photo" />
@@ -781,6 +835,13 @@ function App() {
             {/* 生成区域 */}
             <div className="action-card">
               <h3><span className="step-badge">Step 3</span>Generate Your Meme</h3>
+              
+              {!uploadedImage && selectedTemplate && (
+                <div className="guide-tip">
+                  <span className="guide-icon">📤</span>
+                  <span className="guide-text">Upload your photo to continue</span>
+                </div>
+              )}
 
               {/* 剩余次数提示 */}
               <div className="usage-info">
@@ -792,9 +853,9 @@ function App() {
                 )}
               </div>
 
-                <button
-                  className="generate-button"
-                  onClick={handleGenerate}
+              <button
+                className="generate-button"
+                onClick={handleGenerate}
                   disabled={isProcessing || !selectedTemplate || !uploadedImage || generationCount >= (user ? 6 : 3)}
                 >
                   {isProcessing ? '🔄 Processing...' :
@@ -802,7 +863,7 @@ function App() {
                    !selectedTemplate ? '📝 Please select a template' :
                    !uploadedImage ? '📤 Please upload a photo' :
                    '🎨 Start Generating'}
-                </button>
+              </button>
             </div>
 
             {/* 进度提示 */}
@@ -878,12 +939,16 @@ function App() {
                           <p className="video-date">{new Date(video.timestamp).toLocaleDateString()}</p>
                           <button 
                             className="download-btn-small"
-                            onClick={() => window.open(video.url, '_blank')}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              handleVideoDownload(video.url)
+                            }}
                           >
                             📥 Download
                           </button>
-                        </div>
-                      </div>
+                  </div>
+                </div>
                     ))
                   )}
                 </div>
@@ -1012,7 +1077,11 @@ function App() {
                           <p className="video-date">{new Date(video.timestamp).toLocaleDateString()}</p>
                           <button 
                             className="download-btn-small"
-                            onClick={() => window.open(video.url, '_blank')}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              handleVideoDownload(video.url)
+                            }}
                           >
                             📥 Download
                           </button>
@@ -1036,13 +1105,13 @@ function App() {
                 Log In
               </button>
             </div>
-          </div>
-        </main>
+        </div>
+      </main>
       )}
-      
-        <footer className="footer">
+
+      <footer className="footer">
           <p>© 2025 FaceAI Meme - AI-Powered Face Swap Application</p>
-        </footer>
+      </footer>
       </div>
       </div>
     </div>
