@@ -380,8 +380,7 @@ function App() {
 
     try {
       // 提交换脸任务
-      const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:3001' : ''
-      const response = await fetch(`${API_BASE_URL}/api/face-swap`, {
+      const response = await fetch('/api/face-swap', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -419,7 +418,7 @@ function App() {
         // 轮询任务状态
         const pollTask = async () => {
           try {
-            const statusResponse = await fetch(`${API_BASE_URL}/api/face-swap?taskId=${taskId}`)
+            const statusResponse = await fetch(`/api/face-swap?taskId=${taskId}`)
             const statusData = await statusResponse.json()
 
             if (!statusData.success) {
