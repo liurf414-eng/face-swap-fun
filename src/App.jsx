@@ -675,7 +675,7 @@ function App() {
 
         {currentPage === 'home' && (
       <main className="main">
-        <div className={`content-wrapper ${selectedTemplate ? 'template-selected' : ''} ${uploadedImage ? 'photo-uploaded' : ''} ${isProcessing ? 'processing' : ''} ${result ? 'completed' : ''}`}>
+        <div className={`content-wrapper ${selectedTemplate ? 'template-selected' : ''}`}>
           {/* 左侧：模板选择区 */}
           <section className="templates-section">
             <div className="section-header">

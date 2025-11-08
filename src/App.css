@@ -440,7 +440,7 @@ body {
 .content-wrapper {
   display: grid;
   grid-template-columns: 1fr 0;
-  gap: 2rem;
+  gap: 3rem;
   align-items: stretch;
   max-width: 1800px;
   margin: 0 auto;
@@ -448,24 +448,11 @@ body {
   transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 选择模板后：左侧60%，右侧40% */
 .content-wrapper.template-selected {
   grid-template-columns: 1.5fr 1fr;
 }
 
-/* 上传照片后：左侧50%，右侧50% */
-.content-wrapper.photo-uploaded {
-  grid-template-columns: 1fr 1fr;
-}
-
-/* 处理中或完成：左侧30%，右侧70% */
-.content-wrapper.processing,
-.content-wrapper.completed {
-  grid-template-columns: 0.43fr 1fr;
-}
-
-/* 初始状态：隐藏右侧面板 */
-.content-wrapper:not(.template-selected):not(.photo-uploaded):not(.processing):not(.completed) .action-panel {
+.content-wrapper:not(.template-selected) .action-panel {
   display: none;
 }
 
@@ -474,24 +461,15 @@ body {
   .content-wrapper.template-selected {
     grid-template-columns: 1fr 0.9fr;
   }
-  
-  .content-wrapper.photo-uploaded {
-    grid-template-columns: 1fr 1fr;
-  }
-  
-  .content-wrapper.processing,
-  .content-wrapper.completed {
-    grid-template-columns: 0.5fr 1fr;
-  }
 }
 
 @media (max-width: 768px) {
   .content-wrapper {
     grid-template-columns: 1fr !important;
-    gap: 1rem;
+    gap: 1.5rem;
   }
   
-  .content-wrapper:not(.template-selected):not(.photo-uploaded):not(.processing):not(.completed) .action-panel {
+  .content-wrapper:not(.template-selected) .action-panel {
     display: flex;
   }
   
@@ -533,11 +511,6 @@ body {
   display: flex;
   flex-direction: column;
   transition: opacity 0.3s ease;
-}
-
-.content-wrapper.processing .templates-section,
-.content-wrapper.completed .templates-section {
-  opacity: 0.6;
 }
 
 .clear-selection-btn {
@@ -1272,7 +1245,7 @@ body {
 /* 结果预览框（统一尺寸） */
 .result-preview-box {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
   background: var(--bg-secondary);
