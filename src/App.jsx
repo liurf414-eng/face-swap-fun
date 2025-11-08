@@ -61,6 +61,14 @@ function App() {
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
   const [currentPage, setCurrentPage] = useState('home')  // 新增：当前页面
   const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
+  const remainingGenerations = Math.max(0, MAX_GENERATIONS - generationCount)
+  const limitReached = generationCount >= MAX_GENERATIONS
+  const canGenerate = Boolean(selectedTemplate && uploadedImage && !limitReached && !isProcessing && !result)
+  const generateButtonLabel = limitReached
+    ? '🚫 Daily limit reached'
+    : !uploadedImage
+      ? '📤 Upload a photo first'
+      : '🎨 Create Video'
 
   // 分类名称映射
   const categoryMap = {
@@ -804,12 +812,9 @@ function App() {
                   <div className="welcome-icon">✨</div>
                 </div>
               </div>
-            ) : !uploadedImage ? (
-              /* 已选择模板，未上传照片 */
+            ) : (
               <div className="action-panel-content">
-                {/* 第一行：并排显示 */}
                 <div className="preview-row">
-                  {/* Step 1: 选中模板预览 */}
                   <div className="preview-card">
                     <h3><span className="step-badge">Step 1</span>Selected Template</h3>
                     <div className="preview-box">
@@ -820,282 +825,153 @@ function App() {
                         muted
                         playsInline
                       />
-                      <p className="template-name">{selectedTemplate.name}</p>
                     </div>
                   </div>
 
-                  {/* Step 2: 上传照片 */}
                   <div className="preview-card">
-                    <h3><span className="step-badge">Step 2</span>Upload Your Photo</h3>
-                    <div className="preview-box upload-preview-box">
-                      <div 
-                        className="upload-container-inline"
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                      >
-                <input
-                  type="file"
-                  id="file-upload"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  style={{ display: 'none' }}
-                />
+                    <h3><span className="step-badge">Step 2</span>{uploadedImage ? 'Your Photo' : 'Upload Your Photo'}</h3>
+                    <div
+                      className={`preview-box ${uploadedImage ? '' : 'upload-preview-box'}`}
+                      onDragOver={uploadedImage ? undefined : handleDragOver}
+                      onDrop={uploadedImage ? undefined : handleDrop}
+                    >
+                      <input
+                        type="file"
+                        id="file-upload"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        style={{ display: 'none' }}
+                      />
+                      {uploadedImage ? (
+                        <>
+                          <img src={uploadedImage} alt="Uploaded photo" />
+                          <button 
+                            className="change-photo-btn-small"
+                            onClick={() => document.getElementById('file-upload').click()}
+                          >
+                            Change Photo
+                          </button>
+                        </>
+                      ) : (
                         <label htmlFor="file-upload" className="upload-button-inline">
                           📤 Click to Upload<br/>or Drag & Drop
-                </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                  </div>
-            ) : !result && !isProcessing ? (
-              /* 已上传照片，未生成 */
-              <div className="action-panel-content">
-                {/* 第一行：并排显示 */}
-                <div className="preview-row">
-                  {/* Step 1: 选中模板预览 */}
-                  <div className="preview-card">
-                    <h3><span className="step-badge">Step 1</span>Selected Template</h3>
-                    <div className="preview-box">
-                      <video
-                        src={selectedTemplate.gifUrl}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                      />
-                      <p className="template-name">{selectedTemplate.name}</p>
-              </div>
-            </div>
-
-                  {/* Step 2: 照片预览 */}
-                  <div className="preview-card">
-                    <h3><span className="step-badge">Step 2</span>Your Photo</h3>
-                    <div className="preview-box">
-                      <img src={uploadedImage} alt="Uploaded photo" />
-                      <button 
-                        className="change-photo-btn-small"
-                        onClick={() => document.getElementById('file-upload').click()}
-                      >
-                        Change Photo
-                      </button>
+                        </label>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* 第二行：生成按钮居中 */}
                 <div className="result-section">
-                  <div className="action-card-inline">
-                    <h3><span className="step-badge">Step 3</span>Generate Your Video</h3>
-              <div className="usage-info">
-                <span className="usage-text">
-                        Remaining today: <strong>{(user ? 6 : 3) - generationCount}</strong> / {user ? 6 : 3}
-                </span>
-                      {generationCount >= (user ? 6 : 3) && (
-                        <span className="usage-warning">⚠️ {user ? 'Daily limit reached' : 'Free quota used up. Please log in for more.'}</span>
-                )}
-              </div>
-              <button
-                className="generate-button"
-                onClick={handleGenerate}
-                      disabled={isProcessing || !selectedTemplate || !uploadedImage || generationCount >= (user ? 6 : 3)}
-              >
-                      🎨 Create Video
-              </button>
-            </div>
-                </div>
-              </div>
-            ) : isProcessing ? (
-              /* 生成中 */
-              <div className="action-panel-content">
-                {/* 第一行：并排显示 */}
-                <div className="preview-row">
-                  {/* Step 1: 选中模板预览 */}
-                  <div className="preview-card">
-                    <h3><span className="step-badge">Step 1</span>Selected Template</h3>
-                    <div className="preview-box">
-                      <video
-                        src={selectedTemplate.gifUrl}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                      />
-                      <p className="template-name">{selectedTemplate.name}</p>
-                    </div>
-                  </div>
-
-                  {/* Step 2: 照片预览 */}
-                  <div className="preview-card">
-                    <h3><span className="step-badge">Step 2</span>Your Photo</h3>
-                    <div className="preview-box">
-                      <img src={uploadedImage} alt="Uploaded photo" />
-                  </div>
-                </div>
-              </div>
-
-                {/* 第二行：进度条居中 */}
-                <div className="result-section">
-                  <div className="processing-status-inline">
-                    <h3><span className="step-badge">Step 3</span>Generating Your Video...</h3>
-                    <div className="circular-progress-container">
-                      <svg className="circular-progress" viewBox="0 0 120 120">
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r="50"
-                          fill="none"
-                          stroke="rgba(102, 126, 234, 0.1)"
-                          strokeWidth="8"
-                        />
-                        <circle
-                          cx="60"
-                          cy="60"
-                          r="50"
-                          fill="none"
-                          stroke="url(#gradient)"
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                          strokeDasharray={`${2 * Math.PI * 50}`}
-                          strokeDashoffset={`${2 * Math.PI * 50 * (1 - progress / 100)}`}
-                          transform="rotate(-90 60 60)"
-                          style={{
-                            transition: 'stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                            animation: 'progressPulse 2s ease-in-out infinite'
-                          }}
-                        />
-                        <defs>
-                          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#3b82f6" />
-                            <stop offset="100%" stopColor="#8b5cf6" />
-                          </linearGradient>
-                        </defs>
-                      </svg>
-                      <div className="circular-progress-content">
-                        <div className="progress-percentage">{progress.toFixed(1)}%</div>
-                        <div className="progress-time">
-                          {estimatedTotalTime > 0 && elapsedTime >= 0
-                            ? `${Math.max(0, (estimatedTotalTime - elapsedTime)).toFixed(1)}s`
-                            : '...'}
+                  {isProcessing ? (
+                    <div className="processing-status-inline">
+                      <h3><span className="step-badge">Step 3</span>Generating Your Video...</h3>
+                      <div className="circular-progress-container">
+                        <svg className="circular-progress" viewBox="0 0 120 120">
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            fill="none"
+                            stroke="rgba(102, 126, 234, 0.1)"
+                            strokeWidth="8"
+                          />
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            fill="none"
+                            stroke="url(#gradient)"
+                            strokeWidth="8"
+                            strokeLinecap="round"
+                            strokeDasharray={`${2 * Math.PI * 50}`}
+                            strokeDashoffset={`${2 * Math.PI * 50 * (1 - progress / 100)}`}
+                            transform="rotate(-90 60 60)"
+                            style={{
+                              transition: 'stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                              animation: 'progressPulse 2s ease-in-out infinite'
+                            }}
+                          />
+                          <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#3b82f6" />
+                              <stop offset="100%" stopColor="#8b5cf6" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                        <div className="circular-progress-content">
+                          <div className="progress-percentage">{progress.toFixed(1)}%</div>
+                          <div className="progress-time">
+                            {estimatedTotalTime > 0 && elapsedTime >= 0
+                              ? `${Math.max(0, (estimatedTotalTime - elapsedTime)).toFixed(1)}s`
+                              : '...'}
+                          </div>
                         </div>
                       </div>
+                      <p className="processing-text">{processingStatus || 'Processing your video...'}</p>
                     </div>
-                    <p className="processing-text">{processingStatus || 'Processing your video...'}</p>
-                  </div>
-                </div>
-              </div>
-            ) : result ? (
-              /* 生成完成 */
-              <div className="action-panel-content">
-                {/* 第一行：并排显示 */}
-                <div className="preview-row">
-                  {/* Step 1: 选中模板预览 */}
-                  <div className="preview-card">
-                    <h3><span className="step-badge">Step 1</span>Selected Template</h3>
-                    <div className="preview-box">
-                      <video
-                        src={selectedTemplate.gifUrl}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                      />
-                      <p className="template-name">{selectedTemplate.name}</p>
-                    </div>
-            </div>
-
-                  {/* Step 2: 照片预览 */}
-                  <div className="preview-card">
-                    <h3><span className="step-badge">Step 2</span>Your Photo</h3>
-                    <div className="preview-box">
-                      <img src={uploadedImage} alt="Uploaded photo" />
-                  </div>
-                </div>
-              </div>
-
-                {/* 第二行：生成结果居中 */}
-                <div className="result-section">
-                  <div className="result-card-inline">
-                    <h3><span className="step-badge">Step 3</span>🎉 Complete!</h3>
-                    <div className="result-preview-box">
-                      {isVideoUrl(result.url) ? (
-                    <video
-                          ref={videoRef}
-                      src={result.url}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls
-                          onLoadedData={() => {
-                            if (videoRef.current) {
-                              videoRef.current.play().catch(e => console.log('Autoplay prevented:', e))
-                            }
-                          }}
-                          onCanPlay={() => {
-                            if (videoRef.current) {
-                              videoRef.current.play().catch(e => console.log('Autoplay prevented:', e))
-                            }
-                          }}
-                        />
-                      ) : (
-                        <img src={result.url} alt="Generated result" />
-                  )}
-                </div>
-                    <div className="result-actions">
-                <button className="download-button" onClick={handleDownload}>
-                        📥 Download Video
-                      </button>
-                      <button 
-                        className="create-new-btn"
-                        onClick={() => {
-                          setSelectedTemplate(null)
-                          setUploadedImage(null)
-                          setResult(null)
-                        }}
-                      >
-                        ✨ Create New Video
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {/* 我的视频面板 */}
-            {showMyVideos && user && (
-              <div className="my-videos-panel">
-                <div className="my-videos-header">
-                  <h3>📁 My Videos</h3>
-                  <button className="close-btn" onClick={() => setShowMyVideos(false)}>✕</button>
-                </div>
-                <div className="my-videos-grid">
-                  {myVideos.length === 0 ? (
-                    <p className="empty-message">No videos yet. Start creating!</p>
-                  ) : (
-                    myVideos.map((video) => (
-                      <div key={video.id} className="my-video-card">
-                        <video
-                          src={video.url}
-                          muted
-                          playsInline
-                          style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-                        />
-                        <div className="my-video-info">
-                          <p className="video-date">{new Date(video.timestamp).toLocaleDateString()}</p>
-                          <button 
-                            className="download-btn-small"
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              handleVideoDownload(video.url)
+                  ) : result ? (
+                    <div className="result-card-inline">
+                      <h3><span className="step-badge">Step 3</span>🎉 Complete!</h3>
+                      <div className="result-preview-box">
+                        {isVideoUrl(result.url) ? (
+                          <video
+                            ref={videoRef}
+                            src={result.url}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            controls
+                            onLoadedData={() => {
+                              if (videoRef.current) {
+                                videoRef.current.play().catch(e => console.log('Autoplay prevented:', e))
+                              }
                             }}
-                          >
-                            📥 Download
-                </button>
-                  </div>
-                </div>
-                    ))
+                            onCanPlay={() => {
+                              if (videoRef.current) {
+                                videoRef.current.play().catch(e => console.log('Autoplay prevented:', e))
+                              }
+                            }}
+                          />
+                        ) : (
+                          <img src={result.url} alt="Generated result" />
+                        )}
+                      </div>
+                      <div className="result-actions">
+                        <button className="download-button" onClick={handleDownload}>
+                          📥 Download Video
+                        </button>
+                        <button 
+                          className="create-new-btn"
+                          onClick={() => {
+                            setSelectedTemplate(null)
+                            setUploadedImage(null)
+                            setResult(null)
+                          }}
+                        >
+                          ✨ Create New Video
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="action-card-inline">
+                      <h3><span className="step-badge">Step 3</span>Generate Your Video</h3>
+                      <div className="usage-info">
+                        <span className="usage-text">
+                          Remaining today: <strong>{remainingGenerations}</strong> / {MAX_GENERATIONS}
+                        </span>
+                        {limitReached && (
+                          <span className="usage-warning">⚠️ {user ? 'Daily limit reached' : 'Free quota used up. Please log in for more.'}</span>
+                        )}
+                      </div>
+                      <button
+                        className="generate-button"
+                        onClick={handleGenerate}
+                        disabled={!canGenerate}
+                      >
+                        {generateButtonLabel}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
