@@ -440,7 +440,7 @@ body {
 .content-wrapper {
   display: grid;
   grid-template-columns: 1fr 0;
-  gap: 3rem;
+  gap: 6rem;
   align-items: stretch;
   max-width: 1800px;
   margin: 0 auto;
@@ -466,7 +466,7 @@ body {
 @media (max-width: 768px) {
   .content-wrapper {
     grid-template-columns: 1fr !important;
-    gap: 1.5rem;
+    gap: 3rem;
   }
   
   .content-wrapper:not(.template-selected) .action-panel {
