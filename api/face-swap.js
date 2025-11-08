@@ -438,8 +438,19 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
         
         // 检查任务是否失败
         if (taskStatus === 'failed' || (statusData.error && statusData.error !== null && statusData.error !== '')) {
-          const errorMsg = statusData.error || statusData.message?.en || statusData.message?.zh || 'Task failed'
-          throw new Error(`VModel task failed: ${errorMsg}`)
+          const errorMsg = statusData.error?.message || statusData.error || statusData.message?.en || statusData.message?.zh || 'Task failed'
+          const elapsedFailure = parseFloat(((Date.now() - startTime) / 1000).toFixed(1))
+          taskStore.set(taskId, {
+            status: 'failed',
+            progress: 100,
+            message: 'Generation failed',
+            error: errorMsg,
+            elapsedTime: elapsedFailure,
+            estimatedTotalTime: parseFloat(estimatedTotalTime.toFixed(1)),
+            vmodelTaskId: vmodelTaskId
+          })
+          console.error(`❌ VModel task failed immediately: ${errorMsg}`)
+          return
         }
 
         // 计算已用时间（精确到0.1秒）
@@ -526,7 +537,19 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
           return
         } else if (taskStatus && (taskStatus.toLowerCase() === 'failed' || taskStatus.toLowerCase() === 'error')) {
           const errorObj = statusData.error || statusData.result?.error || {}
-          throw new Error(errorObj.message || statusData.message || 'VModel processing failed')
+          const errorMsg = errorObj.message || statusData.message || 'VModel processing failed'
+          const elapsedFailure = parseFloat(((Date.now() - startTime) / 1000).toFixed(1))
+          taskStore.set(taskId, {
+            status: 'failed',
+            progress: 100,
+            message: 'Generation failed',
+            error: errorMsg,
+            elapsedTime: elapsedFailure,
+            estimatedTotalTime: parseFloat(estimatedTotalTime.toFixed(1)),
+            vmodelTaskId: vmodelTaskId
+          })
+          console.error(`❌ VModel task status returned failed/error: ${errorMsg}`)
+          return
         }
         
         // 如果状态是 'processing'、'pending'、'running' 或其他处理中状态，继续轮询
