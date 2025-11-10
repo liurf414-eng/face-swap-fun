@@ -136,6 +136,33 @@
   },
   {
     "id": 16,
+    "name": "Electrified Veins",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\electrified-veins.mp4",
+    "fileName": "electrified-veins.mp4",
+    "category": "Magic Effects",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/electrified-veins.mp4"
+  },
+  {
+    "id": 17,
+    "name": "Fly Women",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\fly-women.mp4",
+    "fileName": "fly-women.mp4",
+    "category": "Magic Effects",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/fly-women.mp4"
+  },
+  {
+    "id": 18,
+    "name": "Hair Transform",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\hair-transform.mp4",
+    "fileName": "hair-transform.mp4",
+    "category": "Magic Effects",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/hair-transform.mp4"
+  },
+  {
+    "id": 19,
     "name": "视频模板",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\replicate-prediction-9bfv7gbv2hrmc0ct085bn6phfm.mp4",
     "fileName": "replicate-prediction-9bfv7gbv2hrmc0ct085bn6phfm.mp4",
@@ -144,7 +171,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-9bfv7gbv2hrmc0ct085bn6phfm.mp4"
   },
   {
-    "id": 17,
+    "id": 20,
     "name": "Snaps ",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\snaps .mp4",
     "fileName": "snaps .mp4",
@@ -153,7 +180,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/snaps .mp4"
   },
   {
-    "id": 18,
+    "id": 21,
     "name": "Sparkle",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\Sparkle.mp4",
     "fileName": "Sparkle.mp4",
@@ -162,7 +189,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/Sparkle.mp4"
   },
   {
-    "id": 19,
+    "id": 22,
     "name": "Touches",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\touches.mp4",
     "fileName": "touches.mp4",
@@ -171,7 +198,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/touches.mp4"
   },
   {
-    "id": 20,
+    "id": 23,
     "name": "WHOOSH",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\WHOOSH.mp4",
     "fileName": "WHOOSH.mp4",
@@ -180,7 +207,25 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/WHOOSH.mp4"
   },
   {
-    "id": 21,
+    "id": 24,
+    "name": "1",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\1.mp4",
+    "fileName": "1.mp4",
+    "category": "Slapstick Comedy",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/1.mp4"
+  },
+  {
+    "id": 25,
+    "name": "Angery Doll Women",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\angery-doll-women.mp4",
+    "fileName": "angery-doll-women.mp4",
+    "category": "Slapstick Comedy",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/angery-doll-women.mp4"
+  },
+  {
+    "id": 26,
     "name": "Banana ",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\Banana .mp4",
     "fileName": "Banana .mp4",
@@ -189,7 +234,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/Banana .mp4"
   },
   {
-    "id": 22,
+    "id": 27,
     "name": "Chili",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\chili.mp4",
     "fileName": "chili.mp4",
@@ -198,7 +243,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/chili.mp4"
   },
   {
-    "id": 23,
+    "id": 28,
     "name": "Exaggerated ",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\exaggerated .mp4",
     "fileName": "exaggerated .mp4",
@@ -207,7 +252,25 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/exaggerated .mp4"
   },
   {
-    "id": 24,
+    "id": 29,
+    "name": "Fanny Dance Man",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\fanny-dance-man.mp4",
+    "fileName": "fanny-dance-man.mp4",
+    "category": "Slapstick Comedy",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/fanny-dance-man.mp4"
+  },
+  {
+    "id": 30,
+    "name": "Fire Baby",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\fire-baby.mp4",
+    "fileName": "fire-baby.mp4",
+    "category": "Slapstick Comedy",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/fire-baby.mp4"
+  },
+  {
+    "id": 31,
     "name": "视频模板",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\replicate-prediction-d5ryksn8k1rm80ct5bpbfjve5w.mp4",
     "fileName": "replicate-prediction-d5ryksn8k1rm80ct5bpbfjve5w.mp4",
@@ -216,7 +279,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-d5ryksn8k1rm80ct5bpbfjve5w.mp4"
   },
   {
-    "id": 25,
+    "id": 32,
     "name": "视频模板",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\replicate-prediction-hsmwdewhahrm80ct5bn8q2b504.mp4",
     "fileName": "replicate-prediction-hsmwdewhahrm80ct5bn8q2b504.mp4",
@@ -225,16 +288,25 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-hsmwdewhahrm80ct5bn8q2b504.mp4"
   },
   {
-    "id": 26,
-    "name": "制作夸张视频",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\制作夸张视频.mp4",
-    "fileName": "制作夸张视频.mp4",
-    "category": "Slapstick Comedy",
+    "id": 33,
+    "name": "Bikini Women",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\bikini-women.mp4",
+    "fileName": "bikini-women.mp4",
+    "category": "Style Makeovers",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/制作夸张视频.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/bikini-women.mp4"
   },
   {
-    "id": 27,
+    "id": 34,
+    "name": "Man Transforms Woman",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\man-transforms-woman.mp4",
+    "fileName": "man-transforms-woman.mp4",
+    "category": "Style Makeovers",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-transforms-woman.mp4"
+  },
+  {
+    "id": 35,
     "name": "视频模板",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-1spggf2t59rm80ct089a4hhdkm.mp4",
     "fileName": "replicate-prediction-1spggf2t59rm80ct089a4hhdkm.mp4",
@@ -243,7 +315,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-1spggf2t59rm80ct089a4hhdkm.mp4"
   },
   {
-    "id": 28,
+    "id": 36,
     "name": "视频模板",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-2qr3q99wg5rme0ct08baew3b44.mp4",
     "fileName": "replicate-prediction-2qr3q99wg5rme0ct08baew3b44.mp4",
@@ -252,7 +324,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-2qr3q99wg5rme0ct08baew3b44.mp4"
   },
   {
-    "id": 29,
+    "id": 37,
     "name": "视频模板",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-n52c5jx2ksrme0ct5b88124d3m.mp4",
     "fileName": "replicate-prediction-n52c5jx2ksrme0ct5b88124d3m.mp4",
@@ -261,7 +333,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-n52c5jx2ksrme0ct5b88124d3m.mp4"
   },
   {
-    "id": 30,
+    "id": 38,
     "name": "视频模板",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-r0krvfbbb5rme0ct08aakbbjxw.mp4",
     "fileName": "replicate-prediction-r0krvfbbb5rme0ct08aakbbjxw.mp4",
@@ -270,7 +342,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-r0krvfbbb5rme0ct08aakbbjxw.mp4"
   },
   {
-    "id": 31,
+    "id": 39,
     "name": "视频模板",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-w8y2d5c74drm80ct0878vbna04.mp4",
     "fileName": "replicate-prediction-w8y2d5c74drm80ct0878vbna04.mp4",
