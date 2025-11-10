@@ -1,123 +1,168 @@
 [
   {
     "id": 1,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\replicate-prediction-13g23vf881rm80ct08f8h9ag50.mp4",
-    "fileName": "replicate-prediction-13g23vf881rm80ct08f8h9ag50.mp4",
-    "category": "Duo Interaction",
+    "name": "Girl Stand Dance",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Burlesque Dance\\girl-stand-dance.mp4",
+    "fileName": "girl-stand-dance.mp4",
+    "category": "Burlesque Dance",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-13g23vf881rm80ct08f8h9ag50.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/girl-stand-dance.mp4"
   },
   {
     "id": 2,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\replicate-prediction-1fysh1tmfsrme0ct08g9nv53vm.mp4",
-    "fileName": "replicate-prediction-1fysh1tmfsrme0ct08g9nv53vm.mp4",
-    "category": "Duo Interaction",
+    "name": "Man 360 Degrees Dance",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Burlesque Dance\\man-360-degrees-dance.mp4",
+    "fileName": "man-360-degrees-dance.mp4",
+    "category": "Burlesque Dance",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-1fysh1tmfsrme0ct08g9nv53vm.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-360-degrees-dance.mp4"
   },
   {
     "id": 3,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\replicate-prediction-cbrz4bm5tsrmc0ct08h8e9varr.mp4",
-    "fileName": "replicate-prediction-cbrz4bm5tsrmc0ct08h8e9varr.mp4",
-    "category": "Duo Interaction",
+    "name": "Man Danced Haphazardly",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Burlesque Dance\\man-danced-haphazardly.mp4",
+    "fileName": "man-danced-haphazardly.mp4",
+    "category": "Burlesque Dance",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-cbrz4bm5tsrmc0ct08h8e9varr.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-danced-haphazardly.mp4"
   },
   {
     "id": 4,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\replicate-prediction-e4md67vf85rme0ct08db2jbgzg.mp4",
-    "fileName": "replicate-prediction-e4md67vf85rme0ct08db2jbgzg.mp4",
-    "category": "Duo Interaction",
+    "name": "Man Sit Ground",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Burlesque Dance\\man-sit-ground.mp4",
+    "fileName": "man-sit-ground.mp4",
+    "category": "Burlesque Dance",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-e4md67vf85rme0ct08db2jbgzg.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-sit-ground.mp4"
   },
   {
     "id": 5,
-    "name": "Video",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\video.mp4",
-    "fileName": "video.mp4",
-    "category": "Duo Interaction",
+    "name": "Smile Girl Dance",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Burlesque Dance\\smile-girl-dance.mp4",
+    "fileName": "smile-girl-dance.mp4",
+    "category": "Burlesque Dance",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/video.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/smile-girl-dance.mp4"
   },
   {
     "id": 6,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\717c4da6a019d076ba594a9452f13eae415a18f1c1bdd463de077f2e252587da.mp4",
-    "fileName": "717c4da6a019d076ba594a9452f13eae415a18f1c1bdd463de077f2e252587da.mp4",
-    "category": "Emotional Reactions",
+    "name": "Woman Dance Street",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Burlesque Dance\\woman-dance-street.mp4",
+    "fileName": "woman-dance-street.mp4",
+    "category": "Burlesque Dance",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/717c4da6a019d076ba594a9452f13eae415a18f1c1bdd463de077f2e252587da.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/woman-dance-street.mp4"
   },
   {
     "id": 7,
-    "name": "Frightened",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\frightened.mp4",
-    "fileName": "frightened.mp4",
-    "category": "Emotional Reactions",
+    "name": "Couple Touching",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\couple-touching.mp4",
+    "fileName": "couple-touching.mp4",
+    "category": "Duo Interaction",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/frightened.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/couple-touching.mp4"
   },
   {
     "id": 8,
-    "name": "Giphy (1)",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\giphy (1).mp4",
-    "fileName": "giphy (1).mp4",
-    "category": "Emotional Reactions",
+    "name": "Man Woman Each Hold Large  Balloon",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\man-woman each-hold-large -balloon.mp4",
+    "fileName": "man-woman each-hold-large -balloon.mp4",
+    "category": "Duo Interaction",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (1).mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-woman each-hold-large -balloon.mp4"
   },
   {
     "id": 9,
-    "name": "Giphy (2)",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\giphy (2).mp4",
-    "fileName": "giphy (2).mp4",
-    "category": "Emotional Reactions",
+    "name": "Man Woman Funny Dance",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\man-woman-funny-dance.mp4",
+    "fileName": "man-woman-funny-dance.mp4",
+    "category": "Duo Interaction",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (2).mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-woman-funny-dance.mp4"
   },
   {
     "id": 10,
-    "name": "Giphy (3)",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\giphy (3).mp4",
-    "fileName": "giphy (3).mp4",
-    "category": "Emotional Reactions",
+    "name": "Man Woman Maigic Battle ",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\man-woman-maigic-battle .mp4",
+    "fileName": "man-woman-maigic-battle .mp4",
+    "category": "Duo Interaction",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (3).mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-woman-maigic-battle .mp4"
   },
   {
     "id": 11,
-    "name": "Giphy (4)",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\giphy (4).mp4",
-    "fileName": "giphy (4).mp4",
-    "category": "Emotional Reactions",
+    "name": "Two People Dancing",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\two-people-dancing.mp4",
+    "fileName": "two-people-dancing.mp4",
+    "category": "Duo Interaction",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (4).mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/two-people-dancing.mp4"
   },
   {
     "id": 12,
-    "name": "Giphy (5)",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\giphy (5).mp4",
-    "fileName": "giphy (5).mp4",
-    "category": "Emotional Reactions",
+    "name": "Two People Fist Bumping",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Duo Interaction\\two-people-fist-bumping.mp4",
+    "fileName": "two-people-fist-bumping.mp4",
+    "category": "Duo Interaction",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy (5).mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/two-people-fist-bumping.mp4"
   },
   {
     "id": 13,
-    "name": "Giphy",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\giphy.mp4",
-    "fileName": "giphy.mp4",
+    "name": "Man Covered Mouth Laughed",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\man-covered-mouth-laughed.mp4",
+    "fileName": "man-covered-mouth-laughed.mp4",
     "category": "Emotional Reactions",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/giphy.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-covered-mouth-laughed.mp4"
   },
   {
     "id": 14,
+    "name": "Man Eyes  Widened Surprise",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\man-eyes -widened-surprise.mp4",
+    "fileName": "man-eyes -widened-surprise.mp4",
+    "category": "Emotional Reactions",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-eyes -widened-surprise.mp4"
+  },
+  {
+    "id": 15,
+    "name": "Man Frightened",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\man-frightened.mp4",
+    "fileName": "man-frightened.mp4",
+    "category": "Emotional Reactions",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-frightened.mp4"
+  },
+  {
+    "id": 16,
+    "name": "Man Lay On Cried",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\man-lay-on-cried.mp4",
+    "fileName": "man-lay-on-cried.mp4",
+    "category": "Emotional Reactions",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-lay-on-cried.mp4"
+  },
+  {
+    "id": 17,
+    "name": "Man Sat  Surprise",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\man-sat- surprise.mp4",
+    "fileName": "man-sat- surprise.mp4",
+    "category": "Emotional Reactions",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-sat- surprise.mp4"
+  },
+  {
+    "id": 18,
+    "name": "Man Smiles Evilly",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\man-smiles-evilly.mp4",
+    "fileName": "man-smiles-evilly.mp4",
+    "category": "Emotional Reactions",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-smiles-evilly.mp4"
+  },
+  {
+    "id": 19,
     "name": "Surprise",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\surprise.mp4",
     "fileName": "surprise.mp4",
@@ -126,16 +171,25 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/surprise.mp4"
   },
   {
-    "id": 15,
-    "name": "Aura",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\aura.mp4",
-    "fileName": "aura.mp4",
-    "category": "Magic Effects",
+    "id": 20,
+    "name": "Woman Burst Out Laughing",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\woman-burst-out-laughing.mp4",
+    "fileName": "woman-burst-out-laughing.mp4",
+    "category": "Emotional Reactions",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/aura.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/woman-burst-out-laughing.mp4"
   },
   {
-    "id": 16,
+    "id": 21,
+    "name": "Woman Was Speechless",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Emotional Reactions\\woman-was-speechless.mp4",
+    "fileName": "woman-was-speechless.mp4",
+    "category": "Emotional Reactions",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/woman-was-speechless.mp4"
+  },
+  {
+    "id": 22,
     "name": "Electrified Veins",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\electrified-veins.mp4",
     "fileName": "electrified-veins.mp4",
@@ -144,7 +198,16 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/electrified-veins.mp4"
   },
   {
-    "id": 17,
+    "id": 23,
+    "name": "Fire Baby",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\fire-baby.mp4",
+    "fileName": "fire-baby.mp4",
+    "category": "Magic Effects",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/fire-baby.mp4"
+  },
+  {
+    "id": 24,
     "name": "Fly Women",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\fly-women.mp4",
     "fileName": "fly-women.mp4",
@@ -153,7 +216,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/fly-women.mp4"
   },
   {
-    "id": 18,
+    "id": 25,
     "name": "Hair Transform",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\hair-transform.mp4",
     "fileName": "hair-transform.mp4",
@@ -162,61 +225,79 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/hair-transform.mp4"
   },
   {
-    "id": 19,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\replicate-prediction-9bfv7gbv2hrmc0ct085bn6phfm.mp4",
-    "fileName": "replicate-prediction-9bfv7gbv2hrmc0ct085bn6phfm.mp4",
+    "id": 26,
+    "name": "Man Aura",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\man-aura.mp4",
+    "fileName": "man-aura.mp4",
     "category": "Magic Effects",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-9bfv7gbv2hrmc0ct085bn6phfm.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-aura.mp4"
   },
   {
-    "id": 20,
-    "name": "Snaps ",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\snaps .mp4",
-    "fileName": "snaps .mp4",
+    "id": 27,
+    "name": "Man Whoosh",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\man-whoosh.mp4",
+    "fileName": "man-whoosh.mp4",
     "category": "Magic Effects",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/snaps .mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-whoosh.mp4"
   },
   {
-    "id": 21,
-    "name": "Sparkle",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\Sparkle.mp4",
-    "fileName": "Sparkle.mp4",
-    "category": "Magic Effects",
+    "id": 28,
+    "name": "Asian Stand Futuristic Lab",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Sci-Fi Effects\\asian-stand-futuristic-lab.mp4",
+    "fileName": "asian-stand-futuristic-lab.mp4",
+    "category": "Sci-Fi Effects",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/Sparkle.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/asian-stand-futuristic-lab.mp4"
   },
   {
-    "id": 22,
-    "name": "Touches",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\touches.mp4",
-    "fileName": "touches.mp4",
-    "category": "Magic Effects",
+    "id": 29,
+    "name": "Black Woman Stand Futuristic Alley",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Sci-Fi Effects\\black-woman-stand-futuristic-alley.mp4",
+    "fileName": "black-woman-stand-futuristic-alley.mp4",
+    "category": "Sci-Fi Effects",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/touches.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/black-woman-stand-futuristic-alley.mp4"
   },
   {
-    "id": 23,
-    "name": "WHOOSH",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Magic Effects\\WHOOSH.mp4",
-    "fileName": "WHOOSH.mp4",
-    "category": "Magic Effects",
+    "id": 30,
+    "name": "Man Stand  Futuristic Platform",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Sci-Fi Effects\\man-stand- futuristic-platform.mp4",
+    "fileName": "man-stand- futuristic-platform.mp4",
+    "category": "Sci-Fi Effects",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/WHOOSH.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-stand- futuristic-platform.mp4"
   },
   {
-    "id": 24,
-    "name": "1",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\1.mp4",
-    "fileName": "1.mp4",
-    "category": "Slapstick Comedy",
+    "id": 31,
+    "name": "Man Wear Futuristic Armor",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Sci-Fi Effects\\man-wear-futuristic armor.mp4",
+    "fileName": "man-wear-futuristic armor.mp4",
+    "category": "Sci-Fi Effects",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/1.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-wear-futuristic armor.mp4"
   },
   {
-    "id": 25,
+    "id": 32,
+    "name": "Woman Stand Futuristic Street",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Sci-Fi Effects\\woman-stand-futuristic-street.mp4",
+    "fileName": "woman-stand-futuristic-street.mp4",
+    "category": "Sci-Fi Effects",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/woman-stand-futuristic-street.mp4"
+  },
+  {
+    "id": 33,
+    "name": "Woman Wear Futuristic Armor",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Sci-Fi Effects\\woman-wear-futuristic armor.mp4",
+    "fileName": "woman-wear-futuristic armor.mp4",
+    "category": "Sci-Fi Effects",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/woman-wear-futuristic armor.mp4"
+  },
+  {
+    "id": 34,
     "name": "Angery Doll Women",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\angery-doll-women.mp4",
     "fileName": "angery-doll-women.mp4",
@@ -225,34 +306,7 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/angery-doll-women.mp4"
   },
   {
-    "id": 26,
-    "name": "Banana ",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\Banana .mp4",
-    "fileName": "Banana .mp4",
-    "category": "Slapstick Comedy",
-    "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/Banana .mp4"
-  },
-  {
-    "id": 27,
-    "name": "Chili",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\chili.mp4",
-    "fileName": "chili.mp4",
-    "category": "Slapstick Comedy",
-    "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/chili.mp4"
-  },
-  {
-    "id": 28,
-    "name": "Exaggerated ",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\exaggerated .mp4",
-    "fileName": "exaggerated .mp4",
-    "category": "Slapstick Comedy",
-    "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/exaggerated .mp4"
-  },
-  {
-    "id": 29,
+    "id": 35,
     "name": "Fanny Dance Man",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\fanny-dance-man.mp4",
     "fileName": "fanny-dance-man.mp4",
@@ -261,34 +315,43 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/fanny-dance-man.mp4"
   },
   {
-    "id": 30,
-    "name": "Fire Baby",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\fire-baby.mp4",
-    "fileName": "fire-baby.mp4",
+    "id": 36,
+    "name": "Man Banana ",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\man-banana .mp4",
+    "fileName": "man-banana .mp4",
     "category": "Slapstick Comedy",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/fire-baby.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-banana .mp4"
   },
   {
-    "id": 31,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\replicate-prediction-d5ryksn8k1rm80ct5bpbfjve5w.mp4",
-    "fileName": "replicate-prediction-d5ryksn8k1rm80ct5bpbfjve5w.mp4",
+    "id": 37,
+    "name": "Man Chili",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\man-chili.mp4",
+    "fileName": "man-chili.mp4",
     "category": "Slapstick Comedy",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-d5ryksn8k1rm80ct5bpbfjve5w.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-chili.mp4"
   },
   {
-    "id": 32,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\replicate-prediction-hsmwdewhahrm80ct5bn8q2b504.mp4",
-    "fileName": "replicate-prediction-hsmwdewhahrm80ct5bn8q2b504.mp4",
+    "id": 38,
+    "name": "Woman Hold Large Balloon",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\woman-hold-large-balloon.mp4",
+    "fileName": "woman-hold-large-balloon.mp4",
     "category": "Slapstick Comedy",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-hsmwdewhahrm80ct5bn8q2b504.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/woman-hold-large-balloon.mp4"
   },
   {
-    "id": 33,
+    "id": 39,
+    "name": "Woman Sit Wobbly Chair",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Slapstick Comedy\\woman-sit-wobbly-chair.mp4",
+    "fileName": "woman-sit-wobbly-chair.mp4",
+    "category": "Slapstick Comedy",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/woman-sit-wobbly-chair.mp4"
+  },
+  {
+    "id": 40,
     "name": "Bikini Women",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\bikini-women.mp4",
     "fileName": "bikini-women.mp4",
@@ -297,7 +360,16 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/bikini-women.mp4"
   },
   {
-    "id": 34,
+    "id": 41,
+    "name": "Man Transforms Superman",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\man-transforms-superman.mp4",
+    "fileName": "man-transforms-superman.mp4",
+    "category": "Style Makeovers",
+    "type": "video",
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-transforms-superman.mp4"
+  },
+  {
+    "id": 42,
     "name": "Man Transforms Woman",
     "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\man-transforms-woman.mp4",
     "fileName": "man-transforms-woman.mp4",
@@ -306,48 +378,30 @@
     "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-transforms-woman.mp4"
   },
   {
-    "id": 35,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-1spggf2t59rm80ct089a4hhdkm.mp4",
-    "fileName": "replicate-prediction-1spggf2t59rm80ct089a4hhdkm.mp4",
+    "id": 43,
+    "name": "Women Cross Dress",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\women-cross-dress.mp4",
+    "fileName": "women-cross-dress.mp4",
     "category": "Style Makeovers",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-1spggf2t59rm80ct089a4hhdkm.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/women-cross-dress.mp4"
   },
   {
-    "id": 36,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-2qr3q99wg5rme0ct08baew3b44.mp4",
-    "fileName": "replicate-prediction-2qr3q99wg5rme0ct08baew3b44.mp4",
+    "id": 44,
+    "name": "Women Crossdress Skirt",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\women-crossdress-skirt.mp4",
+    "fileName": "women-crossdress-skirt.mp4",
     "category": "Style Makeovers",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-2qr3q99wg5rme0ct08baew3b44.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/women-crossdress-skirt.mp4"
   },
   {
-    "id": 37,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-n52c5jx2ksrme0ct5b88124d3m.mp4",
-    "fileName": "replicate-prediction-n52c5jx2ksrme0ct5b88124d3m.mp4",
+    "id": 45,
+    "name": "Women Transformation Armor",
+    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\women-Transformation-Armor.mp4",
+    "fileName": "women-Transformation-Armor.mp4",
     "category": "Style Makeovers",
     "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-n52c5jx2ksrme0ct5b88124d3m.mp4"
-  },
-  {
-    "id": 38,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-r0krvfbbb5rme0ct08aakbbjxw.mp4",
-    "fileName": "replicate-prediction-r0krvfbbb5rme0ct08aakbbjxw.mp4",
-    "category": "Style Makeovers",
-    "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-r0krvfbbb5rme0ct08aakbbjxw.mp4"
-  },
-  {
-    "id": 39,
-    "name": "视频模板",
-    "localPath": "C:\\Users\\Administrator\\face-swap-fun\\videos\\Style Makeovers\\replicate-prediction-w8y2d5c74drm80ct0878vbna04.mp4",
-    "fileName": "replicate-prediction-w8y2d5c74drm80ct0878vbna04.mp4",
-    "category": "Style Makeovers",
-    "type": "video",
-    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/replicate-prediction-w8y2d5c74drm80ct0878vbna04.mp4"
+    "gifUrl": "https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/women-Transformation-Armor.mp4"
   }
 ]
