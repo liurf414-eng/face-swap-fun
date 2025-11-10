@@ -309,11 +309,27 @@ function App() {
     }, {})
   }, [filteredTemplates])
 
+  const CATEGORY_ORDER = [
+    'Emotional Reactions',
+    'Magic Effects',
+    'Slapstick Comedy',
+    'Sci-Fi Effects',
+    'Style Makeovers',
+    'Burlesque Dance',
+    'Duo Interaction'
+  ]
+
   const sortedCategories = useMemo(() => {
-    return Object.entries(groupedTemplates).sort(([a], [b]) => {
-      if (a === 'Duo Interaction') return 1
-      if (b === 'Duo Interaction') return -1
-      return a.localeCompare(b)
+    const entries = Object.entries(groupedTemplates)
+    return entries.sort(([a], [b]) => {
+      const indexA = CATEGORY_ORDER.indexOf(a)
+      const indexB = CATEGORY_ORDER.indexOf(b)
+      if (indexA === -1 && indexB === -1) {
+        return a.localeCompare(b)
+      }
+      if (indexA === -1) return 1
+      if (indexB === -1) return -1
+      return indexA - indexB
     })
   }, [groupedTemplates])
 
