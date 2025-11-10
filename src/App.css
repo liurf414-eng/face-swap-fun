@@ -654,11 +654,10 @@ body {
 }
 
 .category-header {
+  position: relative;
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
 }
 
 .category-title {
@@ -666,7 +665,7 @@ body {
   padding-left: 1.25rem;
   color: var(--text-primary);
   font-size: 1.6rem;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 1rem;
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--border-color);
@@ -2202,10 +2201,12 @@ body {
 }
 
 .category-controls {
+  position: absolute;
+  top: 0;
+  right: 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-left: auto;
+  gap: 0.35rem;
 }
 
 .category-page-indicator {
