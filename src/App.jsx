@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import './App.css'
 
 // 默认模板（回退方案）
@@ -61,6 +61,9 @@ function App() {
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
   const [currentPage, setCurrentPage] = useState('home')  // 新增：当前页面
   const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
+  const TEMPLATES_PER_PAGE = 6
+  const [categoryPages, setCategoryPages] = useState({})
+  const touchStartRef = useRef({})
   const remainingGenerations = Math.max(0, MAX_GENERATIONS - generationCount)
   const limitReached = generationCount >= MAX_GENERATIONS
   const canGenerate = Boolean(selectedTemplate && uploadedImage && !limitReached && !isProcessing && !result)
@@ -294,6 +297,87 @@ function App() {
            template.category.toLowerCase().includes(query)
     )
   }, [templates, searchQuery])
+
+  const groupedTemplates = useMemo(() => {
+    return filteredTemplates.reduce((groups, template) => {
+      const category = template.category
+      if (!groups[category]) {
+        groups[category] = []
+      }
+      groups[category].push(template)
+      return groups
+    }, {})
+  }, [filteredTemplates])
+
+  const sortedCategories = useMemo(() => {
+    return Object.entries(groupedTemplates).sort(([a], [b]) => {
+      if (a === 'Duo Interaction') return 1
+      if (b === 'Duo Interaction') return -1
+      return a.localeCompare(b)
+    })
+  }, [groupedTemplates])
+
+  useEffect(() => {
+    setCategoryPages(prev => {
+      const updated = { ...prev }
+      Object.entries(groupedTemplates).forEach(([category, items]) => {
+        const totalPages = Math.max(1, Math.ceil(items.length / TEMPLATES_PER_PAGE))
+        if (!(category in updated)) {
+          updated[category] = 0
+        } else if (updated[category] >= totalPages) {
+          updated[category] = totalPages - 1
+        }
+      })
+      Object.keys(updated).forEach(category => {
+        if (!groupedTemplates[category]) {
+          delete updated[category]
+        }
+      })
+      return updated
+    })
+  }, [groupedTemplates])
+
+  useEffect(() => {
+    if (!selectedTemplate) return
+    const category = selectedTemplate.category
+    const categoryList = groupedTemplates[category]
+    if (!categoryList) return
+    const index = categoryList.findIndex(t => t.id === selectedTemplate.id)
+    if (index === -1) return
+    const targetPage = Math.floor(index / TEMPLATES_PER_PAGE)
+    setCategoryPages(prev => {
+      const current = prev[category] || 0
+      if (current === targetPage) return prev
+      return { ...prev, [category]: targetPage }
+    })
+  }, [selectedTemplate, groupedTemplates])
+
+  const handleCategoryPageChange = useCallback((category, delta) => {
+    setCategoryPages(prev => {
+      const categoryList = groupedTemplates[category] || []
+      const totalPages = Math.max(1, Math.ceil(categoryList.length / TEMPLATES_PER_PAGE))
+      const current = prev[category] || 0
+      const next = Math.max(0, Math.min(totalPages - 1, current + delta))
+      if (next === current) return prev
+      return { ...prev, [category]: next }
+    })
+  }, [groupedTemplates])
+
+  const handleTouchStart = (category, event) => {
+    touchStartRef.current[category] = event.touches[0].clientX
+  }
+
+  const handleTouchEnd = (category, event) => {
+    const startX = touchStartRef.current[category]
+    if (startX == null) return
+    const endX = event.changedTouches[0].clientX
+    const delta = endX - startX
+    const threshold = 50
+    if (Math.abs(delta) > threshold) {
+      handleCategoryPageChange(category, delta < 0 ? 1 : -1)
+    }
+    delete touchStartRef.current[category]
+  }
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0]
@@ -746,59 +830,75 @@ function App() {
             )}
 
             {/* 按分类分组显示模板 */}
-            {Object.entries(
-              filteredTemplates.reduce((groups, template) => {
-                const category = template.category
-                if (!groups[category]) {
-                  groups[category] = []
-                }
-                groups[category].push(template)
-                return groups
-              }, {})
-            )
-            .sort(([a], [b]) => {
-              // 将 "Duo Interaction" 排在最后
-              if (a === 'Duo Interaction') return 1
-              if (b === 'Duo Interaction') return -1
-              return 0
-            })
-            .map(([category, templates]) => (
-              <div key={category} className="category-section">
-                <h3 className="category-title">{category}</h3>
-            <div className="templates-grid">
-                  {templates.map((template) => (
-                <div
-                  key={template.id}
-                  className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedTemplate(template)}
-                >
-                  <video
-                    src={template.gifUrl}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                        preload="none"
-                        loading="lazy"
-                    style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-                        onError={(e) => {
-                          console.warn('Video failed to load:', template.name);
-                          e.target.style.display = 'none';
-                        }}
-                        onLoadStart={() => {
-                          // 视频开始加载时显示占位符
-                          e.target.style.opacity = '0.7';
-                        }}
-                        onCanPlay={() => {
-                          // 视频可以播放时恢复正常透明度
-                          e.target.style.opacity = '1';
-                        }}
-                      />
-                    </div>
-                  ))}
+            {sortedCategories.map(([category, categoryTemplates]) => {
+              const totalPages = Math.max(1, Math.ceil(categoryTemplates.length / TEMPLATES_PER_PAGE))
+              const currentPageForCategory = Math.min(categoryPages[category] || 0, totalPages - 1)
+              const startIndex = currentPageForCategory * TEMPLATES_PER_PAGE
+              const visibleTemplates = categoryTemplates.slice(startIndex, startIndex + TEMPLATES_PER_PAGE)
+
+              return (
+                <div key={category} className="category-section">
+                  <div className="category-header">
+                    <h3 className="category-title">{category}</h3>
+                    {totalPages > 1 && (
+                      <div className="category-controls">
+                        <button
+                          className="category-nav-button"
+                          onClick={() => handleCategoryPageChange(category, -1)}
+                          disabled={currentPageForCategory === 0}
+                        >
+                          ←
+                        </button>
+                        <span className="category-page-indicator">
+                          {currentPageForCategory + 1} / {totalPages}
+                        </span>
+                        <button
+                          className="category-nav-button"
+                          onClick={() => handleCategoryPageChange(category, 1)}
+                          disabled={currentPageForCategory >= totalPages - 1}
+                        >
+                          →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    className="templates-grid"
+                    onTouchStart={(event) => handleTouchStart(category, event)}
+                    onTouchEnd={(event) => handleTouchEnd(category, event)}
+                  >
+                    {visibleTemplates.map((template) => (
+                      <div
+                        key={template.id}
+                        className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
+                        onClick={() => setSelectedTemplate(template)}
+                      >
+                        <video
+                          src={template.gifUrl}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="none"
+                          loading="lazy"
+                          style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                          onError={(e) => {
+                            console.warn('Video failed to load:', template.name)
+                            e.target.style.display = 'none'
+                          }}
+                          onLoadStart={(e) => {
+                            e.target.style.opacity = '0.7'
+                          }}
+                          onCanPlay={(e) => {
+                            e.target.style.opacity = '1'
+                          }}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              )
+            })}
           </section>
 
           {/* 右侧：操作区 */}
