@@ -856,27 +856,27 @@ function App() {
                 <div key={category} className="category-section">
                   <div className="category-header">
                     <h3 className="category-title">{category}</h3>
-                    {totalPages > 1 && (
-                      <div className="category-controls">
-                        <button
-                          className="category-nav-button"
-                          onClick={() => handleCategoryPageChange(category, -1)}
-                          disabled={currentPageForCategory === 0}
-                        >
-                          ←
-                        </button>
-                        <span className="category-page-indicator">
-                          {currentPageForCategory + 1} / {totalPages}
-                        </span>
-                        <button
-                          className="category-nav-button"
-                          onClick={() => handleCategoryPageChange(category, 1)}
-                          disabled={currentPageForCategory >= totalPages - 1}
-                        >
-                          →
-                        </button>
-                      </div>
-                    )}
+                    <div className="category-controls">
+                      <button
+                        className="category-nav-button"
+                        onClick={() => handleCategoryPageChange(category, -1)}
+                        disabled={currentPageForCategory === 0}
+                        aria-label={`Previous page for ${category}`}
+                      >
+                        ‹
+                      </button>
+                      <span className="category-page-indicator">
+                        {currentPageForCategory + 1}/{totalPages}
+                      </span>
+                      <button
+                        className="category-nav-button"
+                        onClick={() => handleCategoryPageChange(category, 1)}
+                        disabled={currentPageForCategory >= totalPages - 1}
+                        aria-label={`Next page for ${category}`}
+                      >
+                        ›
+                      </button>
+                    </div>
                   </div>
                   <div
                     className="templates-grid"
