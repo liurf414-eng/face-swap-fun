@@ -563,11 +563,12 @@ function App() {
         setScriptedProgress(prev => {
           if (result) return 100
           if (prev >= 98.9) return 99
-          const next = prev + 2
+          const increment = predictedTotalTime && predictedTotalTime > 0 ? (25 / predictedTotalTime) : 1.5
+          const next = prev + increment
           if (next >= 98.9) return 98.9
           return parseFloat(next.toFixed(1))
         })
-      }, 300)
+      }, 400)
     } else {
       setScriptedProgress(result ? 100 : 5.0)
     }
@@ -575,7 +576,7 @@ function App() {
     return () => {
       if (scriptedTimer) clearInterval(scriptedTimer)
     }
-  }, [isProcessing, result])
+  }, [isProcessing, result, predictedTotalTime])
 
   useEffect(() => {
     if (result) {
@@ -584,11 +585,10 @@ function App() {
   }, [result])
 
   const timeDisplay = useMemo(() => {
-    const elapsed = effectiveElapsedTime > activeEstimatedTotalTime ? activeEstimatedTotalTime : effectiveElapsedTime
     if (activeEstimatedTotalTime > 0) {
-      return `${elapsed.toFixed(1)}s / ${activeEstimatedTotalTime.toFixed(1)}s`
+      return `${effectiveElapsedTime.toFixed(1)}s / ${activeEstimatedTotalTime.toFixed(1)}s`
     }
-    return `${elapsed.toFixed(1)}s / ...`
+    return `${effectiveElapsedTime.toFixed(1)}s / ...`
   }, [effectiveElapsedTime, activeEstimatedTotalTime])
 
   const handleGenerate = async () => {

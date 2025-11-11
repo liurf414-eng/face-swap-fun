@@ -4,6 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fetch from 'node-fetch'
 import dotenv from 'dotenv'
+import { getVideoDurationInSeconds } from 'get-video-duration'
 
 // 加载环境变量
 dotenv.config()
@@ -66,7 +67,7 @@ class TemplateUploader {
   }
 
   // 扫描本地视频文件（递归扫描子文件夹）
-  scanLocalVideos() {
+  async scanLocalVideos() {
     console.log('🔍 扫描本地视频文件...')
     
     if (!fs.existsSync(CONFIG.localVideoDir)) {
@@ -78,7 +79,7 @@ class TemplateUploader {
     let id = 1
 
     // 递归扫描所有子文件夹
-    const scanDirectory = (dir, category = null) => {
+    const scanDirectory = async (dir, category = null) => {
       const items = fs.readdirSync(dir)
       
       for (const item of items) {
@@ -88,23 +89,31 @@ class TemplateUploader {
         if (stat.isDirectory()) {
           // 如果是文件夹，使用文件夹名作为分类
           const folderCategory = this.formatCategoryName(item)
-          scanDirectory(itemPath, folderCategory)
+          await scanDirectory(itemPath, folderCategory)
         } else if (stat.isFile() && item.toLowerCase().endsWith('.mp4')) {
           // 如果是视频文件
           const name = path.parse(item).name
+          let duration = null
+          try {
+            duration = await getVideoDurationInSeconds(itemPath)
+          } catch (error) {
+            console.warn(`⚠️ 无法获取视频时长: ${itemPath}`, error.message)
+          }
+
           videoFiles.push({
             id: id++,
             name: this.formatTemplateName(name),
             localPath: itemPath,
             fileName: item,
             category: category || this.extractCategoryFromFilename(name),
-            type: 'video'
+            type: 'video',
+            duration: duration ? parseFloat(duration.toFixed(2)) : null
           })
         }
       }
     }
 
-    scanDirectory(CONFIG.localVideoDir)
+    await scanDirectory(CONFIG.localVideoDir)
     console.log(`📊 找到 ${videoFiles.length} 个视频文件`)
     return videoFiles
   }
@@ -289,7 +298,7 @@ class TemplateUploader {
   async uploadAll() {
     console.log('🚀 开始批量上传模板...')
     
-    const templates = this.scanLocalVideos()
+    const templates = await this.scanLocalVideos()
     if (templates.length === 0) {
       console.log('❌ 没有找到视频文件')
       return
