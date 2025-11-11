@@ -51,6 +51,9 @@ function App() {
   const [progress, setProgress] = useState(0)  // 新增：进度百分比
   const [elapsedTime, setElapsedTime] = useState(0)  // 已用时间（秒）
   const [estimatedTotalTime, setEstimatedTotalTime] = useState(20)  // 预计总时间（秒）
+  const [predictedTotalTime, setPredictedTotalTime] = useState(null)
+  const [processingStartTime, setProcessingStartTime] = useState(null)
+  const [clientElapsedTime, setClientElapsedTime] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [generationCount, setGenerationCount] = useState(0)  // 新增：用户今日已生成次数
   const [isLoading, setIsLoading] = useState(true)  // 新增：模板加载状态
@@ -465,6 +468,66 @@ function App() {
            url.includes('.webm')
   }
 
+  useEffect(() => {
+    if (!selectedTemplate) return
+    setPredictedTotalTime(null)
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.src = selectedTemplate.gifUrl
+    video.onloadedmetadata = onLoadedMetadata
+    video.onerror = (e) => {
+      console.error('Failed to load video metadata:', e)
+      setPredictedTotalTime(null)
+    }
+  }, [selectedTemplate])
+
+  const onLoadedMetadata = () => {
+    if (!isNaN(video.duration) && video.duration > 0) {
+      const duration = video.duration
+      const predicted = parseFloat((duration * 10.4).toFixed(2))
+      setPredictedTotalTime(predicted)
+      setEstimatedTotalTime(predicted)
+    }
+  }
+
+  useEffect(() => {
+    let timer
+    if (isProcessing && processingStartTime) {
+      timer = setInterval(() => {
+        setClientElapsedTime((Date.now() - processingStartTime) / 1000)
+      }, 100)
+    } else {
+      setClientElapsedTime(0)
+    }
+
+    return () => {
+      if (timer) clearInterval(timer)
+    }
+  }, [isProcessing, processingStartTime])
+
+  const effectiveElapsedTime = useMemo(() => {
+    const backendElapsed = typeof elapsedTime === 'number' ? elapsedTime : 0
+    const clientElapsed = typeof clientElapsedTime === 'number' ? clientElapsedTime : 0
+    return Math.max(backendElapsed, clientElapsed)
+  }, [elapsedTime, clientElapsedTime])
+
+  const activeEstimatedTotalTime = predictedTotalTime || estimatedTotalTime || 0
+
+  const displayProgress = useMemo(() => {
+    if (predictedTotalTime && predictedTotalTime > 0) {
+      return parseFloat((Math.min(100, (effectiveElapsedTime / predictedTotalTime) * 100)).toFixed(2))
+    }
+    const rawProgress = typeof progress === 'number' ? progress : Number(progress) || 0
+    return parseFloat(rawProgress.toFixed(2))
+  }, [predictedTotalTime, effectiveElapsedTime, progress])
+
+  const remainingTimeDisplay = useMemo(() => {
+    if (activeEstimatedTotalTime > 0) {
+      return `${Math.max(0, activeEstimatedTotalTime - effectiveElapsedTime).toFixed(1)}s`
+    }
+    return '...'
+  }, [activeEstimatedTotalTime, effectiveElapsedTime])
+
   const handleGenerate = async () => {
     if (!selectedTemplate || !uploadedImage) {
       alert('请先选择模板并上传照片！')
@@ -483,6 +546,8 @@ function App() {
     }
 
     setIsProcessing(true)
+    setProcessingStartTime(Date.now())
+    setClientElapsedTime(0)
     setResult(null) // 清除之前的结果
     setProcessingStatus('Processing your video...')
 
@@ -537,7 +602,9 @@ function App() {
             setProcessingStatus(statusData.message || 'Processing...')
             setProgress(statusData.progress || 0)
             setElapsedTime(statusData.elapsedTime || 0)
-            setEstimatedTotalTime(statusData.estimatedTotalTime || 20)
+            if (!predictedTotalTime) {
+              setEstimatedTotalTime(statusData.estimatedTotalTime || 20)
+            }
 
             if (statusData.status === 'completed') {
             // 任务完成
@@ -555,6 +622,8 @@ function App() {
               }
               
             setIsProcessing(false)
+            setProcessingStartTime(null)
+            setClientElapsedTime(0)
               
               // 触发庆祝动画
               setShowCelebration(true)
@@ -587,6 +656,8 @@ function App() {
           setProcessingStatus('')
           setProgress(0)
           setIsProcessing(false)
+          setProcessingStartTime(null)
+          setClientElapsedTime(0)
             alert(`❌ Face swap failed: ${error.message}`)
           }
         }
@@ -610,6 +681,8 @@ function App() {
         }
         
         setIsProcessing(false)
+        setProcessingStartTime(null)
+        setClientElapsedTime(0)
         
         setShowCelebration(true)
         setTimeout(() => setShowCelebration(false), 3000)
@@ -634,6 +707,8 @@ function App() {
       console.error('换脸错误:', error)
       setProcessingStatus('')
       setIsProcessing(false)
+      setProcessingStartTime(null)
+      setClientElapsedTime(0)
       alert(`❌ Face swap failed: ${error.message}`)
     }
   }
@@ -884,20 +959,20 @@ function App() {
                     onTouchEnd={(event) => handleTouchEnd(category, event)}
                   >
                     {visibleTemplates.map((template) => (
-                      <div
-                        key={template.id}
-                        className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
-                        onClick={() => setSelectedTemplate(template)}
-                      >
-                        <video
-                          src={template.gifUrl}
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
+                <div
+                  key={template.id}
+                  className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedTemplate(template)}
+                >
+                  <video
+                    src={template.gifUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
                           preload="none"
                           loading="lazy"
-                          style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                           onError={(e) => {
                             console.warn('Video failed to load:', template.name)
                             e.target.style.display = 'none'
@@ -909,9 +984,9 @@ function App() {
                             e.target.style.opacity = '1'
                           }}
                         />
-                      </div>
-                    ))}
-                  </div>
+                </div>
+              ))}
+            </div>
                 </div>
               )
             })}
@@ -951,13 +1026,13 @@ function App() {
                       onDragOver={uploadedImage ? undefined : handleDragOver}
                       onDrop={uploadedImage ? undefined : handleDrop}
                     >
-                      <input
-                        type="file"
-                        id="file-upload"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        style={{ display: 'none' }}
-                      />
+                <input
+                  type="file"
+                  id="file-upload"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{ display: 'none' }}
+                />
                       {uploadedImage ? (
                         <>
                           <img src={uploadedImage} alt="Uploaded photo" />
@@ -971,11 +1046,11 @@ function App() {
                       ) : (
                         <label htmlFor="file-upload" className="upload-button-inline">
                           📤 Click to Upload<br/>or Drag & Drop
-                        </label>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                </label>
+                )}
+              </div>
+            </div>
+              </div>
 
                 <div className="result-section">
                   {isProcessing ? (
@@ -1000,7 +1075,7 @@ function App() {
                             strokeWidth="8"
                             strokeLinecap="round"
                             strokeDasharray={`${2 * Math.PI * 50}`}
-                            strokeDashoffset={`${2 * Math.PI * 50 * (1 - progress / 100)}`}
+                            strokeDashoffset={`${2 * Math.PI * 50 * (1 - displayProgress / 100)}`}
                             transform="rotate(-90 60 60)"
                             style={{
                               transition: 'stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1015,29 +1090,28 @@ function App() {
                           </defs>
                         </svg>
                         <div className="circular-progress-content">
-                          <div className="progress-percentage">{progress.toFixed(1)}%</div>
-                          <div className="progress-time">
-                            {estimatedTotalTime > 0 && elapsedTime >= 0
-                              ? `${Math.max(0, (estimatedTotalTime - elapsedTime)).toFixed(1)}s`
-                              : '...'}
-                          </div>
+                          <div className="progress-percentage">{displayProgress.toFixed(2)}%</div>
+                          <div className="progress-time">{remainingTimeDisplay}</div>
                         </div>
-                      </div>
+            </div>
                       <p className="processing-text">{processingStatus || 'Processing your video...'}</p>
-                    </div>
+                      <div className="prediction-info">
+                        预计耗时：{activeEstimatedTotalTime > 0 ? `${activeEstimatedTotalTime.toFixed(2)}s` : '...'}
+                  </div>
+                </div>
                   ) : result ? (
                     <div className="result-card-inline">
                       <h3><span className="step-badge">Step 3</span>🎉 Complete!</h3>
                       <div className="result-preview-box">
                         {isVideoUrl(result.url) ? (
-                          <video
+                    <video
                             ref={videoRef}
-                            src={result.url}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            controls
+                      src={result.url}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      controls
                             onLoadedData={() => {
                               if (videoRef.current) {
                                 videoRef.current.play().catch(e => console.log('Autoplay prevented:', e))
@@ -1051,10 +1125,10 @@ function App() {
                           />
                         ) : (
                           <img src={result.url} alt="Generated result" />
-                        )}
-                      </div>
+                  )}
+                </div>
                       <div className="result-actions">
-                        <button className="download-button" onClick={handleDownload}>
+                <button className="download-button" onClick={handleDownload}>
                           📥 Download Video
                         </button>
                         <button 
@@ -1066,7 +1140,7 @@ function App() {
                           }}
                         >
                           ✨ Create New Video
-                        </button>
+                </button>
                       </div>
                     </div>
                   ) : (
@@ -1087,6 +1161,9 @@ function App() {
                       >
                         {generateButtonLabel}
                       </button>
+                      <div className="prediction-info">
+                        预计耗时：{activeEstimatedTotalTime > 0 ? `${activeEstimatedTotalTime.toFixed(2)}s` : '...'}
+                      </div>
                     </div>
                   )}
                 </div>
