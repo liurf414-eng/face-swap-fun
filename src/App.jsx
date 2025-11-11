@@ -55,6 +55,7 @@ function App() {
   const [processingStartTime, setProcessingStartTime] = useState(null)
   const [clientElapsedTime, setClientElapsedTime] = useState(0)
   const [scriptedProgress, setScriptedProgress] = useState(5.0)
+  const predictedCacheRef = useRef({})
   const [searchQuery, setSearchQuery] = useState('')
   const [generationCount, setGenerationCount] = useState(0)  // 新增：用户今日已生成次数
   const [isLoading, setIsLoading] = useState(true)  // 新增：模板加载状态
@@ -471,14 +472,44 @@ function App() {
 
   useEffect(() => {
     if (!selectedTemplate) return
+
     setPredictedTotalTime(null)
     const video = document.createElement('video')
     video.preload = 'metadata'
+    video.crossOrigin = 'anonymous'
     video.src = selectedTemplate.gifUrl
-    video.onloadedmetadata = onLoadedMetadata
-    video.onerror = (e) => {
-      console.error('Failed to load video metadata:', e)
-      setPredictedTotalTime(null)
+
+    const cached = predictedCacheRef.current[selectedTemplate.id]
+    if (cached) {
+      setPredictedTotalTime(cached)
+      setEstimatedTotalTime(cached)
+      return
+    }
+
+    const onLoadedMetadata = () => {
+      if (!isNaN(video.duration) && video.duration > 0) {
+        const duration = video.duration
+        const predicted = parseFloat((duration * 15.4).toFixed(2))
+        predictedCacheRef.current[selectedTemplate.id] = predicted
+        setPredictedTotalTime(predicted)
+        setEstimatedTotalTime(predicted)
+      }
+    }
+
+    const onError = () => {
+      if (!predictedCacheRef.current[selectedTemplate.id]) {
+        const fallback = 30
+        predictedCacheRef.current[selectedTemplate.id] = fallback
+        setPredictedTotalTime(fallback)
+        setEstimatedTotalTime(fallback)
+      }
+    }
+    video.addEventListener('loadedmetadata', onLoadedMetadata)
+    video.addEventListener('error', onError)
+
+    return () => {
+      video.removeEventListener('loadedmetadata', onLoadedMetadata)
+      video.removeEventListener('error', onError)
     }
   }, [selectedTemplate])
 
@@ -530,8 +561,11 @@ function App() {
     if (isProcessing) {
       scriptedTimer = setInterval(() => {
         setScriptedProgress(prev => {
+          if (result) return 100
           if (prev >= 98.9) return 99
-          return parseFloat((Math.min(98.9, prev + 0.2)).toFixed(1))
+          const next = prev + 2
+          if (next >= 98.9) return 98.9
+          return parseFloat(next.toFixed(1))
         })
       }, 300)
     } else {
@@ -1083,8 +1117,8 @@ function App() {
                 </label>
                 )}
               </div>
-            </div>
               </div>
+            </div>
 
                 <div className="result-section">
                   {isProcessing ? (
@@ -1177,21 +1211,21 @@ function App() {
                   ) : (
                     <div className="action-card-inline">
                       <h3><span className="step-badge">Step 3</span>Generate Your Video</h3>
-                      <div className="usage-info">
-                        <span className="usage-text">
+              <div className="usage-info">
+                <span className="usage-text">
                           Remaining today: <strong>{remainingGenerations}</strong> / {MAX_GENERATIONS}
-                        </span>
+                </span>
                         {limitReached && (
                           <span className="usage-warning">⚠️ {user ? 'Daily limit reached' : 'Free quota used up. Please log in for more.'}</span>
-                        )}
-                      </div>
-                      <button
-                        className="generate-button"
-                        onClick={handleGenerate}
+                )}
+              </div>
+              <button
+                className="generate-button"
+                onClick={handleGenerate}
                         disabled={!canGenerate}
-                      >
+              >
                         {generateButtonLabel}
-                      </button>
+              </button>
                       <div className="prediction-info">{timeDisplay}</div>
                     </div>
                   )}
@@ -1199,7 +1233,7 @@ function App() {
               </div>
             )}
           </aside>
-        </div>
+            </div>
 
         {/* 庆祝动画 */}
         {showCelebration && (
@@ -1213,12 +1247,12 @@ function App() {
               <div className="confetti-piece"></div>
               <div className="confetti-piece"></div>
               <div className="confetti-piece"></div>
-            </div>
+                  </div>
             <div className="success-message">
               <h2>🎉 Amazing!</h2>
               <p>Your meme is ready!</p>
-            </div>
-          </div>
+                </div>
+              </div>
         )}
       </main>
       )}
@@ -1255,10 +1289,10 @@ function App() {
                   ) : (
                     myVideos.map((video) => (
                       <div key={video.id} className="my-video-card">
-                        <video
+                    <video
                           src={video.url}
-                          muted
-                          playsInline
+                      muted
+                      playsInline
                           style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                         />
                         <div className="my-video-info">
