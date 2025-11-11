@@ -54,6 +54,7 @@ function App() {
   const [predictedTotalTime, setPredictedTotalTime] = useState(null)
   const [processingStartTime, setProcessingStartTime] = useState(null)
   const [clientElapsedTime, setClientElapsedTime] = useState(0)
+  const [scriptedProgress, setScriptedProgress] = useState(5.0)
   const [searchQuery, setSearchQuery] = useState('')
   const [generationCount, setGenerationCount] = useState(0)  // 新增：用户今日已生成次数
   const [isLoading, setIsLoading] = useState(true)  // 新增：模板加载状态
@@ -484,7 +485,7 @@ function App() {
   const onLoadedMetadata = () => {
     if (!isNaN(video.duration) && video.duration > 0) {
       const duration = video.duration
-      const predicted = parseFloat((duration * 10.4).toFixed(2))
+      const predicted = parseFloat((duration * 15.4).toFixed(2))
       setPredictedTotalTime(predicted)
       setEstimatedTotalTime(predicted)
     }
@@ -514,14 +515,8 @@ function App() {
   const activeEstimatedTotalTime = predictedTotalTime || estimatedTotalTime || 0
 
   const displayProgress = useMemo(() => {
-    if (predictedTotalTime && predictedTotalTime > 0) {
-      const ratio = effectiveElapsedTime / predictedTotalTime
-      const cappedRatio = ratio >= 0.989 ? 0.99 : Math.min(0.99, ratio)
-      return parseFloat((cappedRatio * 100).toFixed(1))
-    }
-    const rawProgress = typeof progress === 'number' ? progress : Number(progress) || 0
-    return parseFloat(rawProgress.toFixed(1))
-  }, [predictedTotalTime, effectiveElapsedTime, progress])
+    return parseFloat(scriptedProgress.toFixed(1))
+  }, [scriptedProgress])
 
   const remainingTimeDisplay = useMemo(() => {
     if (activeEstimatedTotalTime > 0) {
@@ -529,6 +524,38 @@ function App() {
     }
     return '...'
   }, [activeEstimatedTotalTime, effectiveElapsedTime])
+
+  useEffect(() => {
+    let scriptedTimer
+    if (isProcessing) {
+      scriptedTimer = setInterval(() => {
+        setScriptedProgress(prev => {
+          if (prev >= 98.9) return 99
+          return parseFloat((Math.min(98.9, prev + 0.2)).toFixed(1))
+        })
+      }, 300)
+    } else {
+      setScriptedProgress(result ? 100 : 5.0)
+    }
+
+    return () => {
+      if (scriptedTimer) clearInterval(scriptedTimer)
+    }
+  }, [isProcessing, result])
+
+  useEffect(() => {
+    if (result) {
+      setScriptedProgress(100)
+    }
+  }, [result])
+
+  const timeDisplay = useMemo(() => {
+    const elapsed = effectiveElapsedTime > activeEstimatedTotalTime ? activeEstimatedTotalTime : effectiveElapsedTime
+    if (activeEstimatedTotalTime > 0) {
+      return `${elapsed.toFixed(1)}s / ${activeEstimatedTotalTime.toFixed(1)}s`
+    }
+    return `${elapsed.toFixed(1)}s / ...`
+  }, [effectiveElapsedTime, activeEstimatedTotalTime])
 
   const handleGenerate = async () => {
     if (!selectedTemplate || !uploadedImage) {
@@ -550,6 +577,7 @@ function App() {
     setIsProcessing(true)
     setProcessingStartTime(Date.now())
     setClientElapsedTime(0)
+    setScriptedProgress(5.0)
     setResult(null) // 清除之前的结果
     setProcessingStatus('Processing your video...')
 
@@ -626,6 +654,7 @@ function App() {
             setIsProcessing(false)
             setProcessingStartTime(null)
             setClientElapsedTime(0)
+            setScriptedProgress(100)
               
               // 触发庆祝动画
               setShowCelebration(true)
@@ -660,6 +689,7 @@ function App() {
           setIsProcessing(false)
           setProcessingStartTime(null)
           setClientElapsedTime(0)
+          setScriptedProgress(5.0)
             alert(`❌ Face swap failed: ${error.message}`)
           }
         }
@@ -685,6 +715,7 @@ function App() {
         setIsProcessing(false)
         setProcessingStartTime(null)
         setClientElapsedTime(0)
+        setScriptedProgress(100)
         
         setShowCelebration(true)
         setTimeout(() => setShowCelebration(false), 3000)
@@ -711,6 +742,7 @@ function App() {
       setIsProcessing(false)
       setProcessingStartTime(null)
       setClientElapsedTime(0)
+      setScriptedProgress(5.0)
       alert(`❌ Face swap failed: ${error.message}`)
     }
   }
@@ -1096,7 +1128,7 @@ function App() {
                         </div>
             </div>
                       <p className="processing-text">{processingStatus || 'Processing your video...'}</p>
-                      <div className="prediction-info">{activeEstimatedTotalTime > 0 ? `${activeEstimatedTotalTime.toFixed(1)}s` : '...'}</div>
+                      <div className="prediction-info">{timeDisplay}</div>
                 </div>
                   ) : result ? (
                     <div className="result-card-inline">
@@ -1160,7 +1192,7 @@ function App() {
                       >
                         {generateButtonLabel}
                       </button>
-                      <div className="prediction-info">{activeEstimatedTotalTime > 0 ? `${activeEstimatedTotalTime.toFixed(1)}s` : '...'}</div>
+                      <div className="prediction-info">{timeDisplay}</div>
                     </div>
                   )}
                 </div>
