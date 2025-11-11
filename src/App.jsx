@@ -515,10 +515,12 @@ function App() {
 
   const displayProgress = useMemo(() => {
     if (predictedTotalTime && predictedTotalTime > 0) {
-      return parseFloat((Math.min(100, (effectiveElapsedTime / predictedTotalTime) * 100)).toFixed(2))
+      const ratio = effectiveElapsedTime / predictedTotalTime
+      const cappedRatio = ratio >= 0.989 ? 0.99 : Math.min(0.99, ratio)
+      return parseFloat((cappedRatio * 100).toFixed(1))
     }
     const rawProgress = typeof progress === 'number' ? progress : Number(progress) || 0
-    return parseFloat(rawProgress.toFixed(2))
+    return parseFloat(rawProgress.toFixed(1))
   }, [predictedTotalTime, effectiveElapsedTime, progress])
 
   const remainingTimeDisplay = useMemo(() => {
@@ -1090,14 +1092,11 @@ function App() {
                           </defs>
                         </svg>
                         <div className="circular-progress-content">
-                          <div className="progress-percentage">{displayProgress.toFixed(2)}%</div>
-                          <div className="progress-time">{remainingTimeDisplay}</div>
+                          <div className="progress-percentage">{displayProgress.toFixed(1)}%</div>
                         </div>
             </div>
                       <p className="processing-text">{processingStatus || 'Processing your video...'}</p>
-                      <div className="prediction-info">
-                        预计耗时：{activeEstimatedTotalTime > 0 ? `${activeEstimatedTotalTime.toFixed(2)}s` : '...'}
-                  </div>
+                      <div className="prediction-info">{activeEstimatedTotalTime > 0 ? `${activeEstimatedTotalTime.toFixed(1)}s` : '...'}</div>
                 </div>
                   ) : result ? (
                     <div className="result-card-inline">
@@ -1161,9 +1160,7 @@ function App() {
                       >
                         {generateButtonLabel}
                       </button>
-                      <div className="prediction-info">
-                        预计耗时：{activeEstimatedTotalTime > 0 ? `${activeEstimatedTotalTime.toFixed(2)}s` : '...'}
-                      </div>
+                      <div className="prediction-info">{activeEstimatedTotalTime > 0 ? `${activeEstimatedTotalTime.toFixed(1)}s` : '...'}</div>
                     </div>
                   )}
                 </div>
