@@ -703,6 +703,7 @@ async function detectFacesInVideo(videoUrl, VMODEL_API_TOKEN) {
         // 处理 output 可能是数组、对象或字符串的情况
         let outputData = statusData.output
         if (Array.isArray(outputData) && outputData.length > 0) {
+          // output 是数组，取第一个元素
           outputData = outputData[0]
         } else if (typeof outputData === 'string') {
           try {
@@ -712,37 +713,35 @@ async function detectFacesInVideo(videoUrl, VMODEL_API_TOKEN) {
           }
         }
         
-        // 尝试多种可能的路径提取 detect_id 和 face_map
-        const detectId = outputData?.detect_id 
-          || outputData?.detectId
+        // 根据 VModel 实际响应结构提取 detect_id
+        // detect_id 就是 output[0].id
+        const detectId = outputData?.id
+          || statusData.id
+          || statusData.task_id
           || statusData.detect_id 
           || statusData.detectId
-          || (typeof outputData === 'string' ? outputData : null)
         
-        const faceMap = outputData?.face_map
-          || outputData?.faceMap
-          || statusData.face_map
-          || statusData.faceMap
-          || outputData?.faces
-          || statusData.faces
-          || (outputData && typeof outputData === 'object' ? JSON.stringify(outputData) : null)
+        // face_map 需要从 output[0].faces 构建
+        // 但这里我们只返回 faces 数组，后续在 processFaceSwapDuo 中构建 face_map
+        const faces = outputData?.faces || statusData.faces
 
         console.log('Extracted values:', { 
           detectId, 
-          faceMap, 
+          faces,
           outputType: typeof statusData.output,
           outputIsArray: Array.isArray(statusData.output),
           outputData: JSON.stringify(outputData)
         })
 
-        if (detectId && faceMap) {
-          console.log('Face detection completed:', { detectId, faceMap })
-          return { detectId, faceMap }
+        if (detectId && faces && Array.isArray(faces) && faces.length > 0) {
+          console.log('Face detection completed:', { detectId, facesCount: faces.length })
+          // 返回 detectId 和 faces 数组，后续用于构建 face_map
+          return { detectId, faces }
         } else {
           // 提供更详细的错误信息
           const missingFields = []
-          if (!detectId) missingFields.push('detect_id')
-          if (!faceMap) missingFields.push('face_map')
+          if (!detectId) missingFields.push('detect_id (id)')
+          if (!faces || !Array.isArray(faces) || faces.length === 0) missingFields.push('faces array')
           throw new Error(`Face detection completed but missing ${missingFields.join(' and ')}. Full response: ${JSON.stringify(statusData, null, 2)}`)
         }
       } else if (statusData.error) {
@@ -834,7 +833,7 @@ async function processFaceSwapDuo(taskId, targetImage, sourceImage, sourceImage2
     })
 
     // 步骤1: 检测视频中的人脸
-    const { detectId, faceMap: detectedFaceMap } = await detectFacesInVideo(targetImage, VMODEL_API_TOKEN)
+    const { detectId, faces: detectedFaces } = await detectFacesInVideo(targetImage, VMODEL_API_TOKEN)
 
     const elapsedAfterDetect = parseFloat(((Date.now() - startTime) / 1000).toFixed(1))
     taskStore.set(taskId, {
@@ -846,44 +845,34 @@ async function processFaceSwapDuo(taskId, targetImage, sourceImage, sourceImage2
     })
 
     // 步骤2: 构建 face_map
-    // 解析检测到的 face_map（如果返回的是字符串，需要解析）
-    let parsedFaceMap = []
-    try {
-      if (typeof detectedFaceMap === 'string') {
-        parsedFaceMap = JSON.parse(detectedFaceMap)
-      } else {
-        parsedFaceMap = detectedFaceMap
-      }
-    } catch (e) {
-      // 如果解析失败，假设检测到的人脸按顺序映射
-      parsedFaceMap = [
-        { face_id: 0 },
-        { face_id: 1 }
-      ]
+    // detectedFaces 是从 VModel 返回的 faces 数组，格式: [{id: 0, link: "..."}, {id: 1, link: "..."}]
+    // 我们需要构建 face_map，格式: [{"face_id": 0, "target": "照片1URL"}, {"face_id": 1, "target": "照片2URL"}]
+    
+    if (!detectedFaces || !Array.isArray(detectedFaces) || detectedFaces.length < 2) {
+      throw new Error(`Expected at least 2 faces, but got ${detectedFaces?.length || 0}`)
     }
 
     // 构建新的 face_map，将用户上传的照片映射到检测到的人脸
-    // 简单映射：face_id 0 -> 照片1, face_id 1 -> 照片2
+    // 使用检测到的人脸的 id 作为 face_id
     const newFaceMap = [
-      { face_id: 0, target: faceImageUrl1 },
-      { face_id: 1, target: faceImageUrl2 }
+      { 
+        face_id: detectedFaces[0].id || 0, 
+        target: faceImageUrl1 
+      },
+      { 
+        face_id: detectedFaces[1].id || 1, 
+        target: faceImageUrl2 
+      }
     ]
 
-    // 如果检测到的人脸数量不是2个，使用前两个或随机映射
-    if (parsedFaceMap.length !== 2) {
-      console.warn(`Detected ${parsedFaceMap.length} faces, expected 2. Using first 2 faces.`)
-      // 只使用前两个检测到的人脸
-      const faceIds = parsedFaceMap.slice(0, 2).map(f => f.face_id || f.id || 0)
-      newFaceMap[0].face_id = faceIds[0] || 0
-      newFaceMap[1].face_id = faceIds[1] || 1
-    } else {
-      // 使用检测到的人脸ID
-      newFaceMap[0].face_id = parsedFaceMap[0].face_id || parsedFaceMap[0].id || 0
-      newFaceMap[1].face_id = parsedFaceMap[1].face_id || parsedFaceMap[1].id || 1
+    // 如果检测到的人脸数量超过2个，只使用前两个
+    if (detectedFaces.length > 2) {
+      console.warn(`Detected ${detectedFaces.length} faces, using first 2 faces.`)
     }
 
     const faceMapString = JSON.stringify(newFaceMap)
     console.log('Face map:', faceMapString)
+    console.log('Detected faces:', JSON.stringify(detectedFaces, null, 2))
 
     // 步骤3: 创建双人脸替换任务
     const encodedVideoUrl = encodeURI(targetImage)
