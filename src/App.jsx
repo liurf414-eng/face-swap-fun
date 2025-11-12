@@ -562,10 +562,10 @@ function App() {
     let scriptedTimer
     if (isProcessing && predictedTotalTime && predictedTotalTime > 0) {
       // 基于预测时间计算进度增量
-      // 如果预测时间为10s，每0.4秒+2.5% = 25% / 10
-      // 如果预测时间为20s，每0.4秒+1.25% = 25% / 20
-      // 公式：每0.4秒增加 = 25% / 预测时间
-      const incrementPerInterval = 25 / predictedTotalTime
+      // 如果预测时间为10s，每0.4秒+4% = 40% / 10
+      // 如果预测时间为20s，每0.4秒+2% = 40% / 20
+      // 公式：每0.4秒增加 = 40% / 预测时间
+      const incrementPerInterval = 40 / predictedTotalTime
       
       scriptedTimer = setInterval(() => {
         setScriptedProgress(prev => {
