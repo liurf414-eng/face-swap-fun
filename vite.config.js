@@ -15,14 +15,16 @@ export default defineConfig({
         },
       },
     },
-    // 启用压缩
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // 生产环境移除console
-        drop_debugger: true,
-      },
-    },
+    // 启用压缩（使用esbuild，更快且无需额外依赖）
+    minify: 'esbuild',
+    // 如果需要使用terser，需要先安装: npm install -D terser
+    // minify: 'terser',
+    // terserOptions: {
+    //   compress: {
+    //     drop_console: true,
+    //     drop_debugger: true,
+    //   },
+    // },
     // 优化chunk大小警告阈值
     chunkSizeWarningLimit: 1000,
     // 启用source map（生产环境可选）
