@@ -1,8 +1,12 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { toast, ToastContainer } from 'react-toastify'
-import imageCompression from 'browser-image-compression'
 import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
+import LazyVideoCard from './components/LazyVideoCard'
+import ProgressDisplay from './components/ProgressDisplay'
+import UploadSection from './components/UploadSection'
+import ResultDisplay from './components/ResultDisplay'
+import TemplateGrid from './components/TemplateGrid'
 
 // 默认模板（回退方案）
 const defaultTemplates = [
@@ -410,150 +414,26 @@ function App() {
     delete touchStartRef.current[category]
   }
 
-  const handleImageUpload = async (e, isSecond = false) => {
-    const file = e.target.files[0]
-    if (file) {
-      // 文件类型验证
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-      if (!allowedTypes.includes(file.type)) {
-        toast.error('Please upload a valid image file (JPEG, PNG, or WebP)')
-        return
-      }
-      
-      // 文件大小验证 (5MB限制)
-      const maxSize = 5 * 1024 * 1024 // 5MB
-      if (file.size > maxSize) {
-        toast.error('File size must be less than 5MB')
-        return
-      }
-      
-      // 文件名安全检查
-      const fileName = file.name.toLowerCase()
-      const dangerousPatterns = /[<>:"/\\|?*]/
-      if (dangerousPatterns.test(fileName)) {
-        toast.error('Invalid file name. Please rename your file.')
-        return
-      }
-
-      // 显示压缩提示
-      const compressionToast = toast.loading('正在压缩图片...', { autoClose: false })
-
-      try {
-        // 图片压缩选项
-        const options = {
-          maxSizeMB: 1, // 压缩后最大1MB
-          maxWidthOrHeight: 1920, // 最大宽度或高度
-          useWebWorker: true, // 使用Web Worker加速
-          fileType: file.type.includes('png') ? 'image/png' : 'image/jpeg', // 保持原格式
-          initialQuality: 0.8 // 初始质量
-        }
-
-        // 压缩图片
-        const compressedFile = await imageCompression(file, options)
-        
-        // 读取压缩后的图片
-      const reader = new FileReader()
-      reader.onload = (e) => {
-          if (isSecond) {
-            setUploadedImage2(e.target.result)
-          } else {
-        setUploadedImage(e.target.result)
-          }
-          
-          // 显示压缩成功提示
-          toast.dismiss(compressionToast)
-          const originalSize = (file.size / 1024 / 1024).toFixed(2)
-          const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2)
-          toast.success(`图片压缩完成：${originalSize}MB → ${compressedSize}MB`, { autoClose: 2000 })
-        }
-        reader.readAsDataURL(compressedFile)
-      } catch (error) {
-        console.error('图片压缩失败:', error)
-        toast.dismiss(compressionToast)
-        toast.warning('图片压缩失败，使用原图')
-        
-        // 压缩失败时使用原图
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          if (isSecond) {
-            setUploadedImage2(e.target.result)
-          } else {
-            setUploadedImage(e.target.result)
-          }
-      }
-      reader.readAsDataURL(file)
-      }
+  // 处理图片上传（由UploadSection组件调用）
+  const handleImageUpload = useCallback((imageData, isSecond = false) => {
+    if (isSecond) {
+      setUploadedImage2(imageData)
+    } else {
+      setUploadedImage(imageData)
     }
-  }
+  }, [])
 
   // 拖拽上传处理
-  const handleDragOver = (e) => {
+  const handleDragOver = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
-  }
+  }, [])
 
-  const handleDrop = async (e) => {
+  const handleDrop = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
-    
-    const files = e.dataTransfer.files
-    if (files.length > 0) {
-      const file = files[0]
-      if (file.type.startsWith('image/')) {
-        // 文件类型验证
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-        if (!allowedTypes.includes(file.type)) {
-          toast.error('Please upload a valid image file (JPEG, PNG, or WebP)')
-          return
-        }
-        
-        // 文件大小验证
-        const maxSize = 5 * 1024 * 1024 // 5MB
-        if (file.size > maxSize) {
-          toast.error('File size must be less than 5MB')
-          return
-        }
-
-        // 显示压缩提示
-        const compressionToast = toast.loading('正在压缩图片...', { autoClose: false })
-
-        try {
-          // 图片压缩选项
-          const options = {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true,
-            fileType: file.type.includes('png') ? 'image/png' : 'image/jpeg',
-            initialQuality: 0.8
-          }
-
-          const compressedFile = await imageCompression(file, options)
-          
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            setUploadedImage(e.target.result)
-            toast.dismiss(compressionToast)
-            const originalSize = (file.size / 1024 / 1024).toFixed(2)
-            const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2)
-            toast.success(`图片压缩完成：${originalSize}MB → ${compressedSize}MB`, { autoClose: 2000 })
-          }
-          reader.readAsDataURL(compressedFile)
-        } catch (error) {
-          console.error('图片压缩失败:', error)
-          toast.dismiss(compressionToast)
-          toast.warning('图片压缩失败，使用原图')
-          
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            setUploadedImage(e.target.result)
-          }
-          reader.readAsDataURL(file)
-        }
-      } else {
-        toast.error('Please upload an image file')
-      }
-    }
-  }
+    // 拖拽上传由UploadSection组件内部处理
+  }, [])
 
   // 检查 URL 是否为视频（去除查询参数后检查扩展名）
   const isVideoUrl = (url) => {
@@ -1210,55 +1090,16 @@ function App() {
             )}
 
             {/* 按分类分组显示模板 */}
-            {sortedCategories.map(([category, categoryTemplates]) => {
-              const totalPages = Math.max(1, Math.ceil(categoryTemplates.length / TEMPLATES_PER_PAGE))
-              const currentPageForCategory = Math.min(categoryPages[category] || 0, totalPages - 1)
-              const startIndex = currentPageForCategory * TEMPLATES_PER_PAGE
-              const visibleTemplates = categoryTemplates.slice(startIndex, startIndex + TEMPLATES_PER_PAGE)
-
-              return (
-                <div key={category} className="category-section">
-                  <div className="category-header">
-                    <h3 className="category-title">{category}</h3>
-                    <div className="category-controls">
-                      <button
-                        className="category-nav-button"
-                        onClick={() => handleCategoryPageChange(category, -1)}
-                        disabled={currentPageForCategory === 0}
-                        aria-label={`Previous page for ${category}`}
-                      >
-                        ‹
-                      </button>
-                      <span className="category-page-indicator">
-                        {currentPageForCategory + 1}/{totalPages}
-                      </span>
-                      <button
-                        className="category-nav-button"
-                        onClick={() => handleCategoryPageChange(category, 1)}
-                        disabled={currentPageForCategory >= totalPages - 1}
-                        aria-label={`Next page for ${category}`}
-                      >
-                        ›
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    className="templates-grid"
-                    onTouchStart={(event) => handleTouchStart(category, event)}
-                    onTouchEnd={(event) => handleTouchEnd(category, event)}
-                  >
-                    {visibleTemplates.map((template) => (
-                      <LazyVideoCard
-                        key={template.id}
-                        template={template}
-                        isSelected={selectedTemplate?.id === template.id}
-                        onSelect={() => setSelectedTemplate(template)}
-                      />
-                    ))}
-            </div>
-                </div>
-              )
-            })}
+            <TemplateGrid
+              sortedCategories={sortedCategories}
+              selectedTemplate={selectedTemplate}
+              onSelectTemplate={setSelectedTemplate}
+              categoryPages={categoryPages}
+              onCategoryPageChange={handleCategoryPageChange}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              templatesPerPage={TEMPLATES_PER_PAGE}
+            />
           </section>
 
           {/* 右侧：操作区 */}
@@ -1288,207 +1129,55 @@ function App() {
                   </div>
                 </div>
 
-                  {isDuoInteraction ? (
-                    // Duo Interaction: 显示两个上传框
-                    <>
-                      <div className="preview-card">
-                        <h3><span className="step-badge">Step 2</span>{uploadedImage ? 'Person 1 Photo' : 'Upload Person 1 Photo'}</h3>
-                        <div
-                          className={`preview-box ${uploadedImage ? '' : 'upload-preview-box'}`}
-                          onDragOver={uploadedImage ? undefined : handleDragOver}
-                          onDrop={uploadedImage ? undefined : handleDrop}
-                        >
-                <input
-                  type="file"
-                            id="file-upload-1"
-                  accept="image/*"
-                            onChange={(e) => handleImageUpload(e, false)}
-                  style={{ display: 'none' }}
-                />
-                          {uploadedImage ? (
-                            <>
-                              <img src={uploadedImage} alt="Person 1 photo" />
-                              <button 
-                                className="change-photo-btn-small"
-                                onClick={() => document.getElementById('file-upload-1').click()}
-                              >
-                                Change Photo
-                              </button>
-                            </>
-                          ) : (
-                            <label htmlFor="file-upload-1" className="upload-button-inline">
-                              📤 Click to Upload<br/>or Drag & Drop
-                </label>
-                          )}
-                  </div>
-                      </div>
-                      <div className="preview-card">
-                        <h3><span className="step-badge">Step 2</span>{uploadedImage2 ? 'Person 2 Photo' : 'Upload Person 2 Photo'}</h3>
-                        <div
-                          className={`preview-box ${uploadedImage2 ? '' : 'upload-preview-box'}`}
-                          onDragOver={uploadedImage2 ? undefined : handleDragOver}
-                          onDrop={uploadedImage2 ? undefined : handleDrop}
-                        >
-                          <input
-                            type="file"
-                            id="file-upload-2"
-                            accept="image/*"
-                            onChange={(e) => handleImageUpload(e, true)}
-                            style={{ display: 'none' }}
-                          />
-                          {uploadedImage2 ? (
-                            <>
-                              <img src={uploadedImage2} alt="Person 2 photo" />
-                              <button 
-                                className="change-photo-btn-small"
-                                onClick={() => document.getElementById('file-upload-2').click()}
-                              >
-                                Change Photo
-                              </button>
-                            </>
-                          ) : (
-                            <label htmlFor="file-upload-2" className="upload-button-inline">
-                              📤 Click to Upload<br/>or Drag & Drop
-                            </label>
-                )}
-              </div>
-                      </div>
-                    </>
-                  ) : (
-                    // 普通类型: 显示单个上传框
-                    <div className="preview-card">
-                      <h3><span className="step-badge">Step 2</span>{uploadedImage ? 'Your Photo' : 'Upload Your Photo'}</h3>
-                      <div
-                        className={`preview-box ${uploadedImage ? '' : 'upload-preview-box'}`}
-                        onDragOver={uploadedImage ? undefined : handleDragOver}
-                        onDrop={uploadedImage ? undefined : handleDrop}
-                      >
-                        <input
-                          type="file"
-                          id="file-upload"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, false)}
-                          style={{ display: 'none' }}
-                        />
-                        {uploadedImage ? (
-                          <>
-                            <img src={uploadedImage} alt="Uploaded photo" />
-                            <button 
-                              className="change-photo-btn-small"
-                              onClick={() => document.getElementById('file-upload').click()}
-                            >
-                              Change Photo
-                            </button>
-                          </>
-                        ) : (
-                          <label htmlFor="file-upload" className="upload-button-inline">
-                            📤 Click to Upload<br/>or Drag & Drop
-                          </label>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  <UploadSection
+                    isDuoInteraction={isDuoInteraction}
+                    uploadedImage={uploadedImage}
+                    uploadedImage2={uploadedImage2}
+                    onImageUpload={handleImageUpload}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  />
             </div>
 
                 <div className="result-section">
                   {isProcessing ? (
-                    <div className="processing-status-inline">
-                      <h3><span className="step-badge">Step 3</span>Generating Your Video...</h3>
-                      <div className="circular-progress-container">
-                        <svg className="circular-progress" viewBox="0 0 120 120">
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r="50"
-                            fill="none"
-                            stroke="rgba(102, 126, 234, 0.1)"
-                            strokeWidth="8"
-                          />
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r="50"
-                            fill="none"
-                            stroke="url(#gradient)"
-                            strokeWidth="8"
-                            strokeLinecap="round"
-                            strokeDasharray={`${2 * Math.PI * 50}`}
-                            strokeDashoffset={`${2 * Math.PI * 50 * (1 - displayProgress / 100)}`}
-                            transform="rotate(-90 60 60)"
-                            style={{
-                              transition: 'stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                              animation: 'progressPulse 2s ease-in-out infinite'
-                            }}
-                          />
-                          <defs>
-                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                              <stop offset="0%" stopColor="#3b82f6" />
-                              <stop offset="100%" stopColor="#8b5cf6" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-                        <div className="circular-progress-content">
-                          <div className="progress-percentage">{displayProgress.toFixed(1)}%</div>
-                        </div>
-            </div>
-                      <p className="processing-text">{processingStatus || 'Processing your video...'}</p>
-                      <div className="prediction-info">{timeDisplay}</div>
-                </div>
+                    <ProgressDisplay
+                      progress={displayProgress}
+                      processingStatus={processingStatus}
+                      elapsedTime={effectiveElapsedTime}
+                      predictedTotalTime={activeEstimatedTotalTime}
+                    />
                   ) : result ? (
-                    <div className="result-card-inline">
-                      <h3><span className="step-badge">Step 3</span>🎉 Complete!</h3>
-                      <div className="result-preview-box">
-                        {isVideoUrl(result.url) ? (
-                    <video
-                            ref={videoRef}
-                      src={result.url}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls
-                            onLoadedData={() => {
-                              if (videoRef.current) {
-                                videoRef.current.play().catch(e => console.log('Autoplay prevented:', e))
-                              }
-                            }}
-                            onCanPlay={() => {
-                              if (videoRef.current) {
-                                videoRef.current.play().catch(e => console.log('Autoplay prevented:', e))
-                              }
-                            }}
-                          />
-                        ) : (
-                          <img src={result.url} alt="Generated result" />
-                  )}
-                </div>
-                      <div className="result-actions">
-                <button className="download-button" onClick={handleDownload}>
-                          📥 Download Video
-                        </button>
-                        <button 
-                          className="create-new-btn"
-                          onClick={() => {
-                            // 如果已有选中的模板和上传的照片，直接生成新视频
-                            const hasRequired = isDuoInteraction 
-                              ? (selectedTemplate && uploadedImage && uploadedImage2)
-                              : (selectedTemplate && uploadedImage)
-                            if (hasRequired && !isProcessing && !limitReached) {
-                              setResult(null)
-                              handleGenerate()
-                            } else {
-                              // 否则清空状态回到初始页面
-                              setSelectedTemplate(null)
-                              setUploadedImage(null)
-                              setUploadedImage2(null)
-                              setResult(null)
-                            }
-                          }}
-                        >
-                          ✨ Create New Video
-                </button>
-                      </div>
-                    </div>
+                    <ResultDisplay
+                      result={result}
+                      selectedTemplate={selectedTemplate}
+                      onDownload={handleDownload}
+                      onCreateNew={(clearAll) => {
+                        if (clearAll) {
+                          setSelectedTemplate(null)
+                          setUploadedImage(null)
+                          setUploadedImage2(null)
+                          setResult(null)
+                        } else {
+                          const hasRequired = isDuoInteraction 
+                            ? (selectedTemplate && uploadedImage && uploadedImage2)
+                            : (selectedTemplate && uploadedImage)
+                          if (hasRequired && !isProcessing && !limitReached) {
+                            setResult(null)
+                            handleGenerate()
+                          } else {
+                            setSelectedTemplate(null)
+                            setUploadedImage(null)
+                            setUploadedImage2(null)
+                            setResult(null)
+                          }
+                        }
+                      }}
+                      isDuoInteraction={isDuoInteraction}
+                      hasRequiredImages={hasRequiredImages}
+                      isProcessing={isProcessing}
+                      limitReached={limitReached}
+                    />
                   ) : (
                     <div className="action-card-inline">
                       <h3><span className="step-badge">Step 3</span>Generate Your Video</h3>
@@ -1631,92 +1320,6 @@ function App() {
         pauseOnHover
         theme="dark"
       />
-    </div>
-  )
-}
-
-// 懒加载视频卡片组件
-function LazyVideoCard({ template, isSelected, onSelect }) {
-  const [isInView, setIsInView] = useState(false)
-  const [isLoaded, setIsLoaded] = useState(false)
-  const videoRef = useRef(null)
-  const cardRef = useRef(null)
-
-  // 使用 Intersection Observer 检测是否进入视口
-  useEffect(() => {
-    const currentCard = cardRef.current
-    if (!currentCard) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsInView(true)
-            observer.disconnect()
-          }
-        })
-      },
-      {
-        rootMargin: '50px', // 提前50px开始加载
-        threshold: 0.1
-      }
-    )
-
-    observer.observe(currentCard)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [])
-
-  return (
-    <div
-      ref={cardRef}
-      className={`template-card ${isSelected ? 'selected' : ''}`}
-      onClick={onSelect}
-    >
-      {isInView ? (
-        <video
-          ref={videoRef}
-          src={template.gifUrl}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="none"
-          style={{ 
-            width: '100%', 
-            height: '200px', 
-            objectFit: 'cover',
-            opacity: isLoaded ? 1 : 0.7,
-            transition: 'opacity 0.3s ease'
-          }}
-          onError={(e) => {
-            console.warn('Video failed to load:', template.name)
-            e.target.style.display = 'none'
-          }}
-          onLoadStart={() => {
-            setIsLoaded(false)
-          }}
-          onCanPlay={() => {
-            setIsLoaded(true)
-          }}
-        />
-      ) : (
-        <div 
-          style={{ 
-            width: '100%', 
-            height: '200px', 
-            background: 'var(--bg-accent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--text-muted)'
-          }}
-        >
-          <div className="loading-spinner" style={{ width: '24px', height: '24px' }}></div>
-        </div>
-      )}
     </div>
   )
 }
