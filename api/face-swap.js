@@ -697,15 +697,53 @@ async function detectFacesInVideo(videoUrl, VMODEL_API_TOKEN) {
 
       // 检查是否完成
       if (statusData.completed_at && !statusData.error) {
-        // 提取 detect_id 和 face_map
-        const detectId = statusData.output?.detect_id || statusData.detect_id
-        const faceMap = statusData.output?.face_map || statusData.face_map
+        // 打印完整的响应数据以便调试
+        console.log('Face detection status data:', JSON.stringify(statusData, null, 2))
+        
+        // 处理 output 可能是数组、对象或字符串的情况
+        let outputData = statusData.output
+        if (Array.isArray(outputData) && outputData.length > 0) {
+          outputData = outputData[0]
+        } else if (typeof outputData === 'string') {
+          try {
+            outputData = JSON.parse(outputData)
+          } catch (e) {
+            // 如果解析失败，outputData 保持为字符串
+          }
+        }
+        
+        // 尝试多种可能的路径提取 detect_id 和 face_map
+        const detectId = outputData?.detect_id 
+          || outputData?.detectId
+          || statusData.detect_id 
+          || statusData.detectId
+          || (typeof outputData === 'string' ? outputData : null)
+        
+        const faceMap = outputData?.face_map
+          || outputData?.faceMap
+          || statusData.face_map
+          || statusData.faceMap
+          || outputData?.faces
+          || statusData.faces
+          || (outputData && typeof outputData === 'object' ? JSON.stringify(outputData) : null)
+
+        console.log('Extracted values:', { 
+          detectId, 
+          faceMap, 
+          outputType: typeof statusData.output,
+          outputIsArray: Array.isArray(statusData.output),
+          outputData: JSON.stringify(outputData)
+        })
 
         if (detectId && faceMap) {
           console.log('Face detection completed:', { detectId, faceMap })
           return { detectId, faceMap }
         } else {
-          throw new Error('Face detection completed but missing detect_id or face_map')
+          // 提供更详细的错误信息
+          const missingFields = []
+          if (!detectId) missingFields.push('detect_id')
+          if (!faceMap) missingFields.push('face_map')
+          throw new Error(`Face detection completed but missing ${missingFields.join(' and ')}. Full response: ${JSON.stringify(statusData, null, 2)}`)
         }
       } else if (statusData.error) {
         throw new Error(`Face detection failed: ${statusData.error}`)
