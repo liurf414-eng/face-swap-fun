@@ -1314,9 +1314,16 @@ function App() {
                         <button 
                           className="create-new-btn"
                           onClick={() => {
-                            setSelectedTemplate(null)
-                            setUploadedImage(null)
-                            setResult(null)
+                            // 如果已有选中的模板和上传的照片，直接生成新视频
+                            if (selectedTemplate && uploadedImage && !isProcessing && !limitReached) {
+                              setResult(null)
+                              handleGenerate()
+                            } else {
+                              // 否则清空状态回到初始页面
+                              setSelectedTemplate(null)
+                              setUploadedImage(null)
+                              setResult(null)
+                            }
                           }}
                         >
                           ✨ Create New Video
