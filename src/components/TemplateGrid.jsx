@@ -1,6 +1,7 @@
+import { memo } from 'react'
 import LazyVideoCard from './LazyVideoCard'
 
-function TemplateGrid({
+const TemplateGrid = memo(function TemplateGrid({
   sortedCategories,
   selectedTemplate,
   onSelectTemplate,
@@ -67,7 +68,7 @@ function TemplateGrid({
       })}
     </>
   )
-}
+})
 
 export default TemplateGrid
 

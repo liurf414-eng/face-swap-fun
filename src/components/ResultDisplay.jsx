@@ -1,7 +1,7 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, memo } from 'react'
 import { toast } from 'react-toastify'
 
-function ResultDisplay({ result, selectedTemplate, onDownload, onCreateNew, isDuoInteraction, hasRequiredImages, isProcessing, limitReached }) {
+const ResultDisplay = memo(function ResultDisplay({ result, selectedTemplate, onDownload, onCreateNew, isDuoInteraction, hasRequiredImages, isProcessing, limitReached }) {
   const videoRef = useRef(null)
   const [shareLink, setShareLink] = useState('')
 
@@ -129,7 +129,7 @@ function ResultDisplay({ result, selectedTemplate, onDownload, onCreateNew, isDu
       </div>
     </div>
   )
-}
+})
 
 export default ResultDisplay
 

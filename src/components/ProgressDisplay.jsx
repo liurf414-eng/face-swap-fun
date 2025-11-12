@@ -1,4 +1,6 @@
-function ProgressDisplay({ 
+import { memo } from 'react'
+
+const ProgressDisplay = memo(function ProgressDisplay({ 
   progress, 
   processingStatus, 
   elapsedTime, 
@@ -57,7 +59,7 @@ function ProgressDisplay({
       <div className="prediction-info">{timeDisplay}</div>
     </div>
   )
-}
+})
 
 export default ProgressDisplay
 

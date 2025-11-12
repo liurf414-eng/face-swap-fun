@@ -74,7 +74,6 @@ function App() {
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
   const [currentPage, setCurrentPage] = useState('home')  // 新增：当前页面
   const [favoriteTemplates, setFavoriteTemplates] = useState([])  // 新增：收藏的模板ID列表
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)  // 新增：是否只显示收藏
   const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
   const TEMPLATES_PER_PAGE = 6
   const [categoryPages, setCategoryPages] = useState({})
