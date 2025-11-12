@@ -123,12 +123,22 @@ export default async function handler(req, res) {
       })
     }
 
-    const { targetImage, sourceImage } = body || {}
+    const { targetImage, sourceImage, sourceImage2 } = body || {}
+
+    // 检查是否为Duo Interaction（有sourceImage2）
+    const isDuoInteraction = !!sourceImage2
 
     if (!targetImage || !sourceImage) {
       return res.status(400).json({
         success: false,
         error: 'Missing required parameters: targetImage and sourceImage'
+      })
+    }
+
+    if (isDuoInteraction && !sourceImage2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Duo Interaction requires sourceImage2'
       })
     }
 
@@ -141,15 +151,26 @@ export default async function handler(req, res) {
       message: 'Processing video...'
     })
 
-    // 使用 VModel 进行视频换脸
-    processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_API_TOKEN, IMGBB_API_KEY).catch(error => {
-      console.error('VModel processing error:', error)
-      taskStore.set(taskId, {
-        status: 'failed',
-        progress: 100,
-        error: error.message || 'Processing failed'
+    // 根据是否有sourceImage2选择处理方式
+    if (isDuoInteraction) {
+      processFaceSwapDuo(taskId, targetImage, sourceImage, sourceImage2, VMODEL_API_TOKEN, IMGBB_API_KEY).catch(error => {
+        console.error('VModel Duo processing error:', error)
+        taskStore.set(taskId, {
+          status: 'failed',
+          progress: 100,
+          error: error.message || 'Processing failed'
+        })
       })
-    })
+    } else {
+      processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_API_TOKEN, IMGBB_API_KEY).catch(error => {
+        console.error('VModel processing error:', error)
+        taskStore.set(taskId, {
+          status: 'failed',
+          progress: 100,
+          error: error.message || 'Processing failed'
+        })
+      })
+    }
 
   } catch (error) {
     console.error('Face swap error:', error)
@@ -591,6 +612,390 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
       status: 'failed',
       progress: 100,
       error: error.message || 'VModel processing failed'
+    })
+  }
+}
+
+// 检测视频中的人脸（用于Duo Interaction）
+async function detectFacesInVideo(videoUrl, VMODEL_API_TOKEN) {
+  const VMODEL_API_URL = 'https://api.vmodel.ai/api/tasks/v1'
+  const DETECT_MODEL_VERSION = 'fa9317a2ad086f7633f4f9b38f35c82495b6c5f38fa2afbe32d9d9df8620b389'
+  
+  // 对视频 URL 进行编码
+  const encodedVideoUrl = encodeURI(videoUrl)
+  
+  console.log('Detecting faces in video:', encodedVideoUrl)
+  
+  // 创建人脸检测任务
+  const createResponse = await fetch(`${VMODEL_API_URL}/create`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${VMODEL_API_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      version: DETECT_MODEL_VERSION,
+      input: {
+        source: encodedVideoUrl
+      }
+    })
+  })
+
+  if (!createResponse.ok) {
+    const errorText = await createResponse.text()
+    throw new Error(`Face detection API error: ${createResponse.status} - ${errorText}`)
+  }
+
+  const createData = await createResponse.json()
+  console.log('Face detection task creation response:', JSON.stringify(createData, null, 2))
+  
+  // 提取 task_id
+  const detectTaskId = createData.result?.task_id || createData.task_id
+  if (!detectTaskId) {
+    throw new Error('No task_id in face detection response')
+  }
+
+  console.log('Face detection task ID:', detectTaskId)
+
+  // 轮询检测任务状态
+  const maxAttempts = 60
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 2000)) // 等待2秒
+
+    try {
+      const statusEndpoints = [
+        `${VMODEL_API_URL}/get/${detectTaskId}`,
+        `${VMODEL_API_URL}/${detectTaskId}`,
+      ]
+
+      let statusData = null
+      for (const endpoint of statusEndpoints) {
+        try {
+          const statusResponse = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${VMODEL_API_TOKEN}`
+            }
+          })
+
+          if (statusResponse.ok) {
+            const responseData = await statusResponse.json()
+            if (responseData.code === 200 && responseData.result) {
+              statusData = responseData.result
+              break
+            }
+          }
+        } catch (fetchError) {
+          console.warn(`Failed to fetch from ${endpoint}:`, fetchError.message)
+          continue
+        }
+      }
+
+      if (!statusData) {
+        throw new Error('Failed to get face detection status')
+      }
+
+      // 检查是否完成
+      if (statusData.completed_at && !statusData.error) {
+        // 提取 detect_id 和 face_map
+        const detectId = statusData.output?.detect_id || statusData.detect_id
+        const faceMap = statusData.output?.face_map || statusData.face_map
+
+        if (detectId && faceMap) {
+          console.log('Face detection completed:', { detectId, faceMap })
+          return { detectId, faceMap }
+        } else {
+          throw new Error('Face detection completed but missing detect_id or face_map')
+        }
+      } else if (statusData.error) {
+        throw new Error(`Face detection failed: ${statusData.error}`)
+      }
+
+      // 继续轮询
+      console.log(`Face detection in progress... (attempt ${attempt}/${maxAttempts})`)
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        throw error
+      }
+      console.warn(`Face detection polling error (attempt ${attempt}):`, error.message)
+    }
+  }
+
+  throw new Error('Face detection timeout (exceeded 2 minutes)')
+}
+
+// VModel 双人脸替换处理（Duo Interaction）
+async function processFaceSwapDuo(taskId, targetImage, sourceImage, sourceImage2, VMODEL_API_TOKEN, IMGBB_API_KEY) {
+  const VMODEL_API_URL = 'https://api.vmodel.ai/api/tasks/v1'
+  const DUO_MODEL_VERSION = '8e960283784c5b58e5f67236757c40bb6796c85e3c733d060342bdf62f9f0c64'
+  
+  const INITIAL_ESTIMATE = 30.0
+  let estimatedTotalTime = INITIAL_ESTIMATE
+  const startTime = Date.now()
+
+  taskStore.set(taskId, {
+    status: 'processing',
+    progress: 5.0,
+    message: 'Uploading images...',
+    elapsedTime: 0.0,
+    estimatedTotalTime: INITIAL_ESTIMATE
+  })
+
+  try {
+    // 上传两张照片到 ImgBB
+    let faceImageUrl1 = sourceImage
+    let faceImageUrl2 = sourceImage2
+
+    // 上传第一张照片
+    if (sourceImage.startsWith('data:image')) {
+      const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
+      const formData = new URLSearchParams()
+      formData.append('image', base64Data)
+
+      const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      })
+
+      const uploadData = await uploadResponse.json()
+      if (!uploadData.success || !uploadData.data?.url) {
+        throw new Error(`Failed to upload image 1: ${uploadData.error?.message || 'Unknown error'}`)
+      }
+      faceImageUrl1 = uploadData.data.url
+      console.log('Image 1 uploaded to ImgBB:', faceImageUrl1)
+    }
+
+    // 上传第二张照片
+    if (sourceImage2.startsWith('data:image')) {
+      const base64Data = sourceImage2.replace(/^data:image\/\w+;base64,/, '')
+      const formData = new URLSearchParams()
+      formData.append('image', base64Data)
+
+      const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      })
+
+      const uploadData = await uploadResponse.json()
+      if (!uploadData.success || !uploadData.data?.url) {
+        throw new Error(`Failed to upload image 2: ${uploadData.error?.message || 'Unknown error'}`)
+      }
+      faceImageUrl2 = uploadData.data.url
+      console.log('Image 2 uploaded to ImgBB:', faceImageUrl2)
+    }
+
+    const elapsedAfterUpload = parseFloat(((Date.now() - startTime) / 1000).toFixed(1))
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 15.0,
+      message: 'Detecting faces in video...',
+      elapsedTime: elapsedAfterUpload,
+      estimatedTotalTime: estimatedTotalTime
+    })
+
+    // 步骤1: 检测视频中的人脸
+    const { detectId, faceMap: detectedFaceMap } = await detectFacesInVideo(targetImage, VMODEL_API_TOKEN)
+
+    const elapsedAfterDetect = parseFloat(((Date.now() - startTime) / 1000).toFixed(1))
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 30.0,
+      message: 'Creating face swap task...',
+      elapsedTime: elapsedAfterDetect,
+      estimatedTotalTime: estimatedTotalTime
+    })
+
+    // 步骤2: 构建 face_map
+    // 解析检测到的 face_map（如果返回的是字符串，需要解析）
+    let parsedFaceMap = []
+    try {
+      if (typeof detectedFaceMap === 'string') {
+        parsedFaceMap = JSON.parse(detectedFaceMap)
+      } else {
+        parsedFaceMap = detectedFaceMap
+      }
+    } catch (e) {
+      // 如果解析失败，假设检测到的人脸按顺序映射
+      parsedFaceMap = [
+        { face_id: 0 },
+        { face_id: 1 }
+      ]
+    }
+
+    // 构建新的 face_map，将用户上传的照片映射到检测到的人脸
+    // 简单映射：face_id 0 -> 照片1, face_id 1 -> 照片2
+    const newFaceMap = [
+      { face_id: 0, target: faceImageUrl1 },
+      { face_id: 1, target: faceImageUrl2 }
+    ]
+
+    // 如果检测到的人脸数量不是2个，使用前两个或随机映射
+    if (parsedFaceMap.length !== 2) {
+      console.warn(`Detected ${parsedFaceMap.length} faces, expected 2. Using first 2 faces.`)
+      // 只使用前两个检测到的人脸
+      const faceIds = parsedFaceMap.slice(0, 2).map(f => f.face_id || f.id || 0)
+      newFaceMap[0].face_id = faceIds[0] || 0
+      newFaceMap[1].face_id = faceIds[1] || 1
+    } else {
+      // 使用检测到的人脸ID
+      newFaceMap[0].face_id = parsedFaceMap[0].face_id || parsedFaceMap[0].id || 0
+      newFaceMap[1].face_id = parsedFaceMap[1].face_id || parsedFaceMap[1].id || 1
+    }
+
+    const faceMapString = JSON.stringify(newFaceMap)
+    console.log('Face map:', faceMapString)
+
+    // 步骤3: 创建双人脸替换任务
+    const encodedVideoUrl = encodeURI(targetImage)
+    const createResponse = await fetch(`${VMODEL_API_URL}/create`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${VMODEL_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        version: DUO_MODEL_VERSION,
+        input: {
+          detect_id: detectId,
+          face_map: faceMapString,
+          disable_safety_checker: false
+        }
+      })
+    })
+
+    if (!createResponse.ok) {
+      const errorText = await createResponse.text()
+      let errorMessage = `VModel Duo API error: ${createResponse.status} - ${errorText}`
+      
+      if (createResponse.status === 402) {
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = `Payment Required: ${errorData.message?.en || errorData.message?.zh || 'Your VModel account balance is insufficient. Please add credits to continue.'}`
+        } catch (e) {
+          errorMessage = 'Payment Required: Your VModel account balance is insufficient. Please add credits at https://vmodel.ai'
+        }
+      }
+      
+      throw new Error(errorMessage)
+    }
+
+    const createData = await createResponse.json()
+    console.log('VModel Duo task creation response:', JSON.stringify(createData, null, 2))
+    
+    if (createData.code === 402) {
+      const errorMsg = createData.message?.en || createData.message?.zh || createData.message || 'Payment Required'
+      throw new Error(`VModel Payment Required: ${errorMsg}. Please check your account balance at https://vmodel.ai`)
+    }
+
+    const vmodelTaskId = createData.result?.task_id || createData.task_id
+    if (!vmodelTaskId) {
+      throw new Error('No task_id in VModel Duo response')
+    }
+
+    console.log('VModel Duo task ID:', vmodelTaskId)
+
+    // 存储 task_id 到 taskStore
+    taskStore.set(taskId, {
+      status: 'processing',
+      progress: 40.0,
+      message: 'Processing video...',
+      elapsedTime: parseFloat(((Date.now() - startTime) / 1000).toFixed(1)),
+      estimatedTotalTime: estimatedTotalTime,
+      vmodelTaskId: vmodelTaskId
+    })
+
+    // 轮询任务状态（与单人脸替换相同的逻辑）
+    const maxAttempts = 120
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      try {
+        const statusEndpoints = [
+          `${VMODEL_API_URL}/get/${vmodelTaskId}`,
+          `${VMODEL_API_URL}/${vmodelTaskId}`,
+        ]
+
+        let statusData = null
+        for (const endpoint of statusEndpoints) {
+          try {
+            const statusResponse = await fetch(endpoint, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${VMODEL_API_TOKEN}`
+              }
+            })
+
+            if (statusResponse.ok) {
+              const responseData = await statusResponse.json()
+              if (responseData.code === 200 && responseData.result) {
+                statusData = responseData.result
+                break
+              }
+            }
+          } catch (fetchError) {
+            console.warn(`Failed to fetch from ${endpoint}:`, fetchError.message)
+            continue
+          }
+        }
+
+        if (!statusData) {
+          throw new Error('Failed to get VModel Duo status')
+        }
+
+        const elapsed = parseFloat(((Date.now() - startTime) / 1000).toFixed(1))
+        const progress = Math.min(40 + (attempt / maxAttempts) * 55, 95)
+
+        taskStore.set(taskId, {
+          status: 'processing',
+          progress: progress,
+          message: 'Processing video...',
+          elapsedTime: elapsed,
+          estimatedTotalTime: estimatedTotalTime,
+          vmodelTaskId: vmodelTaskId
+        })
+
+        // 检查是否完成
+        if (statusData.completed_at && !statusData.error) {
+          const outputUrl = statusData.output?.[0] || statusData.output || statusData.result
+          if (outputUrl) {
+            taskStore.set(taskId, {
+              status: 'completed',
+              progress: 100,
+              message: 'Face swap completed!',
+              result: outputUrl,
+              elapsedTime: elapsed,
+              estimatedTotalTime: estimatedTotalTime,
+              vmodelTaskId: vmodelTaskId
+            })
+            console.log('✅ VModel Duo face swap completed:', outputUrl)
+            return
+          }
+        } else if (statusData.error) {
+          throw new Error(`VModel Duo processing failed: ${statusData.error}`)
+        }
+
+        console.log(`VModel Duo processing... (attempt ${attempt}/${maxAttempts})`)
+      } catch (error) {
+        if (attempt === maxAttempts) {
+          if (error.message && error.message.includes('404')) {
+            throw new Error('VModel Duo task not found after multiple attempts. Task ID: ' + vmodelTaskId)
+          }
+          throw error
+        }
+        console.warn(`VModel Duo polling error (attempt ${attempt}):`, error.message)
+      }
+    }
+
+    throw new Error('VModel Duo processing timeout (exceeded 4 minutes)')
+
+  } catch (error) {
+    console.error('VModel Duo processing error:', error)
+    taskStore.set(taskId, {
+      status: 'failed',
+      progress: 100,
+      error: error.message || 'VModel Duo processing failed'
     })
   }
 }

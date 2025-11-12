@@ -44,6 +44,7 @@ function App() {
   const [templates, setTemplates] = useState([])
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
+  const [uploadedImage2, setUploadedImage2] = useState(null)  // 第二个人照片（用于Duo Interaction）
   const [isProcessing, setIsProcessing] = useState(false)
   const [result, setResult] = useState(null)
   const [processingStatus, setProcessingStatus] = useState('')
@@ -71,11 +72,17 @@ function App() {
   const touchStartRef = useRef({})
   const remainingGenerations = Math.max(0, MAX_GENERATIONS - generationCount)
   const limitReached = generationCount >= MAX_GENERATIONS
-  const canGenerate = Boolean(selectedTemplate && uploadedImage && !limitReached && !isProcessing && !result)
+  const isDuoInteraction = selectedTemplate?.category === 'Duo Interaction'
+  const hasRequiredImages = isDuoInteraction 
+    ? (uploadedImage && uploadedImage2)
+    : uploadedImage
+  const canGenerate = Boolean(selectedTemplate && hasRequiredImages && !limitReached && !isProcessing && !result)
   const generateButtonLabel = limitReached
     ? '🚫 Daily limit reached'
-    : !uploadedImage
-      ? '📤 Upload a photo first'
+    : !hasRequiredImages
+      ? isDuoInteraction
+        ? '📤 Upload two photos first'
+        : '📤 Upload a photo first'
       : '🎨 Create Video'
 
   // 分类名称映射
@@ -400,7 +407,7 @@ function App() {
     delete touchStartRef.current[category]
   }
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = (e, isSecond = false) => {
     const file = e.target.files[0]
     if (file) {
       // 文件类型验证
@@ -427,7 +434,11 @@ function App() {
       
       const reader = new FileReader()
       reader.onload = (e) => {
+        if (isSecond) {
+          setUploadedImage2(e.target.result)
+        } else {
         setUploadedImage(e.target.result)
+        }
       }
       reader.readAsDataURL(file)
     }
@@ -469,6 +480,13 @@ function App() {
            url.includes('.mp4') ||
            url.includes('.webm')
   }
+
+  // 当切换模板时，如果不是Duo Interaction类型，清空第二个照片
+  useEffect(() => {
+    if (selectedTemplate && selectedTemplate.category !== 'Duo Interaction') {
+      setUploadedImage2(null)
+    }
+  }, [selectedTemplate])
 
   useEffect(() => {
     if (!selectedTemplate) return
@@ -610,8 +628,9 @@ function App() {
   }, [effectiveElapsedTime, activeEstimatedTotalTime])
 
   const handleGenerate = async () => {
-    if (!selectedTemplate || !uploadedImage) {
-      alert('请先选择模板并上传照片！')
+    const isDuo = selectedTemplate?.category === 'Duo Interaction'
+    if (!selectedTemplate || !uploadedImage || (isDuo && !uploadedImage2)) {
+      alert(isDuo ? '请先选择模板并上传两张照片！' : '请先选择模板并上传照片！')
       return
     }
 
@@ -653,6 +672,7 @@ function App() {
         body: JSON.stringify({
           targetImage: selectedTemplate.gifUrl,  // 使用GIF URL
           sourceImage: uploadedImage,            // 用户照片
+          sourceImage2: isDuoInteraction ? uploadedImage2 : null,  // 第二个人照片（仅Duo Interaction）
         }),
           signal: controller.signal
         })
@@ -1202,37 +1222,106 @@ function App() {
                     </div>
                   </div>
 
-                  <div className="preview-card">
-                    <h3><span className="step-badge">Step 2</span>{uploadedImage ? 'Your Photo' : 'Upload Your Photo'}</h3>
-                    <div
-                      className={`preview-box ${uploadedImage ? '' : 'upload-preview-box'}`}
-                      onDragOver={uploadedImage ? undefined : handleDragOver}
-                      onDrop={uploadedImage ? undefined : handleDrop}
-                    >
+                  {isDuoInteraction ? (
+                    // Duo Interaction: 显示两个上传框
+                    <>
+                      <div className="preview-card">
+                        <h3><span className="step-badge">Step 2</span>{uploadedImage ? 'Person 1 Photo' : 'Upload Person 1 Photo'}</h3>
+                        <div
+                          className={`preview-box ${uploadedImage ? '' : 'upload-preview-box'}`}
+                          onDragOver={uploadedImage ? undefined : handleDragOver}
+                          onDrop={uploadedImage ? undefined : handleDrop}
+                        >
                 <input
                   type="file"
-                  id="file-upload"
+                            id="file-upload-1"
                   accept="image/*"
-                  onChange={handleImageUpload}
+                            onChange={(e) => handleImageUpload(e, false)}
                   style={{ display: 'none' }}
                 />
-                      {uploadedImage ? (
-                        <>
-                          <img src={uploadedImage} alt="Uploaded photo" />
-                          <button 
-                            className="change-photo-btn-small"
-                            onClick={() => document.getElementById('file-upload').click()}
-                          >
-                            Change Photo
-                          </button>
-                        </>
-                      ) : (
-                        <label htmlFor="file-upload" className="upload-button-inline">
-                          📤 Click to Upload<br/>or Drag & Drop
+                          {uploadedImage ? (
+                            <>
+                              <img src={uploadedImage} alt="Person 1 photo" />
+                              <button 
+                                className="change-photo-btn-small"
+                                onClick={() => document.getElementById('file-upload-1').click()}
+                              >
+                                Change Photo
+                              </button>
+                            </>
+                          ) : (
+                            <label htmlFor="file-upload-1" className="upload-button-inline">
+                              📤 Click to Upload<br/>or Drag & Drop
                 </label>
+                          )}
+                  </div>
+                      </div>
+                      <div className="preview-card">
+                        <h3><span className="step-badge">Step 2</span>{uploadedImage2 ? 'Person 2 Photo' : 'Upload Person 2 Photo'}</h3>
+                        <div
+                          className={`preview-box ${uploadedImage2 ? '' : 'upload-preview-box'}`}
+                          onDragOver={uploadedImage2 ? undefined : handleDragOver}
+                          onDrop={uploadedImage2 ? undefined : handleDrop}
+                        >
+                          <input
+                            type="file"
+                            id="file-upload-2"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, true)}
+                            style={{ display: 'none' }}
+                          />
+                          {uploadedImage2 ? (
+                            <>
+                              <img src={uploadedImage2} alt="Person 2 photo" />
+                              <button 
+                                className="change-photo-btn-small"
+                                onClick={() => document.getElementById('file-upload-2').click()}
+                              >
+                                Change Photo
+                              </button>
+                            </>
+                          ) : (
+                            <label htmlFor="file-upload-2" className="upload-button-inline">
+                              📤 Click to Upload<br/>or Drag & Drop
+                            </label>
                 )}
               </div>
-              </div>
+                      </div>
+                    </>
+                  ) : (
+                    // 普通类型: 显示单个上传框
+                    <div className="preview-card">
+                      <h3><span className="step-badge">Step 2</span>{uploadedImage ? 'Your Photo' : 'Upload Your Photo'}</h3>
+                      <div
+                        className={`preview-box ${uploadedImage ? '' : 'upload-preview-box'}`}
+                        onDragOver={uploadedImage ? undefined : handleDragOver}
+                        onDrop={uploadedImage ? undefined : handleDrop}
+                      >
+                        <input
+                          type="file"
+                          id="file-upload"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, false)}
+                          style={{ display: 'none' }}
+                        />
+                        {uploadedImage ? (
+                          <>
+                            <img src={uploadedImage} alt="Uploaded photo" />
+                            <button 
+                              className="change-photo-btn-small"
+                              onClick={() => document.getElementById('file-upload').click()}
+                            >
+                              Change Photo
+                            </button>
+                          </>
+                        ) : (
+                          <label htmlFor="file-upload" className="upload-button-inline">
+                            📤 Click to Upload<br/>or Drag & Drop
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  )}
             </div>
 
                 <div className="result-section">
@@ -1315,13 +1404,17 @@ function App() {
                           className="create-new-btn"
                           onClick={() => {
                             // 如果已有选中的模板和上传的照片，直接生成新视频
-                            if (selectedTemplate && uploadedImage && !isProcessing && !limitReached) {
+                            const hasRequired = isDuoInteraction 
+                              ? (selectedTemplate && uploadedImage && uploadedImage2)
+                              : (selectedTemplate && uploadedImage)
+                            if (hasRequired && !isProcessing && !limitReached) {
                               setResult(null)
                               handleGenerate()
                             } else {
                               // 否则清空状态回到初始页面
                               setSelectedTemplate(null)
                               setUploadedImage(null)
+                              setUploadedImage2(null)
                               setResult(null)
                             }
                           }}
