@@ -2,10 +2,70 @@
 
 const taskStore = new Map()
 
+// CORS白名单（生产环境应限制为实际域名）
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : ['*'] // 开发环境允许所有
+
+// 获取请求来源
+function getOrigin(req) {
+  return req.headers.origin || req.headers.referer || '*'
+}
+
+// 检查CORS
+function isOriginAllowed(origin) {
+  if (ALLOWED_ORIGINS.includes('*')) return true
+  return ALLOWED_ORIGINS.some(allowed => {
+    if (allowed.includes('*')) {
+      const pattern = allowed.replace(/\*/g, '.*')
+      return new RegExp(`^${pattern}$`).test(origin)
+    }
+    return origin === allowed
+  })
+}
+
+// URL验证函数
+function isValidUrl(url) {
+  if (!url || typeof url !== 'string') return false
+  
+  try {
+    const urlObj = new URL(url)
+    // 只允许http和https协议
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      return false
+    }
+    // URL长度限制（防止DoS）
+    if (url.length > 2048) {
+      return false
+    }
+    // 检查是否为数据URL（base64图片）
+    if (url.startsWith('data:image/')) {
+      // 验证数据URL格式
+      const dataUrlPattern = /^data:image\/(jpeg|jpg|png|webp|gif);base64,/
+      if (!dataUrlPattern.test(url)) {
+        return false
+      }
+      // 数据URL大小限制（10MB）
+      const base64Data = url.split(',')[1]
+      if (base64Data && base64Data.length > 10 * 1024 * 1024) {
+        return false
+      }
+      return true
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  const origin = getOrigin(req)
+  const allowedOrigin = isOriginAllowed(origin) ? origin : ALLOWED_ORIGINS[0]
+  
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Max-Age', '86400') // 24小时
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
@@ -18,7 +78,14 @@ export default async function handler(req, res) {
     if (!task && req.query?.vmodelTaskId) {
       console.log(`Task not found in memory, trying VModel API with task ID: ${req.query.vmodelTaskId}`)
       try {
-        const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN || '3RqdT2vcZj3EB3WWJD-3M6O505kUnd6Q3HtUEoagnbJP96lL_c6AXQp8YdxaL82Q6KKpgm4Y3VBY0fYwL5uZKQ=='
+        const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN
+        if (!VMODEL_API_TOKEN) {
+          console.error('VMODEL_API_TOKEN is not configured')
+          return res.status(500).json({
+            success: false,
+            error: 'Server configuration error'
+          })
+        }
         // 根据 VModel 官方文档：https://vmodel.ai/docs/api/guides/tasks.html
         // 正确的查询端点是：GET https://api.vmodel.ai/api/tasks/v1/get/{task_id}
         const VMODEL_API_URL = 'https://api.vmodel.ai/api/tasks/v1'
@@ -96,20 +163,32 @@ export default async function handler(req, res) {
   }
 
   try {
-    const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN || '3RqdT2vcZj3EB3WWJD-3M6O505kUnd6Q3HtUEoagnbJP96lL_c6AXQp8YdxaL82Q6KKpgm4Y3VBY0fYwL5uZKQ=='
+    // 强制要求环境变量，不允许硬编码fallback
+    const VMODEL_API_TOKEN = process.env.VMODEL_API_TOKEN
     const IMGBB_API_KEY = process.env.IMGBB_API_KEY
 
     if (!IMGBB_API_KEY) {
+      console.error('IMGBB_API_KEY is not configured')
       return res.status(500).json({
         success: false,
-        error: 'IMGBB_API_KEY is not configured'
+        error: 'Server configuration error. Please contact support.'
       })
     }
 
     if (!VMODEL_API_TOKEN) {
+      console.error('VMODEL_API_TOKEN is not configured')
       return res.status(500).json({
         success: false,
-        error: 'VMODEL_API_TOKEN is not configured'
+        error: 'Server configuration error. Please contact support.'
+      })
+    }
+    
+    // 验证API密钥格式（基本检查）
+    if (VMODEL_API_TOKEN.length < 10) {
+      console.error('VMODEL_API_TOKEN appears to be invalid')
+      return res.status(500).json({
+        success: false,
+        error: 'Server configuration error'
       })
     }
 
@@ -125,9 +204,7 @@ export default async function handler(req, res) {
 
     const { targetImage, sourceImage, sourceImage2 } = body || {}
 
-    // 检查是否为Duo Interaction（有sourceImage2）
-    const isDuoInteraction = !!sourceImage2
-
+    // 输入验证
     if (!targetImage || !sourceImage) {
       return res.status(400).json({
         success: false,
@@ -135,10 +212,60 @@ export default async function handler(req, res) {
       })
     }
 
-    if (isDuoInteraction && !sourceImage2) {
+    // URL格式验证
+    if (!isValidUrl(targetImage)) {
       return res.status(400).json({
         success: false,
-        error: 'Duo Interaction requires sourceImage2'
+        error: 'Invalid targetImage URL format'
+      })
+    }
+
+    if (!isValidUrl(sourceImage)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid sourceImage URL format'
+      })
+    }
+
+    // 检查是否为Duo Interaction（有sourceImage2）
+    const isDuoInteraction = !!sourceImage2
+
+    if (isDuoInteraction) {
+      if (!sourceImage2) {
+        return res.status(400).json({
+          success: false,
+          error: 'Duo Interaction requires sourceImage2'
+        })
+      }
+      if (!isValidUrl(sourceImage2)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid sourceImage2 URL format'
+        })
+      }
+    }
+    
+    // 防止恶意URL（检查常见攻击模式）
+    const maliciousPatterns = [
+      /localhost/i,
+      /127\.0\.0\.1/,
+      /192\.168\./,
+      /10\./,
+      /172\.(1[6-9]|2[0-9]|3[0-1])\./,
+      /file:\/\//i,
+      /javascript:/i,
+    ]
+    
+    const checkUrl = (url) => {
+      if (url.startsWith('data:')) return true // 数据URL允许
+      const urlLower = url.toLowerCase()
+      return !maliciousPatterns.some(pattern => pattern.test(urlLower))
+    }
+    
+    if (!checkUrl(targetImage) || !checkUrl(sourceImage) || (isDuoInteraction && !checkUrl(sourceImage2))) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid URL: URLs must be publicly accessible'
       })
     }
 
@@ -201,25 +328,55 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
   })
 
   try {
-    // 上传用户照片到 ImgBB
+    // 上传用户照片到 ImgBB（带重试机制）
     let faceImageUrl = sourceImage
     if (sourceImage.startsWith('data:image')) {
       const base64Data = sourceImage.replace(/^data:image\/\w+;base64,/, '')
       const formData = new URLSearchParams()
       formData.append('image', base64Data)
 
-      const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: 'POST',
-        body: formData,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      })
-
-      const uploadData = await uploadResponse.json()
-      if (!uploadData.success || !uploadData.data?.url) {
-        throw new Error(`Failed to upload image: ${uploadData.error?.message || 'Unknown error'}`)
+      // 重试上传（最多3次，指数退避）
+      let uploadResponse = null
+      let uploadData = null
+      const maxUploadRetries = 3
+      
+      for (let retry = 0; retry < maxUploadRetries; retry++) {
+        try {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 30000) // 30秒超时
+          
+          uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+            method: 'POST',
+            body: formData,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            signal: controller.signal
+          })
+          
+          clearTimeout(timeoutId)
+          
+          if (!uploadResponse.ok) {
+            throw new Error(`ImgBB upload failed: ${uploadResponse.status}`)
+          }
+          
+          uploadData = await uploadResponse.json()
+          
+          if (uploadData.success && uploadData.data?.url) {
+            faceImageUrl = uploadData.data.url
+            console.log('Image uploaded to ImgBB:', faceImageUrl)
+            break
+          } else {
+            throw new Error(`ImgBB upload failed: ${uploadData.error?.message || 'Unknown error'}`)
+          }
+        } catch (error) {
+          if (retry === maxUploadRetries - 1) {
+            throw new Error(`Failed to upload image after ${maxUploadRetries} attempts: ${error.message}`)
+          }
+          // 指数退避：1s, 2s, 4s
+          const delay = Math.pow(2, retry) * 1000
+          console.warn(`ImgBB upload attempt ${retry + 1} failed, retrying in ${delay}ms...`, error.message)
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
       }
-      faceImageUrl = uploadData.data.url
-      console.log('Image uploaded to ImgBB:', faceImageUrl)
     }
 
     const elapsedAfterUpload = parseFloat(((Date.now() - startTime) / 1000).toFixed(1))
@@ -238,21 +395,44 @@ async function processFaceSwapVModel(taskId, targetImage, sourceImage, VMODEL_AP
     console.log('Original video URL:', targetImage)
     console.log('Encoded video URL:', encodedVideoUrl)
     
-    const createResponse = await fetch(`${VMODEL_API_URL}/create`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${VMODEL_API_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        version: MODEL_VERSION,
-        input: {
-          target: faceImageUrl,  // 要替换的人脸图片
-          source: encodedVideoUrl,   // 原始视频（已编码）
-          disable_safety_checker: false
+    // 创建 VModel 任务（带重试机制）
+    let createResponse = null
+    const maxCreateRetries = 3
+    
+    for (let retry = 0; retry < maxCreateRetries; retry++) {
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30秒超时
+        
+        createResponse = await fetch(`${VMODEL_API_URL}/create`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${VMODEL_API_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            version: MODEL_VERSION,
+            input: {
+              target: faceImageUrl,  // 要替换的人脸图片
+              source: encodedVideoUrl,   // 原始视频（已编码）
+              disable_safety_checker: false
+            }
+          }),
+          signal: controller.signal
+        })
+        
+        clearTimeout(timeoutId)
+        break // 成功则退出重试循环
+      } catch (error) {
+        if (retry === maxCreateRetries - 1) {
+          throw new Error(`Failed to create VModel task after ${maxCreateRetries} attempts: ${error.message}`)
         }
-      })
-    })
+        // 指数退避
+        const delay = Math.pow(2, retry) * 1000
+        console.warn(`VModel task creation attempt ${retry + 1} failed, retrying in ${delay}ms...`, error.message)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
 
     if (!createResponse.ok) {
       const errorText = await createResponse.text()

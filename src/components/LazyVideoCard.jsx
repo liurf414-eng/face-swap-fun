@@ -41,20 +41,42 @@ function LazyVideoCard({ template, isSelected, onSelect, isFavorited, onToggleFa
     }
   }
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onSelect()
+    }
+  }
+
+  const handleFavoriteKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      e.stopPropagation()
+      handleFavoriteClick(e)
+    }
+  }
+
   return (
     <div
       ref={cardRef}
       className={`template-card ${isSelected ? 'selected' : ''}`}
       onClick={onSelect}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`Select template: ${template.name}`}
+      aria-pressed={isSelected}
     >
       {onToggleFavorite && (
         <button
           className={`favorite-btn ${isFavorited ? 'favorited' : ''}`}
           onClick={handleFavoriteClick}
-          aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+          onKeyDown={handleFavoriteKeyDown}
+          aria-label={isFavorited ? `Remove ${template.name} from favorites` : `Add ${template.name} to favorites`}
+          aria-pressed={isFavorited}
           title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
         >
-          {isFavorited ? '❤️' : '🤍'}
+          <span aria-hidden="true">{isFavorited ? '❤️' : '🤍'}</span>
         </button>
       )}
       {isInView ? (
@@ -66,6 +88,7 @@ function LazyVideoCard({ template, isSelected, onSelect, isFavorited, onToggleFa
           muted
           playsInline
           preload="none"
+          aria-label={`Preview of ${template.name} template`}
           style={{ 
             width: '100%', 
             height: '200px', 

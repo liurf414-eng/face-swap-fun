@@ -78,6 +78,8 @@ function App() {
   const TEMPLATES_PER_PAGE = 6
   const [categoryPages, setCategoryPages] = useState({})
   const touchStartRef = useRef({})
+  const lastRequestRef = useRef(null) // 请求去重
+  const requestDebounceRef = useRef(null) // 防抖
   const remainingGenerations = Math.max(0, MAX_GENERATIONS - generationCount)
   const limitReached = generationCount >= MAX_GENERATIONS
   const isDuoInteraction = selectedTemplate?.category === 'Duo Interaction'
@@ -683,7 +685,13 @@ function App() {
     return `${effectiveElapsedTime.toFixed(1)}s / ...`
   }, [effectiveElapsedTime, activeEstimatedTotalTime])
 
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
+    // 防止重复提交
+    if (isProcessing) {
+      toast.warning('Please wait for the current request to complete')
+      return
+    }
+    
     const isDuo = selectedTemplate?.category === 'Duo Interaction'
     if (!selectedTemplate || !uploadedImage || (isDuo && !uploadedImage2)) {
       toast.warning(isDuo ? '请先选择模板并上传两张照片！' : '请先选择模板并上传照片！')
@@ -699,6 +707,24 @@ function App() {
         toast.info(`您的免费额度已用完（${maxGenerations}次）。感谢您的使用！`, { autoClose: 5000 })
       }
       return
+    }
+    
+    // 请求去重：生成请求唯一标识
+    const requestHash = `${selectedTemplate.id}_${uploadedImage.substring(0, 50)}_${isDuo ? uploadedImage2?.substring(0, 50) : ''}`
+    const now = Date.now()
+    
+    // 检查是否为重复请求（5秒内相同请求）
+    if (lastRequestRef.current && 
+        lastRequestRef.current.hash === requestHash && 
+        now - lastRequestRef.current.timestamp < 5000) {
+      toast.warning('Please wait before submitting the same request again')
+      return
+    }
+    
+    // 更新最后请求记录
+    lastRequestRef.current = {
+      hash: requestHash,
+      timestamp: now
     }
 
     setIsProcessing(true)
@@ -970,7 +996,19 @@ function App() {
       
       toast.error(`生成失败: ${errorMessage}`, { autoClose: 5000 })
     }
-  }
+  }, [
+    isProcessing,
+    selectedTemplate,
+    uploadedImage,
+    uploadedImage2,
+    user,
+    generationCount,
+    MAX_GENERATIONS,
+    isDuoInteraction,
+    isVideoUrl,
+    saveVideoToMyList,
+    getTodayDateString
+  ])
 
   const handleDownload = async () => {
     if (!result) return
