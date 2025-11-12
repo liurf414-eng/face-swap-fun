@@ -1,4 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { toast, ToastContainer } from 'react-toastify'
+import imageCompression from 'browser-image-compression'
+import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
 
 // 默认模板（回退方案）
@@ -154,7 +157,7 @@ function App() {
       console.log('✅ 登录成功:', userInfo)
     } catch (error) {
       console.error('登录失败:', error)
-      alert('Login failed. Please try again.')
+      toast.error('Login failed. Please try again.')
     }
   }
 
@@ -201,18 +204,18 @@ function App() {
                 console.log('✅ 登录成功！欢迎 ' + userInfo.name + '!')
               } catch (error) {
                 console.error('获取用户信息失败:', error)
-                alert('登录成功，但无法获取用户信息')
+                toast.warning('登录成功，但无法获取用户信息')
               }
             }
           }
         }).requestAccessToken({ prompt: 'consent' })
       } catch (error) {
         console.error('OAuth2 错误:', error)
-        alert('登录功能暂时不可用，请稍后重试')
+        toast.error('登录功能暂时不可用，请稍后重试')
       }
     } else {
       console.error('Google API 未加载')
-      alert('Google 登录功能暂时不可用，请刷新页面重试')
+      toast.error('Google 登录功能暂时不可用，请刷新页面重试')
     }
   }
 
@@ -407,20 +410,20 @@ function App() {
     delete touchStartRef.current[category]
   }
 
-  const handleImageUpload = (e, isSecond = false) => {
+  const handleImageUpload = async (e, isSecond = false) => {
     const file = e.target.files[0]
     if (file) {
       // 文件类型验证
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
       if (!allowedTypes.includes(file.type)) {
-        alert('Please upload a valid image file (JPEG, PNG, or WebP)')
+        toast.error('Please upload a valid image file (JPEG, PNG, or WebP)')
         return
       }
       
       // 文件大小验证 (5MB限制)
       const maxSize = 5 * 1024 * 1024 // 5MB
       if (file.size > maxSize) {
-        alert('File size must be less than 5MB')
+        toast.error('File size must be less than 5MB')
         return
       }
       
@@ -428,19 +431,58 @@ function App() {
       const fileName = file.name.toLowerCase()
       const dangerousPatterns = /[<>:"/\\|?*]/
       if (dangerousPatterns.test(fileName)) {
-        alert('Invalid file name. Please rename your file.')
+        toast.error('Invalid file name. Please rename your file.')
         return
       }
-      
+
+      // 显示压缩提示
+      const compressionToast = toast.loading('正在压缩图片...', { autoClose: false })
+
+      try {
+        // 图片压缩选项
+        const options = {
+          maxSizeMB: 1, // 压缩后最大1MB
+          maxWidthOrHeight: 1920, // 最大宽度或高度
+          useWebWorker: true, // 使用Web Worker加速
+          fileType: file.type.includes('png') ? 'image/png' : 'image/jpeg', // 保持原格式
+          initialQuality: 0.8 // 初始质量
+        }
+
+        // 压缩图片
+        const compressedFile = await imageCompression(file, options)
+        
+        // 读取压缩后的图片
       const reader = new FileReader()
       reader.onload = (e) => {
-        if (isSecond) {
-          setUploadedImage2(e.target.result)
-        } else {
+          if (isSecond) {
+            setUploadedImage2(e.target.result)
+          } else {
         setUploadedImage(e.target.result)
+          }
+          
+          // 显示压缩成功提示
+          toast.dismiss(compressionToast)
+          const originalSize = (file.size / 1024 / 1024).toFixed(2)
+          const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2)
+          toast.success(`图片压缩完成：${originalSize}MB → ${compressedSize}MB`, { autoClose: 2000 })
         }
+        reader.readAsDataURL(compressedFile)
+      } catch (error) {
+        console.error('图片压缩失败:', error)
+        toast.dismiss(compressionToast)
+        toast.warning('图片压缩失败，使用原图')
+        
+        // 压缩失败时使用原图
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          if (isSecond) {
+            setUploadedImage2(e.target.result)
+          } else {
+            setUploadedImage(e.target.result)
+          }
       }
       reader.readAsDataURL(file)
+      }
     }
   }
 
@@ -450,7 +492,7 @@ function App() {
     e.stopPropagation()
   }
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault()
     e.stopPropagation()
     
@@ -458,13 +500,57 @@ function App() {
     if (files.length > 0) {
       const file = files[0]
       if (file.type.startsWith('image/')) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          setUploadedImage(e.target.result)
+        // 文件类型验证
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+        if (!allowedTypes.includes(file.type)) {
+          toast.error('Please upload a valid image file (JPEG, PNG, or WebP)')
+          return
         }
-        reader.readAsDataURL(file)
+        
+        // 文件大小验证
+        const maxSize = 5 * 1024 * 1024 // 5MB
+        if (file.size > maxSize) {
+          toast.error('File size must be less than 5MB')
+          return
+        }
+
+        // 显示压缩提示
+        const compressionToast = toast.loading('正在压缩图片...', { autoClose: false })
+
+        try {
+          // 图片压缩选项
+          const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+            fileType: file.type.includes('png') ? 'image/png' : 'image/jpeg',
+            initialQuality: 0.8
+          }
+
+          const compressedFile = await imageCompression(file, options)
+          
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            setUploadedImage(e.target.result)
+            toast.dismiss(compressionToast)
+            const originalSize = (file.size / 1024 / 1024).toFixed(2)
+            const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2)
+            toast.success(`图片压缩完成：${originalSize}MB → ${compressedSize}MB`, { autoClose: 2000 })
+          }
+          reader.readAsDataURL(compressedFile)
+        } catch (error) {
+          console.error('图片压缩失败:', error)
+          toast.dismiss(compressionToast)
+          toast.warning('图片压缩失败，使用原图')
+          
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            setUploadedImage(e.target.result)
+          }
+          reader.readAsDataURL(file)
+        }
       } else {
-        alert('Please upload an image file')
+        toast.error('Please upload an image file')
       }
     }
   }
@@ -630,7 +716,7 @@ function App() {
   const handleGenerate = async () => {
     const isDuo = selectedTemplate?.category === 'Duo Interaction'
     if (!selectedTemplate || !uploadedImage || (isDuo && !uploadedImage2)) {
-      alert(isDuo ? '请先选择模板并上传两张照片！' : '请先选择模板并上传照片！')
+      toast.warning(isDuo ? '请先选择模板并上传两张照片！' : '请先选择模板并上传照片！')
       return
     }
 
@@ -638,9 +724,9 @@ function App() {
     const maxGenerations = user ? 6 : 3
     if (generationCount >= maxGenerations) {
       if (!user) {
-        alert(`⚠️ 免费额度已用完（${maxGenerations}次）\n\n如需继续使用，请登录账号获得更多额度！`)
+        toast.warning(`免费额度已用完（${maxGenerations}次）。如需继续使用，请登录账号获得更多额度！`, { autoClose: 5000 })
       } else {
-        alert(`⚠️ 您的免费额度已用完（${maxGenerations}次）\n\n感谢您的使用！`)
+        toast.info(`您的免费额度已用完（${maxGenerations}次）。感谢您的使用！`, { autoClose: 5000 })
       }
       return
     }
@@ -852,7 +938,7 @@ function App() {
             errorMessage = '无法连接到服务器，请检查网络连接或稍后重试'
           }
           
-            alert(`❌ 生成失败: ${errorMessage}`)
+            toast.error(`生成失败: ${errorMessage}`, { autoClose: 5000 })
           }
         }
 
@@ -912,7 +998,7 @@ function App() {
         errorMessage = '无法连接到服务器，请检查网络连接或稍后重试'
       }
       
-      alert(`❌ 生成失败: ${errorMessage}`)
+      toast.error(`生成失败: ${errorMessage}`, { autoClose: 5000 })
     }
   }
 
@@ -940,7 +1026,7 @@ function App() {
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error('下载失败:', error)
-      alert('下载失败，请稍后重试')
+      toast.error('下载失败，请稍后重试')
     }
   }
 
@@ -970,7 +1056,7 @@ function App() {
       window.URL.revokeObjectURL(url)
     } catch (error) {
       console.error('下载失败:', error)
-      alert('下载失败，请稍后重试')
+      toast.error('下载失败，请稍后重试')
     }
   }
 
@@ -1162,33 +1248,13 @@ function App() {
                     onTouchEnd={(event) => handleTouchEnd(category, event)}
                   >
                     {visibleTemplates.map((template) => (
-                <div
-                  key={template.id}
-                  className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedTemplate(template)}
-                >
-                  <video
-                    src={template.gifUrl}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                          preload="none"
-                          loading="lazy"
-                    style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-                          onError={(e) => {
-                            console.warn('Video failed to load:', template.name)
-                            e.target.style.display = 'none'
-                          }}
-                          onLoadStart={(e) => {
-                            e.target.style.opacity = '0.7'
-                          }}
-                          onCanPlay={(e) => {
-                            e.target.style.opacity = '1'
-                          }}
-                        />
-                </div>
-              ))}
+                      <LazyVideoCard
+                        key={template.id}
+                        template={template}
+                        isSelected={selectedTemplate?.id === template.id}
+                        onSelect={() => setSelectedTemplate(template)}
+                      />
+                    ))}
             </div>
                 </div>
               )
@@ -1212,15 +1278,15 @@ function App() {
                   <div className="preview-card">
                     <h3><span className="step-badge">Step 1</span>Selected Template</h3>
                     <div className="preview-box">
-                      <video
+                  <video
                         src={selectedTemplate.gifUrl}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                      />
-                    </div>
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
                   </div>
+                </div>
 
                   {isDuoInteraction ? (
                     // Duo Interaction: 显示两个上传框
@@ -1551,6 +1617,106 @@ function App() {
       </footer>
       </div>
       </div>
+      
+      {/* Toast 通知容器 */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+    </div>
+  )
+}
+
+// 懒加载视频卡片组件
+function LazyVideoCard({ template, isSelected, onSelect }) {
+  const [isInView, setIsInView] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
+  const videoRef = useRef(null)
+  const cardRef = useRef(null)
+
+  // 使用 Intersection Observer 检测是否进入视口
+  useEffect(() => {
+    const currentCard = cardRef.current
+    if (!currentCard) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true)
+            observer.disconnect()
+          }
+        })
+      },
+      {
+        rootMargin: '50px', // 提前50px开始加载
+        threshold: 0.1
+      }
+    )
+
+    observer.observe(currentCard)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  return (
+    <div
+      ref={cardRef}
+      className={`template-card ${isSelected ? 'selected' : ''}`}
+      onClick={onSelect}
+    >
+      {isInView ? (
+        <video
+          ref={videoRef}
+          src={template.gifUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="none"
+          style={{ 
+            width: '100%', 
+            height: '200px', 
+            objectFit: 'cover',
+            opacity: isLoaded ? 1 : 0.7,
+            transition: 'opacity 0.3s ease'
+          }}
+          onError={(e) => {
+            console.warn('Video failed to load:', template.name)
+            e.target.style.display = 'none'
+          }}
+          onLoadStart={() => {
+            setIsLoaded(false)
+          }}
+          onCanPlay={() => {
+            setIsLoaded(true)
+          }}
+        />
+      ) : (
+        <div 
+          style={{ 
+            width: '100%', 
+            height: '200px', 
+            background: 'var(--bg-accent)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-muted)'
+          }}
+        >
+          <div className="loading-spinner" style={{ width: '24px', height: '24px' }}></div>
+        </div>
+      )}
     </div>
   )
 }
