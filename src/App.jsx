@@ -473,18 +473,29 @@ function App() {
   useEffect(() => {
     if (!selectedTemplate) return
 
-    setPredictedTotalTime(null)
-    const video = document.createElement('video')
-    video.preload = 'metadata'
-    video.crossOrigin = 'anonymous'
-    video.src = selectedTemplate.gifUrl
+    // 优先从模板数据中获取duration
+    if (selectedTemplate.duration && typeof selectedTemplate.duration === 'number') {
+      const predicted = parseFloat((selectedTemplate.duration * 15.4).toFixed(2))
+      setPredictedTotalTime(predicted)
+      setEstimatedTotalTime(predicted)
+      predictedCacheRef.current[selectedTemplate.id] = predicted
+      return
+    }
 
+    // 如果模板数据中没有duration，尝试从缓存获取
     const cached = predictedCacheRef.current[selectedTemplate.id]
     if (cached) {
       setPredictedTotalTime(cached)
       setEstimatedTotalTime(cached)
       return
     }
+
+    // 最后尝试从video元素获取（可能因CORS失败）
+    setPredictedTotalTime(null)
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.crossOrigin = 'anonymous'
+    video.src = selectedTemplate.gifUrl
 
     const onLoadedMetadata = () => {
       if (!isNaN(video.duration) && video.duration > 0) {
@@ -512,15 +523,6 @@ function App() {
       video.removeEventListener('error', onError)
     }
   }, [selectedTemplate])
-
-  const onLoadedMetadata = () => {
-    if (!isNaN(video.duration) && video.duration > 0) {
-      const duration = video.duration
-      const predicted = parseFloat((duration * 15.4).toFixed(2))
-      setPredictedTotalTime(predicted)
-      setEstimatedTotalTime(predicted)
-    }
-  }
 
   useEffect(() => {
     let timer
@@ -558,13 +560,29 @@ function App() {
 
   useEffect(() => {
     let scriptedTimer
-    if (isProcessing) {
+    if (isProcessing && predictedTotalTime && predictedTotalTime > 0) {
+      // 基于预测时间计算进度增量
+      // 如果预测时间为10s，每0.4秒+2.5% = 25% / 10
+      // 如果预测时间为20s，每0.4秒+1.25% = 25% / 20
+      // 公式：每0.4秒增加 = 25% / 预测时间
+      const incrementPerInterval = 25 / predictedTotalTime
+      
       scriptedTimer = setInterval(() => {
         setScriptedProgress(prev => {
           if (result) return 100
           if (prev >= 98.9) return 99
-          const increment = predictedTotalTime && predictedTotalTime > 0 ? (25 / predictedTotalTime) : 1.5
-          const next = prev + increment
+          const next = prev + incrementPerInterval
+          if (next >= 98.9) return 98.9
+          return parseFloat(next.toFixed(1))
+        })
+      }, 400)
+    } else if (isProcessing) {
+      // 如果没有预测时间，使用默认增量
+      scriptedTimer = setInterval(() => {
+        setScriptedProgress(prev => {
+          if (result) return 100
+          if (prev >= 98.9) return 99
+          const next = prev + 1.5
           if (next >= 98.9) return 98.9
           return parseFloat(next.toFixed(1))
         })
