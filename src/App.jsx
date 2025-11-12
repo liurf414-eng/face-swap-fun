@@ -616,8 +616,18 @@ function App() {
     setProcessingStatus('Processing your video...')
 
     try {
-      // 提交换脸任务
-      const response = await fetch('/api/face-swap', {
+      // 检查网络状态
+      if (!navigator.onLine) {
+        throw new Error('网络连接已断开，请检查您的网络连接')
+      }
+
+      // 提交换脸任务（添加超时控制）
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30秒超时
+
+      let response
+      try {
+        response = await fetch('/api/face-swap', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -626,7 +636,20 @@ function App() {
           targetImage: selectedTemplate.gifUrl,  // 使用GIF URL
           sourceImage: uploadedImage,            // 用户照片
         }),
-      })
+          signal: controller.signal
+        })
+      } catch (fetchError) {
+        clearTimeout(timeoutId)
+        if (fetchError.name === 'AbortError') {
+          throw new Error('请求超时，请检查网络连接或稍后重试')
+        } else if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('fetch failed')) {
+          throw new Error('无法连接到服务器，请检查网络连接或稍后重试')
+        } else {
+          throw new Error(`网络错误: ${fetchError.message}`)
+        }
+      }
+      
+      clearTimeout(timeoutId)
 
       // 检查响应状态
       if (!response.ok) {
@@ -651,11 +674,71 @@ function App() {
       if (data.taskId) {
         console.log('Task created:', data.taskId)
       const taskId = data.taskId
+        let pollAttempts = 0
+        const MAX_POLL_ATTEMPTS = 300 // 最多轮询5分钟（300次 * 1秒）
+        let consecutiveErrors = 0
+        const MAX_CONSECUTIVE_ERRORS = 5 // 连续5次错误后停止
 
         // 轮询任务状态
         const pollTask = async () => {
           try {
-            const statusResponse = await fetch(`/api/face-swap?taskId=${taskId}`)
+            pollAttempts++
+            
+            // 检查最大轮询次数
+            if (pollAttempts > MAX_POLL_ATTEMPTS) {
+              throw new Error('处理超时，请稍后重试')
+            }
+
+            // 检查网络状态
+            if (!navigator.onLine) {
+              consecutiveErrors++
+              if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                throw new Error('网络连接已断开，请检查您的网络连接')
+              }
+              // 网络断开时，延长重试间隔
+              setTimeout(pollTask, 5000)
+              return
+            }
+
+            const statusController = new AbortController()
+            const statusTimeoutId = setTimeout(() => statusController.abort(), 10000) // 10秒超时
+
+            let statusResponse
+            try {
+              statusResponse = await fetch(`/api/face-swap?taskId=${taskId}`, {
+                signal: statusController.signal
+              })
+            } catch (fetchError) {
+              clearTimeout(statusTimeoutId)
+              consecutiveErrors++
+              
+              // 如果是网络错误，允许重试
+              if (fetchError.name === 'AbortError' || 
+                  fetchError.message.includes('Failed to fetch') || 
+                  fetchError.message.includes('fetch failed')) {
+                if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                  throw new Error('无法连接到服务器，请检查网络连接或稍后重试')
+                }
+                // 网络错误时，延长重试间隔
+                console.warn(`轮询错误 (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}):`, fetchError.message)
+                setTimeout(pollTask, 3000)
+                return
+              } else {
+                throw fetchError
+              }
+            }
+            
+            clearTimeout(statusTimeoutId)
+            
+            // 成功请求后重置连续错误计数
+            consecutiveErrors = 0
+            
+            // 检查响应状态
+            if (!statusResponse.ok) {
+              const errorText = await statusResponse.text()
+              throw new Error(`服务器错误 (${statusResponse.status}): ${errorText.substring(0, 100)}`)
+            }
+            
             const statusData = await statusResponse.json()
 
             if (!statusData.success) {
@@ -724,7 +807,14 @@ function App() {
           setProcessingStartTime(null)
           setClientElapsedTime(0)
           setScriptedProgress(5.0)
-            alert(`❌ Face swap failed: ${error.message}`)
+          
+          // 提供更友好的错误提示
+          let errorMessage = error.message || '未知错误'
+          if (errorMessage.includes('fetch failed') || errorMessage.includes('Failed to fetch')) {
+            errorMessage = '无法连接到服务器，请检查网络连接或稍后重试'
+          }
+          
+            alert(`❌ 生成失败: ${errorMessage}`)
           }
         }
 
@@ -777,7 +867,14 @@ function App() {
       setProcessingStartTime(null)
       setClientElapsedTime(0)
       setScriptedProgress(5.0)
-      alert(`❌ Face swap failed: ${error.message}`)
+      
+      // 提供更友好的错误提示
+      let errorMessage = error.message || '未知错误'
+      if (errorMessage.includes('fetch failed') || errorMessage.includes('Failed to fetch')) {
+        errorMessage = '无法连接到服务器，请检查网络连接或稍后重试'
+      }
+      
+      alert(`❌ 生成失败: ${errorMessage}`)
     }
   }
 
