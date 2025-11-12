@@ -1,7 +1,9 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 
 function ResultDisplay({ result, selectedTemplate, onDownload, onCreateNew, isDuoInteraction, hasRequiredImages, isProcessing, limitReached }) {
   const videoRef = useRef(null)
+  const [shareLink, setShareLink] = useState('')
 
   const isVideoUrl = (url) => {
     if (!url) return false
@@ -20,7 +22,57 @@ function ResultDisplay({ result, selectedTemplate, onDownload, onCreateNew, isDu
         console.warn('视频自动播放被阻止:', err)
       })
     }
+    // 生成分享链接
+    if (result && result.url) {
+      setShareLink(result.url)
+    }
   }, [result])
+
+  const handleShare = async () => {
+    if (!shareLink) {
+      toast.error('No video URL to share')
+      return
+    }
+
+    // 尝试使用 Web Share API（如果支持）
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Check out my face swap video!',
+          text: 'I created an amazing face swap video!',
+          url: shareLink
+        })
+        toast.success('Shared successfully!')
+        return
+      } catch (err) {
+        // 用户取消分享或出错，继续使用复制功能
+        if (err.name !== 'AbortError') {
+          console.log('Web Share API failed:', err)
+        }
+      }
+    }
+
+    // 回退到复制链接到剪贴板
+    try {
+      await navigator.clipboard.writeText(shareLink)
+      toast.success('Link copied to clipboard!')
+    } catch (err) {
+      // 如果 clipboard API 不可用，使用传统方法
+      const textArea = document.createElement('textarea')
+      textArea.value = shareLink
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.select()
+      try {
+        document.execCommand('copy')
+        toast.success('Link copied to clipboard!')
+      } catch (err) {
+        toast.error('Failed to copy link. Please copy manually.')
+      }
+      document.body.removeChild(textArea)
+    }
+  }
 
   return (
     <div className="result-card-inline">
@@ -53,6 +105,9 @@ function ResultDisplay({ result, selectedTemplate, onDownload, onCreateNew, isDu
       <div className="result-actions">
         <button className="download-button" onClick={onDownload}>
           📥 Download Video
+        </button>
+        <button className="share-button" onClick={handleShare}>
+          🔗 Share
         </button>
         <button 
           className="create-new-btn"

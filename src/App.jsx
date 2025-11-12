@@ -73,6 +73,8 @@ function App() {
   const [showMyVideos, setShowMyVideos] = useState(false)  // 新增：显示我的视频
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
   const [currentPage, setCurrentPage] = useState('home')  // 新增：当前页面
+  const [favoriteTemplates, setFavoriteTemplates] = useState([])  // 新增：收藏的模板ID列表
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)  // 新增：是否只显示收藏
   const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
   const TEMPLATES_PER_PAGE = 6
   const [categoryPages, setCategoryPages] = useState({})
@@ -260,6 +262,22 @@ function App() {
       const savedVideos = localStorage.getItem('myVideos') || '[]'
       setMyVideos(JSON.parse(savedVideos))
     }
+    // 加载收藏的模板
+    const savedFavorites = localStorage.getItem('favoriteTemplates') || '[]'
+    setFavoriteTemplates(JSON.parse(savedFavorites))
+  }, [])
+
+  // 切换模板收藏状态
+  const handleToggleFavorite = useCallback((templateId) => {
+    setFavoriteTemplates(prev => {
+      const isFavorited = prev.includes(templateId)
+      const updated = isFavorited
+        ? prev.filter(id => id !== templateId)
+        : [...prev, templateId]
+      localStorage.setItem('favoriteTemplates', JSON.stringify(updated))
+      toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites')
+      return updated
+    })
   }, [])
 
   // 初始化 Google 登录
@@ -1099,6 +1117,8 @@ function App() {
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
               templatesPerPage={TEMPLATES_PER_PAGE}
+              favoriteTemplates={favoriteTemplates}
+              onToggleFavorite={handleToggleFavorite}
             />
           </section>
 

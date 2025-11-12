@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 // 懒加载视频卡片组件
-function LazyVideoCard({ template, isSelected, onSelect }) {
+function LazyVideoCard({ template, isSelected, onSelect, isFavorited, onToggleFavorite }) {
   const [isInView, setIsInView] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const videoRef = useRef(null)
@@ -34,12 +34,29 @@ function LazyVideoCard({ template, isSelected, onSelect }) {
     }
   }, [])
 
+  const handleFavoriteClick = (e) => {
+    e.stopPropagation() // 阻止触发模板选择
+    if (onToggleFavorite) {
+      onToggleFavorite(template.id)
+    }
+  }
+
   return (
     <div
       ref={cardRef}
       className={`template-card ${isSelected ? 'selected' : ''}`}
       onClick={onSelect}
     >
+      {onToggleFavorite && (
+        <button
+          className={`favorite-btn ${isFavorited ? 'favorited' : ''}`}
+          onClick={handleFavoriteClick}
+          aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+          title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          {isFavorited ? '❤️' : '🤍'}
+        </button>
+      )}
       {isInView ? (
         <video
           ref={videoRef}

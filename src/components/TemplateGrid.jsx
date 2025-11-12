@@ -8,7 +8,9 @@ function TemplateGrid({
   onCategoryPageChange,
   onTouchStart,
   onTouchEnd,
-  templatesPerPage
+  templatesPerPage,
+  favoriteTemplates,
+  onToggleFavorite
 }) {
   return (
     <>
@@ -55,6 +57,8 @@ function TemplateGrid({
                   template={template}
                   isSelected={selectedTemplate?.id === template.id}
                   onSelect={() => onSelectTemplate(template)}
+                  isFavorited={favoriteTemplates.includes(template.id)}
+                  onToggleFavorite={onToggleFavorite}
                 />
               ))}
             </div>
