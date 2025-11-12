@@ -78,6 +78,12 @@ body {
   font-weight: 400;
   line-height: 1.6;
   color: var(--text-primary);
+  /* 字体渲染优化 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* 性能优化 */
+  will-change: scroll-position;
 }
 
 /* 粒子背景已移除 - 深色主题不需要 */
@@ -2404,6 +2410,32 @@ body {
   .prediction-info {
     font-size: 0.9rem;
   }
+}
+
+/* ============ 可访问性辅助样式 ============ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 键盘导航焦点样式 */
+.template-card:focus,
+.template-card:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 
 /* ============ 错误边界样式 ============ */

@@ -106,11 +106,62 @@ function App() {
     'Style Makeovers': 'Style Makeovers'
   }
 
-  // 加载模板数据
+  // 加载模板数据（带缓存和错误重试）
   useEffect(() => {
-    fetch('/templates.json')
-      .then(res => res.json())
-      .then(data => {
+    const loadTemplates = async () => {
+      try {
+        // 尝试从缓存读取
+        const cachedTemplates = localStorage.getItem('templates_cache')
+        const cacheTimestamp = localStorage.getItem('templates_cache_timestamp')
+        const cacheExpiry = 24 * 60 * 60 * 1000 // 24小时
+        
+        if (cachedTemplates && cacheTimestamp && Date.now() - parseInt(cacheTimestamp) < cacheExpiry) {
+          try {
+            const cachedData = JSON.parse(cachedTemplates)
+            const mappedData = cachedData.map(template => ({
+              ...template,
+              category: categoryMap[template.category] || template.category
+            }))
+            setTemplates(mappedData)
+            setIsLoading(false)
+            console.log('✅ 从缓存加载模板:', mappedData.length, '个')
+            
+            // 后台更新缓存
+            fetch('/templates.json')
+              .then(res => res.json())
+              .then(data => {
+                localStorage.setItem('templates_cache', JSON.stringify(data))
+                localStorage.setItem('templates_cache_timestamp', Date.now().toString())
+              })
+              .catch(() => {
+                // 静默失败，使用缓存数据
+              })
+            return
+          } catch (e) {
+            // 缓存数据损坏，清除缓存
+            localStorage.removeItem('templates_cache')
+            localStorage.removeItem('templates_cache_timestamp')
+          }
+        }
+        
+        // 从服务器加载
+        const res = await fetch('/templates.json', {
+          cache: 'default',
+          headers: {
+            'Cache-Control': 'max-age=86400' // 24小时缓存
+          }
+        })
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+        
+        const data = await res.json()
+        
+        // 保存到缓存
+        localStorage.setItem('templates_cache', JSON.stringify(data))
+        localStorage.setItem('templates_cache_timestamp', Date.now().toString())
+        
         // 映射分类名称
         const mappedData = data.map(template => ({
           ...template,
@@ -119,12 +170,34 @@ function App() {
         setTemplates(mappedData)
         setIsLoading(false)
         console.log('✅ 成功加载模板:', mappedData.length, '个')
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('Failed to load templates:', err)
+        
+        // 尝试使用缓存（即使过期）
+        const cachedTemplates = localStorage.getItem('templates_cache')
+        if (cachedTemplates) {
+          try {
+            const cachedData = JSON.parse(cachedTemplates)
+            const mappedData = cachedData.map(template => ({
+              ...template,
+              category: categoryMap[template.category] || template.category
+            }))
+            setTemplates(mappedData)
+            setIsLoading(false)
+            console.log('⚠️ 使用过期缓存数据')
+            return
+          } catch (e) {
+            // 缓存数据损坏
+          }
+        }
+        
+        // 使用默认模板
         setTemplates(defaultTemplates)
         setIsLoading(false)
-      })
+      }
+    }
+    
+    loadTemplates()
   }, [])
 
   // 监听网络状态
@@ -1038,9 +1111,9 @@ function App() {
       <main className="main">
         <div className={`content-wrapper ${selectedTemplate ? 'template-selected' : ''}`}>
           {/* 左侧：模板选择区 */}
-          <section className="templates-section">
+          <section className="templates-section" aria-label="Video template selection">
             <div className="section-header">
-              <h2>Choose Your Favorite Template</h2>
+              <h2 id="templates-heading">Choose Your Favorite Template</h2>
               {selectedTemplate && (
                 <button 
                   className="clear-selection-btn"
@@ -1049,6 +1122,7 @@ function App() {
                     setUploadedImage(null)
                     setResult(null)
                   }}
+                  aria-label="Clear selected template"
                   title="Clear selection"
                 >
                   ✕ Clear Selection
@@ -1063,10 +1137,14 @@ function App() {
                   placeholder="🔍 Search templates"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search templates"
+                  aria-describedby="search-description"
                 />
+                <span id="search-description" className="sr-only">Search for video templates by name or category</span>
                 {searchQuery && (
                   <button
                     className="clear-search"
+                    aria-label="Clear search"
                     onClick={() => setSearchQuery('')}
                     title="Clear search"
                   >
@@ -1122,7 +1200,7 @@ function App() {
           </section>
 
           {/* 右侧：操作区 */}
-          <aside className="action-panel">
+          <aside className="action-panel" aria-label="Video creation actions">
             {!selectedTemplate ? (
               /* 初始状态：欢迎提示 */
               <div className="welcome-panel">
@@ -1211,10 +1289,15 @@ function App() {
               <button
                 className="generate-button"
                 onClick={handleGenerate}
-                        disabled={!canGenerate}
+                disabled={!canGenerate}
+                aria-label={generateButtonLabel}
+                aria-describedby={limitReached ? "limit-warning" : undefined}
               >
-                        {generateButtonLabel}
+                {generateButtonLabel}
               </button>
+              {limitReached && (
+                <span id="limit-warning" className="sr-only">Daily generation limit reached. Please log in for more generations.</span>
+              )}
                       <div className="prediction-info">{timeDisplay}</div>
                     </div>
                   )}
