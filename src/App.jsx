@@ -1075,7 +1075,7 @@ function App() {
       {/* 顶部导航栏 */}
       <div className="top-navbar">
         <div className="top-navbar-logo">
-          🎭 FaceAI Meme
+          🎭 FaceAI Hub
         </div>
         <div className="top-navbar-actions">
           {user ? (
@@ -1442,7 +1442,7 @@ function App() {
       )}
 
       <footer className="footer">
-          <p>© 2025 FaceAI Meme - AI-Powered Face Swap Application</p>
+          <p>© 2025 FaceAI Hub - AI-Powered Face Swap Application</p>
       </footer>
       </div>
       </div>
