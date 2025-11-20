@@ -11,6 +11,9 @@
     "scan-templates": "node scripts/upload-templates.js scan",
     "setup-storage": "node scripts/setup-storage.js list"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
