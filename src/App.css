@@ -65,10 +65,25 @@
 }
 
 /* ============ 全局样式 ============ */
+/* 移动端优化 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+}
+
+/* 移动端触摸优化 */
+button, a, input, textarea, select {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* 优化触摸响应 */
+}
+
+/* 移动端字体渲染优化 */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {

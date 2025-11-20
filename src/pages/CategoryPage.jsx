@@ -167,10 +167,15 @@ function CategoryPage() {
         <meta property="og:description" content={seoConfig.description} />
         <meta property="og:url" content={`https://faceaihub.com/templates/${categorySlug}`} />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         
         {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={seoConfig.h1} />
         <meta name="twitter:description" content={seoConfig.description} />
+        <meta name="twitter:image" content="https://faceaihub.com/og-image.jpg" />
         
         {/* Structured Data */}
         <script type="application/ld+json">

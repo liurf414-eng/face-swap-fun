@@ -15,6 +15,13 @@ function NoWatermarkPage() {
         <meta property="og:description" content="Create face swap videos with no watermark. Download and share without any branding." />
         <meta property="og:url" content="https://faceaihub.com/no-watermark-face-swap" />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://faceaihub.com/og-image.jpg" />
       </Helmet>
 
       <div className="no-watermark-page">

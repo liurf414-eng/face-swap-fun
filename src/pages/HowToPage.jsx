@@ -66,6 +66,13 @@ function HowToPage() {
         <meta property="og:description" content="Learn how to create face swap videos online for free. Complete tutorial with tips and tricks." />
         <meta property="og:url" content="https://faceaihub.com/how-to-create-face-swap-video" />
         <meta property="og:type" content="article" />
+        <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://faceaihub.com/og-image.jpg" />
         
         {/* Structured Data */}
         <script type="application/ld+json">
