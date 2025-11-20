@@ -399,14 +399,48 @@ function App() {
     }
   }, [])
 
-  // 过滤模板（使用useMemo优化性能）
+  // 过滤模板（使用useMemo优化性能）- 支持SEO关键词搜索
   const filteredTemplates = useMemo(() => {
     if (!searchQuery) return templates
-    const query = searchQuery.toLowerCase()
-    return templates.filter(template => 
+    const query = searchQuery.toLowerCase().trim()
+    
+    // 基础搜索：名称和分类
+    const basicMatch = templates.filter(template => 
       template.name.toLowerCase().includes(query) ||
-           template.category.toLowerCase().includes(query)
+      template.category.toLowerCase().includes(query)
     )
+    
+    // 如果基础匹配有结果，优先返回
+    if (basicMatch.length > 0) return basicMatch
+    
+    // 扩展搜索：SEO关键词匹配（需要动态导入）
+    const queryWords = query.split(/\s+/).filter(word => word.length > 0)
+    return templates.filter(template => {
+      // 尝试从文件名提取关键词
+      const fileName = template.fileName || ''
+      const fileNameLower = fileName.replace(/\.mp4$/, '').replace(/[-_]/g, ' ').toLowerCase()
+      
+      // 检查文件名关键词
+      const fileNameMatch = queryWords.some(word => fileNameLower.includes(word))
+      
+      // 检查分类相关的常见关键词
+      const categoryKeywords = {
+        'Emotional Reactions': ['emotional', 'reaction', 'reactions', 'emotion', 'feelings', 'surprised', 'laughing', 'crying', 'shocked'],
+        'Burlesque Dance': ['dance', 'dancing', 'tiktok', 'hip', 'hop', 'trending', 'choreography'],
+        'Duo Interaction': ['couple', 'two', 'person', 'duo', 'pair', 'friend', 'friends', 'relationship'],
+        'Magic Effects': ['magic', 'magical', 'fantasy', 'supernatural', 'wizard', 'spell', 'transformation'],
+        'Sci-Fi Effects': ['sci-fi', 'scifi', 'futuristic', 'cyberpunk', 'future', 'tech', 'space', 'sci'],
+        'Slapstick Comedy': ['comedy', 'funny', 'hilarious', 'goofy', 'silly', 'prank', 'humor'],
+        'Style Makeovers': ['style', 'makeover', 'fashion', 'outfit', 'transform', 'transformation', 'look']
+      }
+      
+      const categoryKeyList = categoryKeywords[template.category] || []
+      const categoryKeywordMatch = queryWords.some(word => 
+        categoryKeyList.some(keyword => keyword.includes(word))
+      )
+      
+      return fileNameMatch || categoryKeywordMatch
+    })
   }, [templates, searchQuery])
 
   const groupedTemplates = useMemo(() => {
@@ -1138,7 +1172,55 @@ function App() {
 
       {/* 主内容区域 */}
       <div className="main-content">
-        <h1 className="main-title">Create Funny Memes with AI Face Swap</h1>
+        {/* Hero Section */}
+        {currentPage === 'home' && !selectedTemplate && (
+          <div className="hero-section">
+            <h1 className="hero-title">AI Face Swap Video Generator</h1>
+            <p className="hero-subtitle">Upload Photo Replace Face Video • AI Meme Video Maker • Free Online Tool</p>
+            <p className="hero-description">Create hilarious meme videos instantly with 30+ free templates. Perfect for TikTok, Instagram & social media.</p>
+            <div className="hero-cta">
+              <button 
+                className="hero-btn-primary"
+                onClick={() => {
+                  document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Start Creating Free
+              </button>
+              <button 
+                className="hero-btn-secondary"
+                onClick={() => {
+                  document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Browse Templates
+              </button>
+            </div>
+            <div className="hero-features">
+              <div className="hero-feature-item">
+                <span className="hero-feature-icon">🤖</span>
+                <span>AI Powered</span>
+              </div>
+              <div className="hero-feature-item">
+                <span className="hero-feature-icon">⚡</span>
+                <span>Instant Generation</span>
+              </div>
+              <div className="hero-feature-item">
+                <span className="hero-feature-icon">🎬</span>
+                <span>30+ Templates</span>
+              </div>
+              <div className="hero-feature-item">
+                <span className="hero-feature-icon">💧</span>
+                <span>No Watermark</span>
+              </div>
+              <div className="hero-feature-item">
+                <span className="hero-feature-icon">🆓</span>
+                <span>Free Online</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {!isOnline && (
           <div className="offline-notice">
             ⚠️ You're offline. Some features may not work properly.
@@ -1149,9 +1231,9 @@ function App() {
       <main className="main">
         <div className={`content-wrapper ${selectedTemplate ? 'template-selected' : ''}`}>
           {/* 左侧：模板选择区 */}
-          <section className="templates-section" aria-label="Video template selection">
+          <section className="templates-section" aria-label="Short video template selection">
             <div className="section-header">
-              <h2 id="templates-heading">Choose Your Favorite Template</h2>
+              <h2 id="templates-heading">Browse AI Face Swap Video Templates</h2>
               {selectedTemplate && (
                 <button 
                   className="clear-selection-btn"
@@ -1315,7 +1397,7 @@ function App() {
                     />
                   ) : (
                     <div className="action-card-inline">
-                      <h3><span className="step-badge">Step 3</span>Generate Your Video</h3>
+                      <h3><span className="step-badge">Step 3</span>Generate Your Short Video</h3>
               <div className="usage-info">
                 <span className="usage-text">
                           Remaining today: <strong>{remainingGenerations}</strong> / {MAX_GENERATIONS}
@@ -1336,7 +1418,8 @@ function App() {
               {limitReached && (
                 <span id="limit-warning" className="sr-only">Daily generation limit reached. Please log in for more generations.</span>
               )}
-                      <div className="prediction-info">{timeDisplay}</div>
+                      <div className="prediction-info">Estimated time: {timeDisplay}</div>
+                      <p className="short-video-note">✨ Upload your photo and create AI face swap videos instantly</p>
                     </div>
                   )}
                 </div>

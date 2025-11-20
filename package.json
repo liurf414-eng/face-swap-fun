@@ -26,6 +26,8 @@
     "node-fetch": "^3.3.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-helmet-async": "^2.0.5",
+    "react-router-dom": "^7.9.6",
     "react-toastify": "^11.0.5",
     "vite": "^7.1.9"
   }
