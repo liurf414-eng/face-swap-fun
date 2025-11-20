@@ -87,6 +87,8 @@ const ResultDisplay = memo(function ResultDisplay({ result, selectedTemplate, on
             muted
             playsInline
             controls
+            aria-label={`Generated face swap video result${selectedTemplate ? ` using ${selectedTemplate.name} template` : ''}`}
+            title={`Face swap video result${selectedTemplate ? ` - ${selectedTemplate.name}` : ''}`}
             onLoadedData={() => {
               if (videoRef.current) {
                 videoRef.current.play().catch(e => console.log('Autoplay prevented:', e))
@@ -99,7 +101,11 @@ const ResultDisplay = memo(function ResultDisplay({ result, selectedTemplate, on
             }}
           />
         ) : (
-          <img src={result.url} alt="Generated result" />
+          <img 
+            src={result.url} 
+            alt={`Generated face swap result${selectedTemplate ? ` using ${selectedTemplate.name} template` : ''}`}
+            title={`Face swap result${selectedTemplate ? ` - ${selectedTemplate.name}` : ''}`}
+          />
         )}
       </div>
       <div className="result-actions">

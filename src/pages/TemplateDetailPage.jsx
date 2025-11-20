@@ -384,6 +384,32 @@ function TemplateDetailPage() {
     "uploadDate": new Date().toISOString()
   }
 
+  // 面包屑结构化数据
+  const breadcrumbStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://faceaihub.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": template.category,
+        "item": `https://faceaihub.com/templates/${categorySlug}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": seoConfig.seoName,
+        "item": pageUrl
+      }
+    ]
+  }
+
   return (
     <>
       <Helmet>
@@ -403,18 +429,19 @@ function TemplateDetailPage() {
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbStructuredData)}
+        </script>
       </Helmet>
 
       <div className="template-detail-page">
         <div className="template-detail-header">
-          <nav className="breadcrumb">
+          <nav className="breadcrumb" aria-label="Breadcrumb">
             <Link to="/">Home</Link>
-            <span> / </span>
-            <Link to="/templates">Templates</Link>
             <span> / </span>
             <Link to={`/templates/${categorySlug}`}>{template.category}</Link>
             <span> / </span>
-            <span>{seoConfig.seoName}</span>
+            <span aria-current="page">{seoConfig.seoName}</span>
           </nav>
           
           <h1>{seoConfig.seoName}</h1>
@@ -432,6 +459,8 @@ function TemplateDetailPage() {
                 playsInline
                 controls
                 className="template-preview-video"
+                aria-label={`${seoConfig.seoName} face swap video template preview`}
+                title={`${seoConfig.seoName} - AI Face Swap Video Template`}
               />
             </div>
             
@@ -470,6 +499,20 @@ function TemplateDetailPage() {
             <p>
               {seoConfig.useCase}
             </p>
+            <p>
+              Our AI-powered face swap technology ensures high-quality results with natural-looking face replacements. 
+              The process takes only 15-30 seconds, and the final video is ready to download and share on your favorite social media platforms.
+            </p>
+            <div className="template-features">
+              <h3>Template Features:</h3>
+              <ul>
+                <li>✅ High-quality AI face swap technology</li>
+                <li>✅ Instant processing (15-30 seconds)</li>
+                <li>✅ No watermark on final video</li>
+                <li>✅ Free to use, no signup required</li>
+                <li>✅ Perfect for social media sharing</li>
+              </ul>
+            </div>
           </section>
 
           {relatedTemplates.length > 0 && (
@@ -489,6 +532,8 @@ function TemplateDetailPage() {
                         muted
                         playsInline
                         className="related-template-preview"
+                        aria-label={`Preview of ${relatedTemplate.name} face swap template`}
+                        title={`${relatedTemplate.name} face swap template`}
                       />
                       <p className="related-template-name">{relatedTemplate.name}</p>
                     </Link>

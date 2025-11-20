@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
@@ -1216,6 +1217,20 @@ function App() {
               <div className="hero-feature-item">
                 <span className="hero-feature-icon">🆓</span>
                 <span>Free Online</span>
+              </div>
+            </div>
+            
+            {/* 分类快速链接 - 增强内部链接 */}
+            <div className="hero-categories">
+              <p className="hero-categories-title">Browse by Category:</p>
+              <div className="hero-categories-links">
+                <Link to="/templates/emotional-reactions" className="hero-category-link">😄 Emotional Reactions</Link>
+                <Link to="/templates/burlesque-dance" className="hero-category-link">💃 Dance</Link>
+                <Link to="/templates/duo-interaction" className="hero-category-link">👫 Couple</Link>
+                <Link to="/templates/magic-effects" className="hero-category-link">✨ Magic</Link>
+                <Link to="/templates/sci-fi-effects" className="hero-category-link">🚀 Sci-Fi</Link>
+                <Link to="/templates/slapstick-comedy" className="hero-category-link">😂 Comedy</Link>
+                <Link to="/templates/style-makeovers" className="hero-category-link">👗 Style</Link>
               </div>
             </div>
           </div>

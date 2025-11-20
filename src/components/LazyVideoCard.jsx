@@ -123,7 +123,8 @@ function LazyVideoCard({ template, isSelected, onSelect, isFavorited, onToggleFa
           muted
           playsInline
           preload="none"
-          aria-label={`Preview of ${template.name} template`}
+          aria-label={`Preview video of ${template.name} face swap template`}
+          title={`${template.name} face swap video template preview`}
           style={{ 
             width: '100%', 
             height: '200px', 

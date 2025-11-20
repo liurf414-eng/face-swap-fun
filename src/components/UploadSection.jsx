@@ -112,7 +112,11 @@ function UploadSection({
         />
         {image ? (
           <>
-            <img src={image} alt={label} />
+            <img 
+              src={image} 
+              alt={`Uploaded ${label.toLowerCase()} for face swap`}
+              title={`${label} - Ready for face swap`}
+            />
             <button 
               className="change-photo-btn-small"
               onClick={() => document.getElementById(id).click()}

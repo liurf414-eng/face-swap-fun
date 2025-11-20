@@ -134,6 +134,26 @@ function CategoryPage() {
     }
   }
 
+  // 面包屑结构化数据
+  const breadcrumbStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://faceaihub.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": seoConfig.categoryName,
+        "item": `https://faceaihub.com/templates/${categorySlug}`
+      }
+    ]
+  }
+
   return (
     <>
       <Helmet>
@@ -156,16 +176,17 @@ function CategoryPage() {
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbStructuredData)}
+        </script>
       </Helmet>
 
       <div className="category-page">
         <div className="category-header">
-          <nav className="breadcrumb">
+          <nav className="breadcrumb" aria-label="Breadcrumb">
             <Link to="/">Home</Link>
             <span> / </span>
-            <Link to="/templates">Templates</Link>
-            <span> / </span>
-            <span>{seoConfig.categoryName}</span>
+            <span aria-current="page">{seoConfig.categoryName}</span>
           </nav>
           
           <h1>{seoConfig.h1}</h1>
@@ -203,16 +224,30 @@ function CategoryPage() {
               <section className="templates-section">
                 <h2>Available Templates ({templates.length})</h2>
                 <div className="templates-grid">
-                  {templates.map(template => (
-                    <LazyVideoCard
-                      key={template.id}
-                      template={template}
-                      isSelected={false}
-                      onSelect={() => window.location.href = '/'}
-                      isFavorited={false}
-                      onToggleFavorite={() => {}}
-                    />
-                  ))}
+                  {templates.map(template => {
+                    // 生成模板详情页URL
+                    const generateSlug = (fileName) => {
+                      return fileName
+                        .replace(/\.mp4$/, '')
+                        .replace(/\s+/g, '-')
+                        .toLowerCase()
+                        .replace(/[^a-z0-9-]/g, '')
+                    }
+                    const templateSlug = generateSlug(template.fileName || template.name)
+                    const detailUrl = `/templates/${categorySlug}/${templateSlug}`
+                    
+                    return (
+                      <LazyVideoCard
+                        key={template.id}
+                        template={template}
+                        isSelected={false}
+                        onSelect={() => {}}
+                        isFavorited={false}
+                        onToggleFavorite={() => {}}
+                        showLink={true}
+                      />
+                    )
+                  })}
                 </div>
               </section>
 
