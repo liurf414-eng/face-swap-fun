@@ -7,6 +7,20 @@ function HowToPage() {
     "@type": "HowTo",
     "name": "How to Create Face Swap Video Online Free",
     "description": "Step-by-step guide to create face swap videos using FaceAI Hub's free online tool",
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://faceaihub.com/og-image.jpg"
+    },
+    "totalTime": "PT30S",
+    "estimatedCost": {
+      "@type": "MonetaryAmount",
+      "currency": "USD",
+      "value": "0"
+    },
+    "tool": {
+      "@type": "HowToTool",
+      "name": "FaceAI Hub"
+    },
     "step": [
       {
         "@type": "HowToStep",
@@ -36,12 +50,7 @@ function HowToPage() {
         "text": "Once complete, preview your face swap video and download it in MP4 format. Share on TikTok, Instagram, or any social media platform!",
         "image": "https://faceaihub.com/images/step4-download-share.jpg"
       }
-    ],
-    "totalTime": "PT30S",
-    "tool": {
-      "@type": "HowToTool",
-      "name": "FaceAI Hub"
-    }
+    ]
   }
 
   return (

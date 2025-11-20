@@ -36,13 +36,14 @@ function UploadSection({
     const compressionToast = toast.loading('正在压缩图片...', { autoClose: false })
 
     try {
-      // 图片压缩选项
+      // 图片压缩选项 - 优化为WebP格式（如果支持）
+      const supportsWebP = document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0
       const options = {
         maxSizeMB: 1, // 压缩后最大1MB
         maxWidthOrHeight: 1920, // 最大宽度或高度
         useWebWorker: true, // 使用Web Worker加速
-        fileType: file.type.includes('png') ? 'image/png' : 'image/jpeg', // 保持原格式
-        initialQuality: 0.8 // 初始质量
+        fileType: supportsWebP ? 'image/webp' : (file.type.includes('png') ? 'image/png' : 'image/jpeg'), // 优先使用WebP
+        initialQuality: 0.85 // 初始质量（稍微提高以保持质量）
       }
 
       // 压缩图片

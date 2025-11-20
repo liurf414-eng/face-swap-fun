@@ -6,6 +6,7 @@ import HowToPage from './pages/HowToPage'
 import BestToolPage from './pages/BestToolPage'
 import NoWatermarkPage from './pages/NoWatermarkPage'
 import FAQPage from './pages/FAQPage'
+import NotFoundPage from './pages/NotFoundPage'
 
 function AppRoutes() {
   return (
@@ -19,6 +20,8 @@ function AppRoutes() {
       <Route path="/best-face-swap-tool" element={<BestToolPage />} />
       <Route path="/no-watermark-face-swap" element={<NoWatermarkPage />} />
       <Route path="/faq" element={<FAQPage />} />
+      {/* 404页面 - 必须放在最后 */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

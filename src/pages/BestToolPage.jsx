@@ -9,10 +9,29 @@ function BestToolPage() {
     "description": "Discover the best free face swap video tool for 2025. Compare features, quality, and ease of use. FaceAI Hub offers instant AI-powered face swap with no watermark.",
     "author": {
       "@type": "Organization",
-      "name": "FaceAI Hub"
+      "name": "FaceAI Hub",
+      "url": "https://faceaihub.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "FaceAI Hub",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://faceaihub.com/logo.svg"
+      }
     },
     "datePublished": "2025-01-27",
-    "dateModified": "2025-01-27"
+    "dateModified": "2025-01-27",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://faceaihub.com/best-face-swap-tool"
+    },
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://faceaihub.com/og-image.jpg",
+      "width": 1200,
+      "height": 630
+    }
   }
 
   return (

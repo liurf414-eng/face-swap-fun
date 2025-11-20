@@ -12,23 +12,23 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom'],
           // 将第三方库单独打包
           'vendor': ['react-toastify', 'browser-image-compression'],
+          // 路由相关库单独打包
+          'router': ['react-router-dom', 'react-helmet-async'],
         },
       },
     },
     // 启用压缩（使用esbuild，更快且无需额外依赖）
     minify: 'esbuild',
-    // 如果需要使用terser，需要先安装: npm install -D terser
-    // minify: 'terser',
-    // terserOptions: {
-    //   compress: {
-    //     drop_console: true,
-    //     drop_debugger: true,
-    //   },
-    // },
     // 优化chunk大小警告阈值
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 600,
     // 启用source map（生产环境可选）
     sourcemap: false,
+    // 启用CSS代码分割
+    cssCodeSplit: true,
+    // 启用资源内联阈值（小于4KB的资源内联）
+    assetsInlineLimit: 4096,
+    // 启用压缩优化
+    reportCompressedSize: true,
   },
   // 优化依赖预构建
   optimizeDeps: {
