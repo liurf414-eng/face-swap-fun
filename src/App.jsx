@@ -1233,7 +1233,7 @@ function App() {
           {/* 左侧：模板选择区 */}
           <section className="templates-section" aria-label="Short video template selection">
             <div className="section-header">
-              <h2 id="templates-heading">Browse AI Face Swap Video Templates</h2>
+              <h2 id="templates-heading">Choose AI Face Swap Video Templates</h2>
               {selectedTemplate && (
                 <button 
                   className="clear-selection-btn"
