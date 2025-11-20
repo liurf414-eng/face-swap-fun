@@ -34,6 +34,26 @@
     <priority>0.8</priority>
   </url>
   
+  <!-- P2级别：长尾关键词页面 -->
+  <url>
+    <loc>https://faceaihub.com/face-swap-for-tiktok</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://faceaihub.com/face-swap-for-instagram</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://faceaihub.com/birthday-face-swap-video</loc>
+    <lastmod>2025-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
   <!-- 模板分类页面 -->
   <url>
     <loc>https://faceaihub.com/templates/emotional-reactions</loc>

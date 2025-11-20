@@ -6,6 +6,9 @@ import HowToPage from './pages/HowToPage'
 import BestToolPage from './pages/BestToolPage'
 import NoWatermarkPage from './pages/NoWatermarkPage'
 import FAQPage from './pages/FAQPage'
+import TikTokPage from './pages/TikTokPage'
+import InstagramPage from './pages/InstagramPage'
+import BirthdayPage from './pages/BirthdayPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function AppRoutes() {
@@ -20,6 +23,10 @@ function AppRoutes() {
       <Route path="/best-face-swap-tool" element={<BestToolPage />} />
       <Route path="/no-watermark-face-swap" element={<NoWatermarkPage />} />
       <Route path="/faq" element={<FAQPage />} />
+      {/* P2级别：长尾关键词页面 */}
+      <Route path="/face-swap-for-tiktok" element={<TikTokPage />} />
+      <Route path="/face-swap-for-instagram" element={<InstagramPage />} />
+      <Route path="/birthday-face-swap-video" element={<BirthdayPage />} />
       {/* 404页面 - 必须放在最后 */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

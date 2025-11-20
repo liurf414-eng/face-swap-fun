@@ -1233,6 +1233,15 @@ function App() {
                 <Link to="/templates/style-makeovers" className="hero-category-link">👗 Style</Link>
               </div>
             </div>
+            
+            <div className="hero-popular-links">
+              <p className="hero-popular-title">Popular Use Cases:</p>
+              <div className="hero-popular-links-grid">
+                <Link to="/face-swap-for-tiktok" className="hero-popular-link">📱 TikTok Face Swap</Link>
+                <Link to="/face-swap-for-instagram" className="hero-popular-link">📸 Instagram Face Swap</Link>
+                <Link to="/birthday-face-swap-video" className="hero-popular-link">🎂 Birthday Face Swap</Link>
+              </div>
+            </div>
           </div>
         )}
 
