@@ -460,6 +460,52 @@ body {
   transform: translateY(-2px);
 }
 
+/* 热门用例链接 */
+.hero-popular-links {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.hero-popular-title {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hero-popular-links-grid {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hero-popular-link {
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-accent);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-popular-link:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: var(--accent-purple);
+  transform: translateY(-2px);
+  color: var(--text-primary);
+}
+
 /* 模板详情页样式增强 */
 .template-features {
   margin-top: 1.5rem;
@@ -541,6 +587,16 @@ body {
   .hero-category-link {
     width: 100%;
     text-align: center;
+  }
+  
+  .hero-popular-links-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .hero-popular-link {
+    text-align: center;
+    justify-content: center;
   }
   
   .main-content {
