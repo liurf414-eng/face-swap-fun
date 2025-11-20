@@ -21,12 +21,12 @@ function BestToolPage() {
         <title>Best Free Face Swap Video Tool 2025 - No Watermark | FaceAI Hub</title>
         <meta name="description" content="Find the best free face swap video tool for 2025. FaceAI Hub offers instant AI-powered face swap, 30+ templates, no watermark, and works entirely online. Try it free!" />
         <meta name="keywords" content="best free face swap video tool 2025, best face swap tool for videos, free face swap video online, no watermark face swap video, instant face swap video generator" />
-        <link rel="canonical" href="https://faceaihub.com/best-face-swap-video-tool" />
+        <link rel="canonical" href="https://faceaihub.com/best-face-swap-tool" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Best Free Face Swap Video Tool 2025 - No Watermark" />
         <meta property="og:description" content="Discover the best free face swap video tool for 2025. Instant AI-powered face swap with no watermark." />
-        <meta property="og:url" content="https://faceaihub.com/best-face-swap-video-tool" />
+        <meta property="og:url" content="https://faceaihub.com/best-face-swap-tool" />
         <meta property="og:type" content="article" />
         
         {/* Structured Data */}

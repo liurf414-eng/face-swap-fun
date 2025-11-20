@@ -97,7 +97,7 @@ function NoWatermarkPage() {
           <section className="related-links">
             <h2>Related Resources</h2>
             <div className="links-grid">
-              <Link to="/best-face-swap-video-tool" className="resource-link">
+              <Link to="/best-face-swap-tool" className="resource-link">
                 Best Face Swap Tool
               </Link>
               <Link to="/how-to-create-face-swap-video" className="resource-link">

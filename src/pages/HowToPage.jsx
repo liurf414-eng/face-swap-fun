@@ -218,7 +218,7 @@ function HowToPage() {
           <section className="related-links">
             <h2>Related Resources</h2>
             <div className="links-grid">
-              <Link to="/best-face-swap-video-tool" className="resource-link">
+              <Link to="/best-face-swap-tool" className="resource-link">
                 Best Face Swap Video Tool 2025
               </Link>
               <Link to="/templates" className="resource-link">

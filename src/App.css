@@ -3003,3 +3003,248 @@ input:focus-visible {
   opacity: 0.25;
   cursor: not-allowed;
 }
+
+/* ============ 分类页面样式 ============ */
+.category-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 200px);
+}
+
+.category-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.category-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 1rem 0;
+  line-height: 1.2;
+}
+
+.category-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: 0.5rem;
+}
+
+.breadcrumb {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+  color: var(--accent-blue);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.breadcrumb span {
+  margin: 0 0.5rem;
+  color: var(--text-muted);
+}
+
+.category-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.intro-section {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid var(--border-color);
+}
+
+.intro-section h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.intro-section p {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.use-cases {
+  background: rgba(59, 130, 246, 0.1);
+  border-left: 3px solid var(--accent-blue);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+.use-cases strong {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.category-page .templates-section {
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.category-page .templates-section h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.category-page .templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.how-to-section {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid var(--border-color);
+}
+
+.how-to-section h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.how-to-section ol {
+  color: var(--text-secondary);
+  line-height: 2;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.how-to-section li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.learn-more-link {
+  display: inline-block;
+  color: var(--accent-blue);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  margin-top: 1rem;
+}
+
+.learn-more-link:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.related-categories {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid var(--border-color);
+}
+
+.related-categories h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.category-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.category-link {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-accent);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.category-link:hover {
+  border-color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+.category-page .loading-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.category-page .no-templates {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.back-button {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent-blue);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.back-button:hover {
+  background: #2563eb;
+}
+
+/* 分类页面响应式设计 */
+@media (max-width: 768px) {
+  .category-page {
+    padding: 1rem;
+  }
+
+  .category-header h1 {
+    font-size: 2rem;
+  }
+
+  .category-description {
+    font-size: 1rem;
+  }
+
+  .intro-section,
+  .how-to-section,
+  .related-categories {
+    padding: 1.5rem;
+  }
+
+  .category-page .templates-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+}
