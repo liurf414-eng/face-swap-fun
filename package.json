@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "upload-templates": "node scripts/upload-templates.js upload",
     "scan-templates": "node scripts/upload-templates.js scan",
-    "setup-storage": "node scripts/setup-storage.js list"
+    "setup-storage": "node scripts/setup-storage.js list",
+    "validate-sitemap": "node scripts/validate-sitemap.js",
+    "check-sitemap": "node scripts/check-sitemap-accessibility.js",
+    "generate-sitemap": "node scripts/generate-sitemap.js"
   },
   "engines": {
     "node": ">=18.0.0"
