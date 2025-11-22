@@ -302,6 +302,24 @@ body {
   text-align: center;
 }
 
+
+/* 
+   Gemini 3 Pro - Visual Upgrade
+   Animation definitions & Enhanced Visual Styles
+*/
+
+@keyframes gradient-shine {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float-subtle {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0); }
+}
+
 /* ============ Hero Section ============ */
 .hero-section {
   text-align: center;
@@ -318,14 +336,25 @@ body {
 }
 
 .hero-title {
-  font-size: 3.5rem;
+  font-size: 4rem;
   font-weight: 900;
-  background: var(--accent-gradient);
+  /* Gemini 3 Pro: Dynamic Gradient Text */
+  background: linear-gradient(
+    to right, 
+    #ffffff 20%, 
+    #6366f1 30%, 
+    #ec4899 70%, 
+    #ffffff 80%
+  );
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 1rem;
-  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+  animation: gradient-shine 5s ease infinite;
+  letter-spacing: -1px;
+  text-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
 }
 
 .hero-subtitle {
@@ -333,19 +362,23 @@ body {
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 0.5rem;
+  opacity: 0.9;
 }
 
 .hero-description {
   font-size: 1.1rem;
   color: var(--text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .hero-cta {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   justify-content: center;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   flex-wrap: wrap;
 }
 
@@ -358,30 +391,52 @@ body {
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Gemini 3 Pro: Enhanced Glow */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset, 0 8px 20px rgba(99, 102, 241, 0.4);
+  position: relative;
+  overflow: hidden;
 }
 
 .hero-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) inset, 0 15px 30px rgba(99, 102, 241, 0.6);
+}
+
+.hero-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.hero-btn-primary:hover::after {
+  opacity: 1;
 }
 
 .hero-btn-secondary {
   padding: 1rem 2.5rem;
-  background: transparent;
-  border: 2px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   color: var(--text-primary);
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .hero-btn-secondary:hover {
   border-color: var(--accent-blue);
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
 }
 
 .hero-features {
@@ -399,111 +454,129 @@ body {
 .hero-feature-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: var(--bg-card);
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
+  gap: 0.75rem;
+  padding: 0.85rem 1.75rem;
+  /* Gemini 3 Pro: Glassmorphism */
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 0.95rem;
   color: var(--text-secondary);
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .hero-feature-item:hover {
-  border-color: var(--accent-blue);
+  border-color: rgba(99, 102, 241, 0.3);
   color: var(--text-primary);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .hero-feature-icon {
   font-size: 1.2rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
 /* Hero分类链接区域 */
 .hero-categories {
-  margin-top: 3rem;
+  margin-top: 4rem;
   padding-top: 2rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .hero-categories-title {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
   font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .hero-categories-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 1rem;
   justify-content: center;
 }
 
 .hero-category-link {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  /* Gemini 3 Pro: Glassmorphism */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   color: var(--text-primary);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .hero-category-link:hover {
   border-color: var(--accent-blue);
   background: rgba(59, 130, 246, 0.1);
-  color: var(--accent-blue);
-  transform: translateY(-2px);
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px -4px rgba(59, 130, 246, 0.2);
 }
 
 /* 热门用例链接 */
 .hero-popular-links {
-  margin-top: 2rem;
+  margin-top: 3rem;
   padding-top: 2rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .hero-popular-title {
   font-size: 0.9rem;
   color: var(--text-muted);
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   text-align: center;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .hero-popular-links-grid {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .hero-popular-link {
-  padding: 0.75rem 1.5rem;
-  background: var(--bg-accent);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
+  padding: 0.85rem 2rem;
+  /* Gemini 3 Pro: Glassmorphism */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 500;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .hero-popular-link:hover {
-  background: rgba(139, 92, 246, 0.2);
+  background: rgba(139, 92, 246, 0.15);
   border-color: var(--accent-purple);
-  transform: translateY(-2px);
-  color: var(--text-primary);
+  transform: translateY(-3px);
+  color: #fff;
+  box-shadow: 0 8px 20px -4px rgba(139, 92, 246, 0.25);
 }
 
 /* 模板详情页样式增强 */
