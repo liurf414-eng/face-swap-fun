@@ -2086,6 +2086,34 @@ body {
   font-size: 1rem;
 }
 
+.template-card-name {
+  text-align: center;
+  padding: 0.75rem 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  margin-top: auto;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 确保链接内的文字颜色正确 */
+.template-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.template-card-link .template-card-name {
+  color: var(--text-primary);
+}
+
+.template-card-link:hover .template-card-name {
+  color: var(--text-primary);
+}
+
 .template-tag {
   background: var(--accent-gradient);
   color: var(--text-primary);
