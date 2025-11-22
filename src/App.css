@@ -4266,3 +4266,43 @@ Y�Py��}�� 22�y�,�Im  ( Y�� ? 
  
  
  
+ / *   = = = = = = = = = = = =   A u t o - H e i g h t   F i x   ( G e m i n i   3   P r o )   = = = = = = = = = = = =   * / 
+ . p r e v i e w - c a r d   { 
+     d i s p l a y :   f l e x ; 
+     f l e x - d i r e c t i o n :   c o l u m n ; 
+     h e i g h t :   1 0 0 % ; 
+     f l e x :   1 ; 
+ } 
+ 
+ . p r e v i e w - b o x   { 
+     f l e x :   1 ; 
+     d i s p l a y :   f l e x ; 
+     a l i g n - i t e m s :   c e n t e r ; 
+     j u s t i f y - c o n t e n t :   c e n t e r ; 
+     b a c k g r o u n d :   r g b a ( 0 ,   0 ,   0 ,   0 . 4 ) ; 
+     m i n - h e i g h t :   2 8 0 p x ; 
+     a s p e c t - r a t i o :   a u t o ;   / *   R e s e t   f i x e d   r a t i o   * / 
+ } 
+ 
+ . p r e v i e w - b o x   v i d e o   { 
+     w i d t h :   1 0 0 % ; 
+     h e i g h t :   1 0 0 % ; 
+     o b j e c t - f i t :   c o n t a i n ; 
+     m a x - h e i g h t :   1 0 0 % ; 
+ } 
+ 
+ . p r e v i e w - c o l u m n   { 
+     d i s p l a y :   f l e x ; 
+     f l e x - d i r e c t i o n :   c o l u m n ; 
+     h e i g h t :   1 0 0 % ; 
+ } 
+ 
+ . u p l o a d - c o l u m n   . u p l o a d - s e c t i o n   { 
+     / *   E n s u r e   u p l o a d   s e c t i o n   g r o w s   i n   s i n g l e   m o d e   t o o   * / 
+     f l e x :   1 ; 
+     d i s p l a y :   f l e x ; 
+     f l e x - d i r e c t i o n :   c o l u m n ; 
+     j u s t i f y - c o n t e n t :   c e n t e r ; 
+ } 
+  
+ 
