@@ -1,28 +1,66 @@
-/* ============ CSS 变量定义 ============ */
+/* ============ CSS 变量定义 (Gemini 3 Pro Design System) ============ */
 :root {
-  /* 主色调 */
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #242424;
-  --bg-accent: #2a2a2a;
-  --bg-card: #1f1f1f;
-  
-  /* 强调色 */
+  /* Core Palette - Midnight Theme */
+  --bg-root: #020617; /* Slate 950 - 最深背景 */
+  --bg-surface: #0f172a; /* Slate 900 - 次级背景 */
+  --bg-glass: rgba(15, 23, 42, 0.7); /* 玻璃态背景 */
+  --bg-glass-hover: rgba(30, 41, 59, 0.7); /* 悬停态 */
+
+  /* Accents - Neon Vibe */
+  --primary-500: #6366f1; /* Indigo */
+  --primary-600: #4f46e5;
+  --secondary-500: #ec4899; /* Pink */
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
   --accent-blue: #3b82f6;
   --accent-purple: #8b5cf6;
-  --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
   --accent-red: #ef4444;
-  
-  /* 文字颜色 */
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0a0;
-  --text-muted: #6b7280;
-  
-  /* 边框 */
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-hover: rgba(255, 255, 255, 0.2);
+
+  /* Text Colors */
+  --text-primary: #f8fafc; /* Slate 50 */
+  --text-secondary: #94a3b8; /* Slate 400 */
+  --text-muted: #64748b; /* Slate 500 */
+
+  /* Borders & Effects */
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --backdrop-blur: blur(16px);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+
+  /* Legacy Compatibility (Mapping to new system) */
+  --bg-primary: var(--bg-root);
+  --bg-secondary: var(--bg-glass); /* Sidebar is now glass */
+  --bg-card: rgba(30, 41, 59, 0.4); /* Cards are glass */
+  --bg-accent: rgba(255, 255, 255, 0.03);
 }
 
-/* ============ Toast 通知样式 ============ */
+/* ============ Global Styles ============ */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-root);
+  color: var(--text-primary);
+  /* Ambient Background Light */
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.08), transparent 25%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility Class: Glass Panel */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* ... Rest of existing styles ... */
 .Toastify__toast-container {
   z-index: 9999;
 }
@@ -114,8 +152,11 @@ body {
 .top-navbar {
   width: 100%;
   height: 80px;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
+  /* Glassmorphism Navbar */
+  background: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -125,12 +166,19 @@ body {
   left: 0;
   right: 0;
   z-index: 1000;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .top-navbar-logo {
   font-size: 1.5rem;
   font-weight: 900;
   color: var(--text-primary);
+  /* Logo Glow */
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  background: linear-gradient(to right, #fff, #a5b4fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .top-navbar-actions {
@@ -149,8 +197,11 @@ body {
 /* ============ 左侧导航栏 ============ */
 .sidebar {
   width: 240px;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
+  /* Glassmorphism Sidebar */
+  background: rgba(2, 6, 23, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   padding: 2rem 1rem;
@@ -1741,65 +1792,64 @@ body {
   color: var(--text-primary);
 }
 
-/* 上传预览框 */
+/* 上传预览框 (Gemini 3 Pro) */
 .upload-preview-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed var(--border-color);
-  background: var(--bg-accent);
-}
-
-.upload-container-inline {
   width: 100%;
   height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.upload-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.upload-preview-box:hover .upload-preview-image {
+  transform: scale(1.05);
+}
+
+.upload-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.upload-container-inline:hover {
-  background: var(--bg-card);
+.upload-preview-box:hover .upload-overlay {
+  opacity: 1;
 }
 
-.upload-button-inline {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
-  font-size: 1rem;
+.change-photo-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+  color: white;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  line-height: 1.6;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.upload-button-inline:hover {
-  color: var(--text-primary);
-}
-
-/* 更换照片按钮（小） */
-.change-photo-btn-small {
-  position: absolute;
-  bottom: 0.75rem;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 0.5rem 1rem;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  color: var(--text-primary);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-
-.change-photo-btn-small:hover {
-  background: rgba(59, 130, 246, 0.8);
-  border-color: var(--accent-blue);
+.change-photo-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+  border-color: white;
 }
 
 /* 结果区域：居中显示 */
