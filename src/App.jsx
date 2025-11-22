@@ -1167,13 +1167,13 @@ function App() {
 
           <div className="sidebar-section-title">CATEGORIES</div>
           <div className="sidebar-scroll-area">
-            <Link to="/templates/emotional-reactions" className="nav-item-link">😄 Emotions</Link>
-            <Link to="/templates/burlesque-dance" className="nav-item-link">💃 Dance</Link>
-            <Link to="/templates/duo-interaction" className="nav-item-link">👫 Couple</Link>
-            <Link to="/templates/magic-effects" className="nav-item-link">✨ Magic</Link>
-            <Link to="/templates/sci-fi-effects" className="nav-item-link">🚀 Sci-Fi</Link>
-            <Link to="/templates/slapstick-comedy" className="nav-item-link">😂 Comedy</Link>
-            <Link to="/templates/style-makeovers" className="nav-item-link">👗 Style</Link>
+            <Link to="/templates/emotional-reactions" className="nav-item-link">😄 Emotional Reactions</Link>
+            <Link to="/templates/burlesque-dance" className="nav-item-link">💃 Burlesque Dance</Link>
+            <Link to="/templates/duo-interaction" className="nav-item-link">👫 Duo Interaction</Link>
+            <Link to="/templates/magic-effects" className="nav-item-link">✨ Magic Effects</Link>
+            <Link to="/templates/sci-fi-effects" className="nav-item-link">🚀 Sci-Fi Effects</Link>
+            <Link to="/templates/slapstick-comedy" className="nav-item-link">😂 Slapstick Comedy</Link>
+            <Link to="/templates/style-makeovers" className="nav-item-link">👗 Style Makeovers</Link>
           </div>
 
           <div className="sidebar-divider"></div>

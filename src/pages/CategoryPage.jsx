@@ -6,26 +6,26 @@ import LazyVideoCard from '../components/LazyVideoCard'
 // 分类SEO配置 - 基于用户搜索意图优化
 const CATEGORY_SEO_CONFIG = {
   'emotional-reactions': {
-    title: 'Emotional Reaction Face Swap Video - Surprised, Laughing, Crying Memes | FaceAI Hub',
-    description: 'Create hilarious emotional reaction face swap videos! Surprised, laughing, crying, shocked reaction memes. 9 free templates. Upload photo and generate instantly!',
-    keywords: 'emotional reaction face swap video, surprised face swap meme, laughing face swap video, crying face swap template, shocked face swap, reaction meme generator',
-    h1: 'Emotional Reaction Face Swap Videos',
+    title: 'Emotional Reactions Face Swap Video - Surprised, Laughing Memes | FaceAI Hub',
+    description: 'Create hilarious emotional reactions face swap videos! Surprised, laughing, crying, shocked reaction memes. 9 free templates. Upload photo and generate instantly!',
+    keywords: 'emotional reactions face swap, emotional face swap video, surprised face swap meme, laughing face swap video, crying face swap template, reaction meme generator',
+    h1: 'Emotional Reactions Face Swap Videos',
     categoryName: 'Emotional Reactions',
     useCases: 'Perfect for reaction memes, TikTok reactions, Instagram story reactions, and funny response videos.',
     templatesCount: 9
   },
   'magic-effects': {
-    title: 'Magic Face Swap Video - Fantasy Transformation Effects | FaceAI Hub',
-    description: 'Create magical face swap videos with fantasy effects! Electric, fire, flying, transformation templates. 6 free magic effect templates. AI-powered face swap!',
-    keywords: 'magic face swap video, fantasy face swap template, supernatural face swap, magical transformation face swap, electric face swap, fire face swap',
+    title: 'Magic Effects Face Swap Video - Fantasy Transformation | FaceAI Hub',
+    description: 'Create magical effects face swap videos with fantasy elements! Electric, fire, flying, transformation templates. 6 free magic effect templates. AI-powered face swap!',
+    keywords: 'magic effects face swap, magic face swap video, fantasy face swap template, supernatural face swap, magical transformation face swap, electric face swap',
     h1: 'Magic Effects Face Swap Videos',
     categoryName: 'Magic Effects',
     useCases: 'Perfect for fantasy content, magical transformations, supernatural effects, and creative video edits.',
     templatesCount: 6
   },
   'slapstick-comedy': {
-    title: 'Funny Comedy Face Swap Video - Hilarious Meme Templates | FaceAI Hub',
-    description: 'Generate hilarious comedy face swap videos! Funny, goofy, silly meme templates. 6 free slapstick comedy templates. Create viral comedy content!',
+    title: 'Slapstick Comedy Face Swap Video - Hilarious Meme Templates | FaceAI Hub',
+    description: 'Generate hilarious slapstick comedy face swap videos! Funny, goofy, silly meme templates. 6 free slapstick comedy templates. Create viral comedy content!',
     keywords: 'slapstick comedy face swap, funny comedy face swap, hilarious face swap video, comedy meme generator, goofy face swap, silly face swap meme',
     h1: 'Slapstick Comedy Face Swap Videos',
     categoryName: 'Slapstick Comedy',
@@ -33,37 +33,37 @@ const CATEGORY_SEO_CONFIG = {
     templatesCount: 6
   },
   'sci-fi-effects': {
-    title: 'Sci-Fi Face Swap Video - Futuristic & Cyberpunk Templates | FaceAI Hub',
-    description: 'Create futuristic sci-fi face swap videos! Cyberpunk, space, futuristic transformation templates. 6 free sci-fi effect templates. Future-tech face swap!',
-    keywords: 'sci-fi face swap video, futuristic face swap template, cyberpunk face swap, sci-fi transformation video, future face swap, space face swap',
+    title: 'Sci-Fi Effects Face Swap Video - Futuristic & Cyberpunk Templates | FaceAI Hub',
+    description: 'Create futuristic sci-fi effects face swap videos! Cyberpunk, space, futuristic transformation templates. 6 free sci-fi effect templates. Future-tech face swap!',
+    keywords: 'sci-fi effects face swap, futuristic face swap template, cyberpunk face swap, sci-fi transformation video, future face swap, space face swap',
     h1: 'Sci-Fi Effects Face Swap Videos',
     categoryName: 'Sci-Fi Effects',
     useCases: 'Perfect for sci-fi content, cyberpunk aesthetics, futuristic transformations, and tech-themed videos.',
     templatesCount: 6
   },
   'style-makeovers': {
-    title: 'Style Makeover Face Swap Video - Fashion Transformation | FaceAI Hub',
-    description: 'Transform your style with face swap makeover videos! Fashion, outfit change, transformation templates. 6 free style makeover templates. Create style memes!',
-    keywords: 'style makeover face swap, fashion face swap video, makeover meme generator, style transformation video, outfit change face swap, fashion transformation',
-    h1: 'Style Makeover Face Swap Videos',
+    title: 'Style Makeovers Face Swap Video - Fashion Transformation | FaceAI Hub',
+    description: 'Transform your style with style makeovers face swap videos! Fashion, outfit change, transformation templates. 6 free style makeover templates. Create style memes!',
+    keywords: 'style makeovers face swap, fashion face swap video, makeover meme generator, style transformation video, outfit change face swap, fashion transformation',
+    h1: 'Style Makeovers Face Swap Videos',
     categoryName: 'Style Makeovers',
     useCases: 'Perfect for fashion content, style transformations, outfit changes, and makeover videos.',
     templatesCount: 6
   },
   'burlesque-dance': {
-    title: 'Dance Face Swap Video - TikTok Dance Memes | FaceAI Hub',
-    description: 'Create fun dance face swap videos! TikTok dance, hip hop, trending dance templates. 6 free dance templates. Perfect for TikTok and Instagram Reels!',
-    keywords: 'dance face swap video, TikTok dance face swap, dancing meme generator, dance face swap template, hip hop dance face swap, trending dance meme',
-    h1: 'Dance Face Swap Videos',
+    title: 'Burlesque Dance Face Swap Video - TikTok Dance Memes | FaceAI Hub',
+    description: 'Create fun burlesque dance face swap videos! TikTok dance, hip hop, trending dance templates. 6 free dance templates. Perfect for TikTok and Instagram Reels!',
+    keywords: 'burlesque dance face swap, dance face swap video, TikTok dance face swap, dancing meme generator, dance face swap template, trending dance meme',
+    h1: 'Burlesque Dance Face Swap Videos',
     categoryName: 'Burlesque Dance',
     useCases: 'Perfect for TikTok videos, Instagram Reels, dance challenges, and trending dance memes.',
     templatesCount: 6
   },
   'duo-interaction': {
-    title: 'Couple Face Swap Video - Two Person AI Meme Generator | FaceAI Hub',
-    description: 'Create amazing couple face swap videos! Two-person, friend, pair face swap templates. 6 free duo interaction templates. Perfect for couple memes!',
-    keywords: 'couple face swap video, two-person face swap AI, friend meme face generator, pair face replacement video, duo face swap, couple meme generator',
-    h1: 'Couple Face Swap Videos',
+    title: 'Duo Interaction Face Swap Video - Couple & Friend Memes | FaceAI Hub',
+    description: 'Create amazing duo interaction face swap videos! Two-person, couple, friend pair face swap templates. 6 free duo interaction templates. Perfect for couple memes!',
+    keywords: 'duo interaction face swap, couple face swap video, two-person face swap AI, friend meme face generator, pair face replacement video, duo face swap',
+    h1: 'Duo Interaction Face Swap Videos',
     categoryName: 'Duo Interaction',
     useCases: 'Perfect for couple content, friend memes, relationship videos, and two-person interactions.',
     templatesCount: 6
@@ -239,7 +239,6 @@ function CategoryPage() {
                         .replace(/[^a-z0-9-]/g, '')
                     }
                     const templateSlug = generateSlug(template.fileName || template.name)
-                    const detailUrl = `/templates/${categorySlug}/${templateSlug}`
                     
                     return (
                       <LazyVideoCard
@@ -273,7 +272,7 @@ function CategoryPage() {
               <li>Click "Create Video" and wait for processing</li>
               <li>Download your face swap video and share it!</li>
             </ol>
-            <Link to="/how-to-face-swap" className="learn-more-link">
+            <Link to="/how-to-create-face-swap-video" className="learn-more-link">
               Learn more in our detailed tutorial →
             </Link>
           </section>
@@ -302,4 +301,3 @@ function CategoryPage() {
 }
 
 export default CategoryPage
-
