@@ -1144,7 +1144,7 @@ function App() {
       </div>
 
       <div className="app-body">
-      {/* 左侧导航栏 */}
+      {/* 左侧导航栏 - 全新设计 (Creator Studio Sidebar) */}
       <div className="sidebar">
         <nav className="sidebar-nav">
           <button 
@@ -1153,15 +1153,37 @@ function App() {
           >
             🏠 Home
           </button>
+          
           {user && (
             <button 
               className={`nav-item ${currentPage === 'me' ? 'active' : ''}`}
               onClick={() => setCurrentPage('me')}
             >
-              👤 Me
+              👤 My Videos
             </button>
           )}
+
+          <div className="sidebar-divider"></div>
+
+          <div className="sidebar-section-title">CATEGORIES</div>
+          <div className="sidebar-scroll-area">
+            <Link to="/templates/emotional-reactions" className="nav-item-link">😄 Emotions</Link>
+            <Link to="/templates/burlesque-dance" className="nav-item-link">💃 Dance</Link>
+            <Link to="/templates/duo-interaction" className="nav-item-link">👫 Couple</Link>
+            <Link to="/templates/magic-effects" className="nav-item-link">✨ Magic</Link>
+            <Link to="/templates/sci-fi-effects" className="nav-item-link">🚀 Sci-Fi</Link>
+            <Link to="/templates/slapstick-comedy" className="nav-item-link">😂 Comedy</Link>
+            <Link to="/templates/style-makeovers" className="nav-item-link">👗 Style</Link>
+          </div>
+
+          <div className="sidebar-divider"></div>
+
+          <div className="sidebar-section-title">POPULAR</div>
+          <Link to="/face-swap-for-tiktok" className="nav-item-link">📱 TikTok</Link>
+          <Link to="/face-swap-for-instagram" className="nav-item-link">📸 Instagram</Link>
+          <Link to="/birthday-face-swap-video" className="nav-item-link">🎂 Birthday</Link>
         </nav>
+        
         <div className="sidebar-footer">
           {!user && (
             <button className="sidebar-login" onClick={handleGoogleSignInClick}>
@@ -1171,76 +1193,24 @@ function App() {
         </div>
       </div>
 
-      {/* 主内容区域 */}
+      {/* 主内容区域 - 移除巨大的Hero，改为紧凑横幅 */}
       <div className="main-content">
-        {/* Hero Section */}
+        {/* Compact Banner */}
         {currentPage === 'home' && !selectedTemplate && (
-          <div className="hero-section">
-            <h1 className="hero-title">AI Face Swap Video Generator</h1>
-            <p className="hero-subtitle">Upload Photo Replace Face Video • AI Meme Video Maker • Free Online Tool</p>
-            <p className="hero-description">Create hilarious meme videos instantly with 30+ free templates. Perfect for TikTok, Instagram & social media.</p>
-            <div className="hero-cta">
-              <button 
-                className="hero-btn-primary"
+          <div className="compact-banner">
+            <div className="compact-banner-content">
+              <h1 className="compact-title">Create Magic with AI Face Swap</h1>
+              <p className="compact-subtitle">Instant • Free • No Watermark</p>
+            </div>
+            <div className="compact-actions">
+               <button 
+                className="compact-btn-primary"
                 onClick={() => {
                   document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                Start Creating Free
+                ⚡ Start Creating
               </button>
-              <button 
-                className="hero-btn-secondary"
-                onClick={() => {
-                  document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                Browse Templates
-              </button>
-            </div>
-            <div className="hero-features">
-              <div className="hero-feature-item">
-                <span className="hero-feature-icon">🤖</span>
-                <span>AI Powered</span>
-              </div>
-              <div className="hero-feature-item">
-                <span className="hero-feature-icon">⚡</span>
-                <span>Instant Generation</span>
-              </div>
-              <div className="hero-feature-item">
-                <span className="hero-feature-icon">🎬</span>
-                <span>30+ Templates</span>
-              </div>
-              <div className="hero-feature-item">
-                <span className="hero-feature-icon">💧</span>
-                <span>No Watermark</span>
-              </div>
-              <div className="hero-feature-item">
-                <span className="hero-feature-icon">🆓</span>
-                <span>Free Online</span>
-              </div>
-            </div>
-            
-            {/* 分类快速链接 - 增强内部链接 */}
-            <div className="hero-categories">
-              <p className="hero-categories-title">Browse by Category:</p>
-              <div className="hero-categories-links">
-                <Link to="/templates/emotional-reactions" className="hero-category-link">😄 Emotional Reactions</Link>
-                <Link to="/templates/burlesque-dance" className="hero-category-link">💃 Dance</Link>
-                <Link to="/templates/duo-interaction" className="hero-category-link">👫 Couple</Link>
-                <Link to="/templates/magic-effects" className="hero-category-link">✨ Magic</Link>
-                <Link to="/templates/sci-fi-effects" className="hero-category-link">🚀 Sci-Fi</Link>
-                <Link to="/templates/slapstick-comedy" className="hero-category-link">😂 Comedy</Link>
-                <Link to="/templates/style-makeovers" className="hero-category-link">👗 Style</Link>
-              </div>
-            </div>
-            
-            <div className="hero-popular-links">
-              <p className="hero-popular-title">Popular Use Cases:</p>
-              <div className="hero-popular-links-grid">
-                <Link to="/face-swap-for-tiktok" className="hero-popular-link">📱 TikTok Face Swap</Link>
-                <Link to="/face-swap-for-instagram" className="hero-popular-link">📸 Instagram Face Swap</Link>
-                <Link to="/birthday-face-swap-video" className="hero-popular-link">🎂 Birthday Face Swap</Link>
-              </div>
             </div>
           </div>
         )}
