@@ -1219,29 +1219,6 @@ function App() {
                 <span>Free Online</span>
               </div>
             </div>
-            
-            {/* 分类快速链接 - 增强内部链接 */}
-            <div className="hero-categories">
-              <p className="hero-categories-title">Browse by Category:</p>
-              <div className="hero-categories-links">
-                <Link to="/templates/emotional-reactions" className="hero-category-link">😄 Emotional Reactions</Link>
-                <Link to="/templates/burlesque-dance" className="hero-category-link">💃 Dance</Link>
-                <Link to="/templates/duo-interaction" className="hero-category-link">👫 Couple</Link>
-                <Link to="/templates/magic-effects" className="hero-category-link">✨ Magic</Link>
-                <Link to="/templates/sci-fi-effects" className="hero-category-link">🚀 Sci-Fi</Link>
-                <Link to="/templates/slapstick-comedy" className="hero-category-link">😂 Comedy</Link>
-                <Link to="/templates/style-makeovers" className="hero-category-link">👗 Style</Link>
-              </div>
-            </div>
-            
-            <div className="hero-popular-links">
-              <p className="hero-popular-title">Popular Use Cases:</p>
-              <div className="hero-popular-links-grid">
-                <Link to="/face-swap-for-tiktok" className="hero-popular-link">📱 TikTok Face Swap</Link>
-                <Link to="/face-swap-for-instagram" className="hero-popular-link">📸 Instagram Face Swap</Link>
-                <Link to="/birthday-face-swap-video" className="hero-popular-link">🎂 Birthday Face Swap</Link>
-              </div>
-            </div>
           </div>
         )}
 
@@ -1342,6 +1319,53 @@ function App() {
               onToggleFavorite={handleToggleFavorite}
             />
           </section>
+
+          {/* 探索更多区域 - SEO优化内容 */}
+          {!selectedTemplate && (
+            <div className="explore-more-section">
+              <div className="explore-categories">
+                <h3 className="explore-title">Browse by Category</h3>
+                <p className="explore-subtitle">Explore our collection of AI face swap video templates organized by category</p>
+                <div className="explore-categories-links">
+                  <Link to="/templates/emotional-reactions" className="explore-category-link">😄 Emotional Reactions</Link>
+                  <Link to="/templates/burlesque-dance" className="explore-category-link">💃 Dance</Link>
+                  <Link to="/templates/duo-interaction" className="explore-category-link">👫 Couple</Link>
+                  <Link to="/templates/magic-effects" className="explore-category-link">✨ Magic</Link>
+                  <Link to="/templates/sci-fi-effects" className="explore-category-link">🚀 Sci-Fi</Link>
+                  <Link to="/templates/slapstick-comedy" className="explore-category-link">😂 Comedy</Link>
+                  <Link to="/templates/style-makeovers" className="explore-category-link">👗 Style</Link>
+                </div>
+              </div>
+              
+              <div className="explore-popular">
+                <h3 className="explore-title">Popular Use Cases</h3>
+                <p className="explore-subtitle">Discover how to create face swap videos for different platforms and occasions</p>
+                <div className="explore-popular-links">
+                  <Link to="/face-swap-for-tiktok" className="explore-popular-link">
+                    <span className="explore-link-icon">📱</span>
+                    <div>
+                      <div className="explore-link-title">TikTok Face Swap</div>
+                      <div className="explore-link-desc">Create viral TikTok videos</div>
+                    </div>
+                  </Link>
+                  <Link to="/face-swap-for-instagram" className="explore-popular-link">
+                    <span className="explore-link-icon">📸</span>
+                    <div>
+                      <div className="explore-link-title">Instagram Face Swap</div>
+                      <div className="explore-link-desc">Perfect for Reels & Stories</div>
+                    </div>
+                  </Link>
+                  <Link to="/birthday-face-swap-video" className="explore-popular-link">
+                    <span className="explore-link-icon">🎂</span>
+                    <div>
+                      <div className="explore-link-title">Birthday Face Swap</div>
+                      <div className="explore-link-desc">Personalized birthday videos</div>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 右侧：操作区 */}
           <aside className="action-panel" aria-label="Video creation actions">
