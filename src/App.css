@@ -305,8 +305,8 @@ body {
 /* ============ Hero Section ============ */
 .hero-section {
   text-align: center;
-  padding: 3rem 2rem 2rem;
-  margin: 2rem auto 1rem;
+  padding: 5rem 2rem;
+  margin: 3rem auto;
   /* 去掉背景框和边框，融入背景 */
   background: transparent;
   border: none;
@@ -389,7 +389,7 @@ body {
   justify-content: center;
   gap: 1.5rem;
   flex-wrap: wrap;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   /* 特性标签区域宽度，与Hero区域协调 */
   max-width: 1000px;
   margin-left: auto;
@@ -538,8 +538,8 @@ body {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .hero-section {
-    padding: 2rem 1rem 1.5rem;
-    margin: 1.5rem 0 1rem;
+    padding: 3rem 1.5rem;
+    margin: 2rem 0;
   }
   
   .hero-title {
@@ -552,16 +552,6 @@ body {
   
   .hero-description {
     font-size: 1rem;
-  }
-  
-  .hero-features {
-    margin-top: 1rem;
-    gap: 0.75rem;
-  }
-  
-  .hero-feature-item {
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
   }
   
   .hero-cta {
@@ -611,167 +601,6 @@ body {
   
   .main-content {
     padding: 1rem 1.5rem;
-  }
-}
-
-/* 探索更多区域 - 优化后的SEO内容 */
-.explore-more-section {
-  width: 100%;
-  max-width: 1200px;
-  margin: 3rem auto;
-  padding: 0 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-}
-
-.explore-categories,
-.explore-popular {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 2.5rem;
-  text-align: center;
-}
-
-.explore-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.75rem;
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.explore-subtitle {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
-
-.explore-categories-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
-}
-
-.explore-category-link {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  background: var(--bg-accent);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  color: var(--text-primary);
-  text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.explore-category-link:hover {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: var(--accent-blue);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-}
-
-.explore-popular-links {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.explore-popular-link {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: var(--bg-accent);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
-.explore-popular-link:hover {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: var(--accent-purple);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
-}
-
-.explore-link-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
-.explore-link-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.25rem;
-}
-
-.explore-link-desc {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-/* 移动端优化 */
-@media (max-width: 768px) {
-  .explore-more-section {
-    padding: 0 1rem;
-    gap: 2rem;
-    margin: 2rem auto;
-  }
-
-  .explore-categories,
-  .explore-popular {
-    padding: 1.5rem;
-  }
-
-  .explore-title {
-    font-size: 1.5rem;
-  }
-
-  .explore-subtitle {
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .explore-categories-links {
-    gap: 0.5rem;
-  }
-
-  .explore-category-link {
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
-  }
-
-  .explore-popular-links {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .explore-popular-link {
-    padding: 1.25rem;
-  }
-
-  .explore-link-icon {
-    font-size: 1.75rem;
-  }
-
-  .explore-link-title {
-    font-size: 1rem;
-  }
-
-  .explore-link-desc {
-    font-size: 0.85rem;
   }
 }
 
