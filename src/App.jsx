@@ -1180,7 +1180,8 @@ function App() {
       <div className="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-logo">
-            🎭 FaceAI Hub
+            <span className="logo-icon">🎭</span>
+            <span className="logo-text">FaceAI Hub</span>
           </div>
         </div>
 

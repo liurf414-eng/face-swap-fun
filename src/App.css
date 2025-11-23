@@ -61,8 +61,19 @@ a {
 }
 
 .sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+.logo-icon {
+  -webkit-text-fill-color: initial;
+  background: none;
+}
+
+.logo-text {
   background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
