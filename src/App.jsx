@@ -1399,16 +1399,7 @@ function App() {
       
                 {/* 右侧：操作区 */}
                 <aside className="action-panel" aria-label="Video creation actions">
-                  {!selectedTemplate ? (
-                    /* 初始状态：欢迎提示 */
-                    <div className="welcome-panel">
-                      <div className="welcome-content">
-                        <h2>🎬 Start Creating</h2>
-                        <p>Select a template from the left to begin creating your face swap video</p>
-                        <div className="welcome-icon">✨</div>
-                      </div>
-                    </div>
-                  ) : (
+                  {selectedTemplate && (
                     <div className="action-panel-content">
                       {result ? (
                         <ResultDisplay 
@@ -1591,9 +1582,6 @@ function App() {
           </main>
         )}
 
-        <footer className="footer">
-            <p>© 2025 FaceAI Hub - AI-Powered Face Swap Application</p>
-        </footer>
       </div>
     </div>
       
