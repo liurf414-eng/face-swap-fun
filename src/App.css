@@ -396,6 +396,42 @@ a {
   color: white;
 }
 
+/* === Content Layout (Sticky Sidebar) === */
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .content-wrapper {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .templates-section {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .action-panel {
+    width: 420px; /* Fixed width for action panel */
+    position: sticky;
+    top: 24px;
+    height: calc(100vh - 48px);
+    overflow-y: auto;
+    flex-shrink: 0;
+    /* Hide when empty if necessary, but App.jsx handles content rendering */
+    display: none; 
+  }
+  
+  /* Only show action panel when it has content (selectedTemplate) */
+  .content-wrapper.template-selected .action-panel {
+    display: flex;
+  }
+}
+
 /* === Template Grid & Video Cards (RESTORED) === */
 .templates-grid {
   display: grid;
@@ -1146,3 +1182,70 @@ a {
   cursor: pointer;
 }
 .download-btn-small:hover { background: var(--primary); }
+
+/* === Creation Mode (Full Screen) === */
+.creation-mode-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-dark);
+}
+
+.creation-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.creation-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.back-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.back-btn:hover {
+  border-color: var(--primary);
+  color: white;
+  background: rgba(99, 102, 241, 0.1);
+}
+
+/* Adjust action panel content for full screen */
+.creation-mode-container .action-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  max-width: 1000px; /* Limit width for better readability */
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Adjust grid layout for full screen */
+.creation-mode-container .action-grid-layout {
+  gap: 40px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .creation-mode-container .action-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}

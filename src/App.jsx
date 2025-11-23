@@ -151,6 +151,11 @@ function App() {
     }
   }, [location, navigate]);
 
+  // Auto-scroll removed based on user feedback
+  useEffect(() => {
+    // Keep empty or remove entirely
+  }, [selectedTemplate]);
+
   // 加载模板数据（带缓存和错误重试）
   useEffect(() => {
     const loadTemplates = async () => {
@@ -1308,8 +1313,9 @@ function App() {
     
             <main className="main">
               <div className={`content-wrapper ${selectedTemplate ? 'template-selected' : ''}`}>
-                {/* 左侧：模板选择区 */}
-                <section className="templates-section" aria-label="Short video template selection">
+                {/* 模板列表模式 */}
+                {!selectedTemplate && (
+                  <section className="templates-section" aria-label="Short video template selection">
                   <div className="section-header">
                     <h2 id="templates-heading">Choose AI Face Swap Video Templates</h2>
                     {selectedTemplate && (
@@ -1395,11 +1401,26 @@ function App() {
                     favoriteTemplates={favoriteTemplates}
                     onToggleFavorite={handleToggleFavorite}
                   />
-                </section>
+                  </section>
+                )}
       
-                {/* 右侧：操作区 */}
-                <aside className="action-panel" aria-label="Video creation actions">
-                  {selectedTemplate && (
+                {/* 全屏制作模式 */}
+                {selectedTemplate && (
+                  <div className="creation-mode-container">
+                    <div className="creation-header">
+                      <button 
+                        className="back-btn"
+                        onClick={() => {
+                          setSelectedTemplate(null);
+                          setUploadedImage(null);
+                          setResult(null);
+                        }}
+                      >
+                        ← Back to Templates
+                      </button>
+                      <h2>Create Your Video</h2>
+                    </div>
+
                     <div className="action-panel-content">
                       {result ? (
                         <ResultDisplay 
@@ -1480,8 +1501,8 @@ function App() {
                         </>
                       )}
                     </div>
-                  )}
-                </aside>
+                  </div>
+                )}
               </div>
       
               {/* 庆祝动画 */}
