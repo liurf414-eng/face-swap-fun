@@ -1297,39 +1297,6 @@ function App() {
                   </div>
                 </div>
 
-                <h2 className="section-title">Creative Tools</h2>
-                <div className="tools-grid">
-                  <Link to="/ai-studio" className="tool-card">
-                    <div className="tool-icon">🖼️</div>
-                    <div className="tool-info">
-                      <h3>AI Image Gen</h3>
-                      <p>Quickly generate your AI images from text or images.</p>
-                    </div>
-                  </Link>
-                  <Link to="/" className="tool-card">
-                    <div className="tool-icon">🎥</div>
-                    <div className="tool-info">
-                      <h3>AI Video Generator</h3>
-                      <p>Turn text or images into stunning videos with AI.</p>
-                    </div>
-                  </Link>
-                  <Link to="/face-swap-video-maker" className="tool-card">
-                    <div className="tool-icon">⚡</div>
-                    <div className="tool-info">
-                      <h3>AI Video Effects</h3>
-                      <p>Explore various AI effects to easily create cool videos.</p>
-                    </div>
-                  </Link>
-                  <Link to="/face-swap-gif-maker" className="tool-card">
-                    <div className="tool-icon">🔊</div>
-                    <div className="tool-info">
-                      <h3>AI Audio Generator</h3>
-                      <p>One-click dubbing and dynamic sound effects.</p>
-                    </div>
-                  </Link>
-                </div>
-                
-                <h2 className="section-title">Hot Templates</h2>
               </>
             )}
     

@@ -261,8 +261,7 @@ a {
 
 /* === Hero Banner === */
 .hero-banner {
-  background: #121212; /* 极深灰背景 */
-  background-image: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 60%); /* 中心微弱紫光 */
+  background: var(--bg-card); /* Match card background */
   border-radius: 16px;
   padding: 60px 20px;
   margin-bottom: 40px;
@@ -271,7 +270,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.05); /* 极淡边框 */
+  border: 1px solid var(--border-color);
   min-height: 280px;
 }
 
