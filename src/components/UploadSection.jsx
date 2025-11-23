@@ -1,5 +1,4 @@
 import { toast } from 'react-toastify'
-import imageCompression from 'browser-image-compression'
 
 function UploadSection({ 
   isDuoInteraction, 
@@ -32,47 +31,12 @@ function UploadSection({
       return
     }
 
-    // 显示压缩提示
-    const compressionToast = toast.loading('正在压缩图片...', { autoClose: false })
-
-    try {
-      // 图片压缩选项 - 优化为WebP格式（如果支持）
-      const supportsWebP = document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0
-      const options = {
-        maxSizeMB: 1, // 压缩后最大1MB
-        maxWidthOrHeight: 1920, // 最大宽度或高度
-        useWebWorker: true, // 使用Web Worker加速
-        fileType: supportsWebP ? 'image/webp' : (file.type.includes('png') ? 'image/png' : 'image/jpeg'), // 优先使用WebP
-        initialQuality: 0.85 // 初始质量（稍微提高以保持质量）
-      }
-
-      // 压缩图片
-      const compressedFile = await imageCompression(file, options)
-      
-      // 读取压缩后的图片
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        onImageUpload(e.target.result, isSecond)
-        
-        // 显示压缩成功提示
-        toast.dismiss(compressionToast)
-        const originalSize = (file.size / 1024 / 1024).toFixed(2)
-        const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2)
-        toast.success(`图片压缩完成：${originalSize}MB → ${compressedSize}MB`, { autoClose: 2000 })
-      }
-      reader.readAsDataURL(compressedFile)
-    } catch (error) {
-      console.error('图片压缩失败:', error)
-      toast.dismiss(compressionToast)
-      toast.warning('图片压缩失败，使用原图')
-      
-      // 压缩失败时使用原图
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        onImageUpload(e.target.result, isSecond)
-      }
-      reader.readAsDataURL(file)
+    // 直接读取文件
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      onImageUpload(e.target.result, isSecond)
     }
+    reader.readAsDataURL(file)
   }
   const handleImageUpload = async (e, isSecond = false) => {
     const file = e.target.files[0]
