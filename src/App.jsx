@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
@@ -8,6 +8,7 @@ import ProgressDisplay from './components/ProgressDisplay'
 import UploadSection from './components/UploadSection'
 import ResultDisplay from './components/ResultDisplay'
 import TemplateGrid from './components/TemplateGrid'
+import AIStudioPage from './pages/AIStudioPage' // Import AI Studio Page
 
 // 默认模板（回退方案）
 const defaultTemplates = [
@@ -49,6 +50,7 @@ const defaultTemplates = [
 ]
 
 function App() {
+  const location = useLocation();
   const [templates, setTemplates] = useState([])
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
@@ -73,7 +75,7 @@ function App() {
   const [user, setUser] = useState(null)  // 新增：用户信息
   const [showMyVideos, setShowMyVideos] = useState(false)  // 新增：显示我的视频
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
-  const [currentPage, setCurrentPage] = useState('home')  // 新增：当前页面
+  const [currentPage, setCurrentPage] = useState('home')  // home | studio | me
   const [favoriteTemplates, setFavoriteTemplates] = useState([])  // 新增：收藏的模板ID列表
   const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
   const TEMPLATES_PER_PAGE = 6
@@ -108,6 +110,27 @@ function App() {
     'stylemakeovers': 'Style Makeovers',
     'Style Makeovers': 'Style Makeovers'
   }
+
+  // Handle data from AI Studio
+  useEffect(() => {
+    if (location.state && location.state.fromStudio && location.state.imageUrl) {
+      setUploadedImage(location.state.imageUrl);
+      setCurrentPage('home');
+      
+      // Clear the state to prevent reloading on refresh
+      window.history.replaceState({}, document.title);
+      
+      toast.success('✨ AI Generated Image loaded! Now select a template.', {
+        autoClose: 5000,
+        icon: '🎨'
+      });
+
+      // Scroll to templates section
+      setTimeout(() => {
+        document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 500);
+    }
+  }, [location]);
 
   // 加载模板数据（带缓存和错误重试）
   useEffect(() => {
@@ -1147,23 +1170,35 @@ function App() {
       {/* 左侧导航栏 - 全新设计 (Creator Studio Sidebar) */}
       <div className="sidebar">
         <nav className="sidebar-nav">
+          <div className="sidebar-section-title">TOOLS</div>
           <button 
             className={`nav-item ${currentPage === 'home' ? 'active' : ''}`}
             onClick={() => setCurrentPage('home')}
           >
-            🏠 Home
+            🎭 Face Swap
           </button>
           
-          {user && (
-            <button 
-              className={`nav-item ${currentPage === 'me' ? 'active' : ''}`}
-              onClick={() => setCurrentPage('me')}
-            >
-              👤 My Videos
-            </button>
-          )}
-
+          <button 
+            className={`nav-item ${currentPage === 'studio' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('studio')}
+          >
+            ✨ AI Studio
+          </button>
+          
           <div className="sidebar-divider"></div>
+          
+          {user && (
+            <>
+              <div className="sidebar-section-title">ASSETS</div>
+              <button 
+                className={`nav-item ${currentPage === 'me' ? 'active' : ''}`}
+                onClick={() => setCurrentPage('me')}
+              >
+                👤 My Gallery
+              </button>
+              <div className="sidebar-divider"></div>
+            </>
+          )}
 
           <div className="sidebar-section-title">CATEGORIES</div>
           <div className="sidebar-scroll-area">
@@ -1195,314 +1230,335 @@ function App() {
 
       {/* 主内容区域 - 移除巨大的Hero，改为紧凑横幅 */}
       <div className="main-content">
-        {/* Compact Banner */}
-        {currentPage === 'home' && !selectedTemplate && (
-          <div className="compact-banner">
-            <div className="compact-banner-content">
-              <h1 className="compact-title">Create Magic with AI Face Swap</h1>
-              <p className="compact-subtitle">Instant • Free • No Watermark</p>
-            </div>
-            <div className="compact-actions">
-               <button 
-                className="compact-btn-primary"
-                onClick={() => {
-                  document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                ⚡ Start Creating
-              </button>
-            </div>
-          </div>
+        
+        {/* === AI Studio Page === */}
+        {currentPage === 'studio' && (
+          <AIStudioPage />
         )}
-
-        {!isOnline && (
-          <div className="offline-notice">
-            ⚠️ You're offline. Some features may not work properly.
-          </div>
-        )}
-
+        
+        {/* === Home Page (Face Swap) === */}
         {currentPage === 'home' && (
-      <main className="main">
-        <div className={`content-wrapper ${selectedTemplate ? 'template-selected' : ''}`}>
-          {/* 左侧：模板选择区 */}
-          <section className="templates-section" aria-label="Short video template selection">
-            <div className="section-header">
-              <h2 id="templates-heading">Choose AI Face Swap Video Templates</h2>
-              {selectedTemplate && (
-                <button 
-                  className="clear-selection-btn"
-                  onClick={() => {
-                    setSelectedTemplate(null)
-                    setUploadedImage(null)
-                    setResult(null)
-                  }}
-                  aria-label="Clear selected template"
-                  title="Clear selection"
-                >
-                  ✕ Clear Selection
-                </button>
-              )}
-
-              {/* 搜索框 */}
-              <div className="search-container">
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="🔍 Search templates"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search templates"
-                  aria-describedby="search-description"
-                />
-                <span id="search-description" className="sr-only">Search for video templates by name or category</span>
-                {searchQuery && (
-                  <button
-                    className="clear-search"
-                    aria-label="Clear search"
-                    onClick={() => setSearchQuery('')}
-                    title="Clear search"
+          <>
+            {/* Main Content - Compact Banner */}
+            {!selectedTemplate && (
+              <div className="compact-banner">
+                <div className="compact-banner-content">
+                  <h1 className="compact-title">Create Magic with AI Face Swap</h1>
+                  <p className="compact-subtitle">Instant • Free • No Watermark</p>
+                </div>
+                <div className="compact-actions">
+                  <button 
+                    className="compact-btn-primary"
+                    onClick={() => {
+                      document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
                   >
-                    ✕
+                    ⚡ Start Creating
                   </button>
-                )}
-              </div>
-            </div>
-
-            {/* 搜索结果提示 */}
-            {searchQuery && (
-              <div className="search-result-info">
-                Found {filteredTemplates.length} templates
-              </div>
-            )}
-
-            {/* 无结果提示 */}
-            {filteredTemplates.length === 0 && (
-              <div className="no-results">
-                <p>😕 No matching templates found</p>
-                <p>Try searching: smile, laugh, surprise, funny, cool</p>
-              </div>
-            )}
-
-            {/* 加载状态 */}
-            {isLoading && (
-              <div className="loading-state">
-                <div className="skeleton-grid">
-                  {[...Array(6)].map((_, index) => (
-                    <div key={index} className="skeleton-card">
-                      <div className="skeleton-video"></div>
-                    </div>
-                  ))}
-                </div>
-                <div className="loading-spinner"></div>
-                <p>Loading amazing templates...</p>
-              </div>
-            )}
-
-            {/* 按分类分组显示模板 */}
-            <TemplateGrid
-              sortedCategories={sortedCategories}
-              selectedTemplate={selectedTemplate}
-              onSelectTemplate={setSelectedTemplate}
-              categoryPages={categoryPages}
-              onCategoryPageChange={handleCategoryPageChange}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              templatesPerPage={TEMPLATES_PER_PAGE}
-              favoriteTemplates={favoriteTemplates}
-              onToggleFavorite={handleToggleFavorite}
-            />
-          </section>
-
-          {/* 右侧：操作区 */}
-          <aside className="action-panel" aria-label="Video creation actions">
-            {!selectedTemplate ? (
-              /* 初始状态：欢迎提示 */
-              <div className="welcome-panel">
-                <div className="welcome-content">
-                  <h2>🎬 Start Creating</h2>
-                  <p>Select a template from the left to begin creating your face swap video</p>
-                  <div className="welcome-icon">✨</div>
                 </div>
               </div>
-            )             : (
-              <div className="action-panel-content">
-                {/* 布局修复：左右分栏结构 */}
-                <div className="action-grid-layout">
-                  {/* 左列：模板预览 */}
-                  <div className="preview-column">
-                    <div className="preview-card">
-                      <h3><span className="step-badge">Step 1</span>Template</h3>
-                      <div className="preview-box">
-                        <video
-                          src={selectedTemplate.gifUrl}
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 右列：上传区域 (包含所有上传框) */}
-                  <div className="upload-column">
-                    <h3><span className="step-badge">Step 2</span>Upload Photo</h3>
-                    <UploadSection
-                      isDuoInteraction={isDuoInteraction}
-                      uploadedImage={uploadedImage}
-                      uploadedImage2={uploadedImage2}
-                      onImageUpload={handleImageUpload}
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                    />
-                  </div>
-                </div>
-
-                {/* 底部：生成区域 (全宽) */}
-                <div className="generate-section-full">
-                  <div className="action-card-inline">
-                    <h3><span className="step-badge">Step 3</span>Generate</h3>
-                    <div className="usage-info">
-                      <span className="usage-text">
-                        Remaining: <strong>{remainingGenerations}</strong> / {MAX_GENERATIONS}
-                      </span>
-                      {limitReached && (
-                        <span className="usage-warning">⚠️ Limit Reached</span>
+            )}
+    
+            {/* New: Quick Links Bar for SEO & Internal Linking */}
+            {!selectedTemplate && (
+              <div className="quick-links-bar">
+                <span className="quick-links-label">🔥 Trending:</span>
+                <Link to="/face-swap-for-tiktok" className="quick-link">TikTok Face Swap</Link>
+                <Link to="/templates/emotional-reactions" className="quick-link">Reaction Memes</Link>
+                <Link to="/birthday-face-swap-video" className="quick-link">Birthday Videos</Link>
+                <Link to="/face-swap-for-instagram" className="quick-link">Instagram Reels</Link>
+              </div>
+            )}
+    
+            {!isOnline && (
+              <div className="offline-notice">
+                ⚠️ You're offline. Some features may not work properly.
+              </div>
+            )}
+    
+            <main className="main">
+              <div className={`content-wrapper ${selectedTemplate ? 'template-selected' : ''}`}>
+                {/* 左侧：模板选择区 */}
+                <section className="templates-section" aria-label="Short video template selection">
+                  <div className="section-header">
+                    <h2 id="templates-heading">Choose AI Face Swap Video Templates</h2>
+                    {selectedTemplate && (
+                      <button 
+                        className="clear-selection-btn"
+                        onClick={() => {
+                          setSelectedTemplate(null)
+                          setUploadedImage(null)
+                          setResult(null)
+                        }}
+                        aria-label="Clear selected template"
+                        title="Clear selection"
+                      >
+                        ✕ Clear Selection
+                      </button>
+                    )}
+      
+                    {/* 搜索框 */}
+                    <div className="search-container">
+                      <input
+                        type="text"
+                        className="search-input"
+                        placeholder="🔍 Search templates"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        aria-label="Search templates"
+                        aria-describedby="search-description"
+                      />
+                      <span id="search-description" className="sr-only">Search for video templates by name or category</span>
+                      {searchQuery && (
+                        <button
+                          className="clear-search"
+                          aria-label="Clear search"
+                          onClick={() => setSearchQuery('')}
+                          title="Clear search"
+                        >
+                          ✕
+                        </button>
                       )}
                     </div>
-                    
-                    <button
-                      className="generate-button"
-                      onClick={handleGenerate}
-                      disabled={!canGenerate}
-                    >
-                      {generateButtonLabel}
-                    </button>
-                    
-                    <div className="prediction-info">Estimated time: {timeDisplay}</div>
                   </div>
-                </div>
-              </div>
-            )}
-          </aside>
-            </div>
-
-        {/* 庆祝动画 */}
-        {showCelebration && (
-          <div className="celebration-overlay">
-            <div className="confetti">
-              <div className="confetti-piece"></div>
-              <div className="confetti-piece"></div>
-              <div className="confetti-piece"></div>
-              <div className="confetti-piece"></div>
-              <div className="confetti-piece"></div>
-              <div className="confetti-piece"></div>
-              <div className="confetti-piece"></div>
-              <div className="confetti-piece"></div>
-                  </div>
-            <div className="success-message">
-              <h2>🎉 Amazing!</h2>
-              <p>Your meme is ready!</p>
-                </div>
-              </div>
-        )}
-      </main>
-      )}
-
-      {currentPage === 'me' && user && (
-        <main className="main">
-          <div className="content-wrapper">
-            <div className="me-section">
-              <div className="me-header">
-                <img src={user.picture} alt={user.name} className="me-avatar" />
-                <div className="me-info">
-                  <h2>{user.name}</h2>
-                  <p>{user.email}</p>
-                  <div className="me-stats">
-                    <div className="stat-item">
-                      <span className="stat-label">Videos</span>
-                      <span className="stat-value">{myVideos.length}</span>
+      
+                  {/* 搜索结果提示 */}
+                  {searchQuery && (
+                    <div className="search-result-info">
+                      Found {filteredTemplates.length} templates
                     </div>
-                    <div className="stat-item">
-                      <span className="stat-label">Level</span>
-                      <span className="stat-value">{Math.floor(myVideos.length / 10) + 1}</span>
+                  )}
+      
+                  {/* 无结果提示 */}
+                  {filteredTemplates.length === 0 && (
+                    <div className="no-results">
+                      <p>😕 No matching templates found</p>
+                      <p>Try searching: smile, laugh, surprise, funny, cool</p>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="me-content">
-                <h3>📁 My Created Videos</h3>
-                <div className="my-videos-grid">
-                  {myVideos.length === 0 ? (
-                    <div className="empty-message">
-                      <p>No videos yet. Start creating!</p>
+                  )}
+      
+                  {/* 加载状态 */}
+                  {isLoading && (
+                    <div className="loading-state">
+                      <div className="skeleton-grid">
+                        {[...Array(6)].map((_, index) => (
+                          <div key={index} className="skeleton-card">
+                            <div className="skeleton-video"></div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="loading-spinner"></div>
+                      <p>Loading amazing templates...</p>
                     </div>
-                  ) : (
-                    myVideos.map((video) => (
-                      <div key={video.id} className="my-video-card">
-                    <video
-                          src={video.url}
-                      muted
-                      playsInline
-                          style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-                        />
-                        <div className="my-video-info">
-                          <p className="video-date">{new Date(video.timestamp).toLocaleDateString()}</p>
-                          <button 
-                            className="download-btn-small"
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              handleVideoDownload(video.url)
-                            }}
-                          >
-                            📥 Download
-                          </button>
+                  )}
+      
+                  {/* 按分类分组显示模板 */}
+                  <TemplateGrid
+                    sortedCategories={sortedCategories}
+                    selectedTemplate={selectedTemplate}
+                    onSelectTemplate={setSelectedTemplate}
+                    categoryPages={categoryPages}
+                    onCategoryPageChange={handleCategoryPageChange}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    templatesPerPage={TEMPLATES_PER_PAGE}
+                    favoriteTemplates={favoriteTemplates}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                </section>
+      
+                {/* 右侧：操作区 */}
+                <aside className="action-panel" aria-label="Video creation actions">
+                  {!selectedTemplate ? (
+                    /* 初始状态：欢迎提示 */
+                    <div className="welcome-panel">
+                      <div className="welcome-content">
+                        <h2>🎬 Start Creating</h2>
+                        <p>Select a template from the left to begin creating your face swap video</p>
+                        <div className="welcome-icon">✨</div>
+                      </div>
+                    </div>
+                  )             : (
+                    <div className="action-panel-content">
+                      {/* 布局修复：左右分栏结构 */}
+                      <div className="action-grid-layout">
+                        {/* 左列：模板预览 */}
+                        <div className="preview-column">
+                          <div className="preview-card">
+                            <h3><span className="step-badge">Step 1</span>Template</h3>
+                            <div className="preview-box">
+                              <video
+                                src={selectedTemplate.gifUrl}
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                              />
+                            </div>
+                          </div>
+                        </div>
+      
+                        {/* 右列：上传区域 (包含所有上传框) */}
+                        <div className="upload-column">
+                          <h3><span className="step-badge">Step 2</span>Upload Photo</h3>
+                          <UploadSection
+                            isDuoInteraction={isDuoInteraction}
+                            uploadedImage={uploadedImage}
+                            uploadedImage2={uploadedImage2}
+                            onImageUpload={handleImageUpload}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                          />
                         </div>
                       </div>
-                    ))
+      
+                      {/* 底部：生成区域 (全宽) */}
+                      <div className="generate-section-full">
+                        <div className="action-card-inline">
+                          <h3><span className="step-badge">Step 3</span>Generate</h3>
+                          <div className="usage-info">
+                            <span className="usage-text">
+                              Remaining: <strong>{remainingGenerations}</strong> / {MAX_GENERATIONS}
+                            </span>
+                            {limitReached && (
+                              <span className="usage-warning">⚠️ Limit Reached</span>
+                            )}
+                          </div>
+                          
+                          <button
+                            className="generate-button"
+                            onClick={handleGenerate}
+                            disabled={!canGenerate}
+                          >
+                            {generateButtonLabel}
+                          </button>
+                          
+                          <div className="prediction-info">Estimated time: {timeDisplay}</div>
+                        </div>
+                      </div>
+                    </div>
                   )}
+                </aside>
+              </div>
+      
+              {/* 庆祝动画 */}
+              {showCelebration && (
+                <div className="celebration-overlay">
+                  <div className="confetti">
+                    <div className="confetti-piece"></div>
+                    <div className="confetti-piece"></div>
+                    <div className="confetti-piece"></div>
+                    <div className="confetti-piece"></div>
+                    <div className="confetti-piece"></div>
+                    <div className="confetti-piece"></div>
+                    <div className="confetti-piece"></div>
+                    <div className="confetti-piece"></div>
+                  </div>
+                  <div className="success-message">
+                    <h2>🎉 Amazing!</h2>
+                    <p>Your meme is ready!</p>
+                  </div>
+                </div>
+              )}
+            </main>
+          </>
+        )}
+
+        {/* === Me Page === */}
+        {currentPage === 'me' && user && (
+          <main className="main">
+            <div className="content-wrapper">
+              <div className="me-section">
+                <div className="me-header">
+                  <img src={user.picture} alt={user.name} className="me-avatar" />
+                  <div className="me-info">
+                    <h2>{user.name}</h2>
+                    <p>{user.email}</p>
+                    <div className="me-stats">
+                      <div className="stat-item">
+                        <span className="stat-label">Videos</span>
+                        <span className="stat-value">{myVideos.length}</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">Level</span>
+                        <span className="stat-value">{Math.floor(myVideos.length / 10) + 1}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="me-content">
+                  <h3>📁 My Created Videos</h3>
+                  <div className="my-videos-grid">
+                    {myVideos.length === 0 ? (
+                      <div className="empty-message">
+                        <p>No videos yet. Start creating!</p>
+                      </div>
+                    ) : (
+                      myVideos.map((video) => (
+                        <div key={video.id} className="my-video-card">
+                          <video
+                            src={video.url}
+                            muted
+                            playsInline
+                            style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                          />
+                          <div className="my-video-info">
+                            <p className="video-date">{new Date(video.timestamp).toLocaleDateString()}</p>
+                            <button 
+                              className="download-btn-small"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                handleVideoDownload(video.url)
+                              }}
+                            >
+                              📥 Download
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </main>
-      )}
+          </main>
+        )}
 
-      {!user && currentPage !== 'home' && (
-        <main className="main">
-          <div className="content-wrapper">
-            <div className="login-prompt">
-              <h2>Please log in to view your profile</h2>
-              <button className="generate-button" onClick={handleGoogleSignInClick}>
-                Log In
-              </button>
+        {!user && currentPage === 'me' && (
+          <main className="main">
+            <div className="content-wrapper">
+              <div className="login-prompt">
+                <h2>Please log in to view your profile</h2>
+                <button className="generate-button" onClick={handleGoogleSignInClick}>
+                  Log In
+                </button>
+              </div>
             </div>
-        </div>
-      </main>
-      )}
+          </main>
+        )}
 
-      <footer className="footer">
-          <p>© 2025 FaceAI Hub - AI-Powered Face Swap Application</p>
-      </footer>
+        <footer className="footer">
+            <p>© 2025 FaceAI Hub - AI-Powered Face Swap Application</p>
+        </footer>
       </div>
-      </div>
-      
-      {/* Toast 通知容器 */}
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
     </div>
+      
+    {/* Toast 通知容器 */}
+    <ToastContainer
+      position="top-right"
+      autoClose={3000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="dark"
+    />
+  </div>
   )
 }
 
