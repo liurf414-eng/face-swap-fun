@@ -261,27 +261,22 @@ a {
 
 /* === Hero Banner === */
 .hero-banner {
-  background: linear-gradient(to right, #1e1b4b, #312e81);
+  background: #121212; /* 极深灰背景 */
+  background-image: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 60%); /* 中心微弱紫光 */
   border-radius: 16px;
-  padding: 40px;
+  padding: 60px 20px;
   margin-bottom: 40px;
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  min-height: 300px; /* Ensure height */
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.05); /* 极淡边框 */
+  min-height: 280px;
 }
 
 .hero-bg-glow {
-  position: absolute;
-  top: -50%;
-  left: -10%;
-  width: 50%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
-  pointer-events: none;
+  display: none;
 }
 
 .hero-content { z-index: 1; max-width: 600px; }
@@ -304,7 +299,7 @@ a {
   line-height: 1.1;
 }
 .hero-desc {
-  color: #c7d2fe;
+  color: #a1a1aa;
   margin-bottom: 24px;
   font-size: 1.1rem;
   line-height: 1.5;
