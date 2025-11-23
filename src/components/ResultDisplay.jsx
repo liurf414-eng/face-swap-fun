@@ -57,7 +57,6 @@ const ResultDisplay = memo(function ResultDisplay({ result, selectedTemplate, on
       await navigator.clipboard.writeText(shareLink)
       toast.success('Link copied to clipboard!')
     } catch (err) {
-      // 如果 clipboard API 不可用，使用传统方法
       const textArea = document.createElement('textarea')
       textArea.value = shareLink
       textArea.style.position = 'fixed'
@@ -72,6 +71,36 @@ const ResultDisplay = memo(function ResultDisplay({ result, selectedTemplate, on
       }
       document.body.removeChild(textArea)
     }
+  }
+
+  // 社交媒体分享链接生成
+  const shareToSocial = (platform) => {
+    if (!shareLink) return
+    const text = encodeURIComponent('Check out this funny AI face swap video I made! 🤣 #faceswap #meme')
+    const url = encodeURIComponent(shareLink)
+    
+    let shareUrl = ''
+    switch (platform) {
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`
+        break
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`
+        break
+      case 'whatsapp':
+        shareUrl = `https://api.whatsapp.com/send?text=${text}%20${url}`
+        break
+      case 'telegram':
+        shareUrl = `https://t.me/share/url?url=${url}&text=${text}`
+        break
+      case 'reddit':
+        shareUrl = `https://www.reddit.com/submit?url=${url}&title=${text}`
+        break
+      default:
+        return
+    }
+    
+    window.open(shareUrl, '_blank', 'width=600,height=400')
   }
 
   return (
@@ -108,13 +137,33 @@ const ResultDisplay = memo(function ResultDisplay({ result, selectedTemplate, on
           />
         )}
       </div>
+      
       <div className="result-actions">
         <button className="download-button" onClick={onDownload}>
           📥 Download Video
         </button>
-        <button className="share-button" onClick={handleShare}>
-          🔗 Share
-        </button>
+        
+        <div className="share-buttons-container">
+          <p className="share-label">Share to:</p>
+          <div className="social-share-buttons">
+            <button className="social-btn twitter" onClick={() => shareToSocial('twitter')} title="Share to Twitter">
+              🐦
+            </button>
+            <button className="social-btn facebook" onClick={() => shareToSocial('facebook')} title="Share to Facebook">
+              📘
+            </button>
+            <button className="social-btn whatsapp" onClick={() => shareToSocial('whatsapp')} title="Share to WhatsApp">
+              💚
+            </button>
+            <button className="social-btn reddit" onClick={() => shareToSocial('reddit')} title="Share to Reddit">
+              🤖
+            </button>
+            <button className="social-btn copy-link" onClick={handleShare} title="Copy Link">
+              🔗
+            </button>
+          </div>
+        </div>
+
         <button 
           className="create-new-btn"
           onClick={() => {
@@ -123,14 +172,14 @@ const ResultDisplay = memo(function ResultDisplay({ result, selectedTemplate, on
               ? (selectedTemplate && hasRequiredImages)
               : (selectedTemplate && hasRequiredImages)
             if (hasRequired && !isProcessing && !limitReached) {
-              onCreateNew()
+              onCreateNew(false) // 保持当前选择，重新生成
             } else {
               // 否则清空状态回到初始页面
-              onCreateNew(true)
+              onCreateNew(true) // 重置所有状态
             }
           }}
         >
-          ✨ Create New Video
+          ✨ Create Another
         </button>
       </div>
     </div>
@@ -138,4 +187,3 @@ const ResultDisplay = memo(function ResultDisplay({ result, selectedTemplate, on
 })
 
 export default ResultDisplay
-

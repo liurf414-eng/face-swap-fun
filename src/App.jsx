@@ -1399,64 +1399,86 @@ function App() {
                         <div className="welcome-icon">✨</div>
                       </div>
                     </div>
-                  )             : (
+                  ) : (
                     <div className="action-panel-content">
-                      {/* 布局修复：左右分栏结构 */}
-                      <div className="action-grid-layout">
-                        {/* 左列：模板预览 */}
-                        <div className="preview-column">
-                          <div className="preview-card">
-                            <h3><span className="step-badge">Step 1</span>Template</h3>
-                            <div className="preview-box">
-                              <video
-                                src={selectedTemplate.gifUrl}
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
+                      {result ? (
+                        <ResultDisplay 
+                          result={result}
+                          selectedTemplate={selectedTemplate}
+                          onDownload={handleDownload}
+                          onCreateNew={(resetAll) => {
+                            setResult(null);
+                            if (resetAll) {
+                              setSelectedTemplate(null);
+                              setUploadedImage(null);
+                              setUploadedImage2(null);
+                            }
+                          }}
+                          isDuoInteraction={isDuoInteraction}
+                          hasRequiredImages={hasRequiredImages}
+                          isProcessing={isProcessing}
+                          limitReached={limitReached}
+                        />
+                      ) : (
+                        <>
+                          {/* 布局修复：左右分栏结构 */}
+                          <div className="action-grid-layout">
+                            {/* 左列：模板预览 */}
+                            <div className="preview-column">
+                              <div className="preview-card">
+                                <h3><span className="step-badge">Step 1</span>Template</h3>
+                                <div className="preview-box">
+                                  <video
+                                    src={selectedTemplate.gifUrl}
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                  />
+                                </div>
+                              </div>
+                            </div>
+          
+                            {/* 右列：上传区域 (包含所有上传框) */}
+                            <div className="upload-column">
+                              <h3><span className="step-badge">Step 2</span>Upload Photo</h3>
+                              <UploadSection
+                                isDuoInteraction={isDuoInteraction}
+                                uploadedImage={uploadedImage}
+                                uploadedImage2={uploadedImage2}
+                                onImageUpload={handleImageUpload}
+                                onDragOver={handleDragOver}
+                                onDrop={handleDrop}
                               />
                             </div>
                           </div>
-                        </div>
-      
-                        {/* 右列：上传区域 (包含所有上传框) */}
-                        <div className="upload-column">
-                          <h3><span className="step-badge">Step 2</span>Upload Photo</h3>
-                          <UploadSection
-                            isDuoInteraction={isDuoInteraction}
-                            uploadedImage={uploadedImage}
-                            uploadedImage2={uploadedImage2}
-                            onImageUpload={handleImageUpload}
-                            onDragOver={handleDragOver}
-                            onDrop={handleDrop}
-                          />
-                        </div>
-                      </div>
-      
-                      {/* 底部：生成区域 (全宽) */}
-                      <div className="generate-section-full">
-                        <div className="action-card-inline">
-                          <h3><span className="step-badge">Step 3</span>Generate</h3>
-                          <div className="usage-info">
-                            <span className="usage-text">
-                              Remaining: <strong>{remainingGenerations}</strong> / {MAX_GENERATIONS}
-                            </span>
-                            {limitReached && (
-                              <span className="usage-warning">⚠️ Limit Reached</span>
-                            )}
+          
+                          {/* 底部：生成区域 (全宽) */}
+                          <div className="generate-section-full">
+                            <div className="action-card-inline">
+                              <h3><span className="step-badge">Step 3</span>Generate</h3>
+                              <div className="usage-info">
+                                <span className="usage-text">
+                                  Remaining: <strong>{remainingGenerations}</strong> / {MAX_GENERATIONS}
+                                </span>
+                                {limitReached && (
+                                  <span className="usage-warning">⚠️ Limit Reached</span>
+                                )}
+                              </div>
+                              
+                              <button
+                                className="generate-button"
+                                onClick={handleGenerate}
+                                disabled={!canGenerate}
+                              >
+                                {generateButtonLabel}
+                              </button>
+                              
+                              <div className="prediction-info">Estimated time: {timeDisplay}</div>
+                            </div>
                           </div>
-                          
-                          <button
-                            className="generate-button"
-                            onClick={handleGenerate}
-                            disabled={!canGenerate}
-                          >
-                            {generateButtonLabel}
-                          </button>
-                          
-                          <div className="prediction-info">Estimated time: {timeDisplay}</div>
-                        </div>
-                      </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </aside>
