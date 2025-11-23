@@ -1462,7 +1462,6 @@ function App() {
           
                             {/* 右列：上传区域 (包含所有上传框) */}
                             <div className="upload-column">
-                              <h3><span className="step-badge">Step 2</span>Upload Photo</h3>
                               <UploadSection
                                 isDuoInteraction={isDuoInteraction}
                                 uploadedImage={uploadedImage}
