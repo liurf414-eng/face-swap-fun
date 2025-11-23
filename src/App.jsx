@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
@@ -8,7 +8,10 @@ import ProgressDisplay from './components/ProgressDisplay'
 import UploadSection from './components/UploadSection'
 import ResultDisplay from './components/ResultDisplay'
 import TemplateGrid from './components/TemplateGrid'
-import AIStudioPage from './pages/AIStudioPage' // Import AI Studio Page
+import AIStudioPage from './pages/AIStudioPage'
+import TikTokPage from './pages/TikTokPage'
+import InstagramPage from './pages/InstagramPage'
+import BirthdayPage from './pages/BirthdayPage'
 
 // 默认模板（回退方案）
 const defaultTemplates = [
@@ -51,6 +54,7 @@ const defaultTemplates = [
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState([])
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
@@ -75,7 +79,6 @@ function App() {
   const [user, setUser] = useState(null)  // 新增：用户信息
   const [showMyVideos, setShowMyVideos] = useState(false)  // 新增：显示我的视频
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
-  const [currentPage, setCurrentPage] = useState('home')  // home | studio | me
   const [favoriteTemplates, setFavoriteTemplates] = useState([])  // 新增：收藏的模板ID列表
   const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
   const TEMPLATES_PER_PAGE = 6
@@ -98,6 +101,15 @@ function App() {
         : '📤 Upload a photo first'
       : '🎨 Create Video'
 
+  // 确定当前页面类型
+  const currentPath = location.pathname;
+  const isAIStudio = currentPath === '/ai-studio';
+  const isMyVideos = currentPath === '/my-videos';
+  const isTikTok = currentPath === '/face-swap-for-tiktok';
+  const isInstagram = currentPath === '/face-swap-for-instagram';
+  const isBirthday = currentPath === '/birthday-face-swap-video';
+  const isHome = currentPath === '/' || (!isAIStudio && !isMyVideos && !isTikTok && !isInstagram && !isBirthday);
+
   // 分类名称映射
   const categoryMap = {
     'duo': 'Duo Interaction',
@@ -115,7 +127,10 @@ function App() {
   useEffect(() => {
     if (location.state && location.state.fromStudio && location.state.imageUrl) {
       setUploadedImage(location.state.imageUrl);
-      setCurrentPage('home');
+      // 如果是从 AI Studio 回来，确保回到首页
+      if (location.pathname !== '/') {
+        navigate('/');
+      }
       
       // Clear the state to prevent reloading on refresh
       window.history.replaceState({}, document.title);
@@ -130,7 +145,7 @@ function App() {
         document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
       }, 500);
     }
-  }, [location]);
+  }, [location, navigate]);
 
   // 加载模板数据（带缓存和错误重试）
   useEffect(() => {
@@ -327,7 +342,7 @@ function App() {
     setUser(null)
     localStorage.removeItem('user')
     setMyVideos([])
-    setCurrentPage('home')
+    navigate('/') // 回到首页
     // 关闭下拉菜单
     const menu = document.querySelector('.user-dropdown')
     if (menu) {
@@ -1171,31 +1186,22 @@ function App() {
       <div className="sidebar">
         <nav className="sidebar-nav">
           <div className="sidebar-section-title">TOOLS</div>
-          <button 
-            className={`nav-item ${currentPage === 'home' ? 'active' : ''}`}
-            onClick={() => setCurrentPage('home')}
-          >
+          <Link to="/" className={`nav-item ${!isAIStudio && !isMyVideos ? 'active' : ''}`}>
             🎭 Face Swap
-          </button>
+          </Link>
           
-          <button 
-            className={`nav-item ${currentPage === 'studio' ? 'active' : ''}`}
-            onClick={() => setCurrentPage('studio')}
-          >
+          <Link to="/ai-studio" className={`nav-item ${isAIStudio ? 'active' : ''}`}>
             ✨ AI Studio
-          </button>
+          </Link>
           
           <div className="sidebar-divider"></div>
           
           {user && (
             <>
               <div className="sidebar-section-title">ASSETS</div>
-              <button 
-                className={`nav-item ${currentPage === 'me' ? 'active' : ''}`}
-                onClick={() => setCurrentPage('me')}
-              >
+              <Link to="/my-videos" className={`nav-item ${isMyVideos ? 'active' : ''}`}>
                 👤 My Gallery
-              </button>
+              </Link>
               <div className="sidebar-divider"></div>
             </>
           )}
@@ -1214,9 +1220,9 @@ function App() {
           <div className="sidebar-divider"></div>
 
           <div className="sidebar-section-title">POPULAR</div>
-          <Link to="/face-swap-for-tiktok" className="nav-item-link">📱 TikTok</Link>
-          <Link to="/face-swap-for-instagram" className="nav-item-link">📸 Instagram</Link>
-          <Link to="/birthday-face-swap-video" className="nav-item-link">🎂 Birthday</Link>
+          <Link to="/face-swap-for-tiktok" className={`nav-item-link ${isTikTok ? 'active' : ''}`}>📱 TikTok</Link>
+          <Link to="/face-swap-for-instagram" className={`nav-item-link ${isInstagram ? 'active' : ''}`}>📸 Instagram</Link>
+          <Link to="/birthday-face-swap-video" className={`nav-item-link ${isBirthday ? 'active' : ''}`}>🎂 Birthday</Link>
         </nav>
         
         <div className="sidebar-footer">
@@ -1232,12 +1238,27 @@ function App() {
       <div className="main-content">
         
         {/* === AI Studio Page === */}
-        {currentPage === 'studio' && (
+        {isAIStudio && (
           <AIStudioPage />
+        )}
+
+        {/* === TikTok Page === */}
+        {isTikTok && (
+          <TikTokPage />
+        )}
+
+        {/* === Instagram Page === */}
+        {isInstagram && (
+          <InstagramPage />
+        )}
+
+        {/* === Birthday Page === */}
+        {isBirthday && (
+          <BirthdayPage />
         )}
         
         {/* === Home Page (Face Swap) === */}
-        {currentPage === 'home' && (
+        {isHome && (
           <>
             {/* Main Content - Compact Banner */}
             {!selectedTemplate && (
@@ -1465,7 +1486,7 @@ function App() {
         )}
 
         {/* === Me Page === */}
-        {currentPage === 'me' && user && (
+        {isMyVideos && user && (
           <main className="main">
             <div className="content-wrapper">
               <div className="me-section">
@@ -1526,7 +1547,7 @@ function App() {
           </main>
         )}
 
-        {!user && currentPage === 'me' && (
+        {!user && isMyVideos && (
           <main className="main">
             <div className="content-wrapper">
               <div className="login-prompt">
