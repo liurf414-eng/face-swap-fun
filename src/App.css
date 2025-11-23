@@ -1013,7 +1013,7 @@ a {
    SEO Landing Pages (TikTok, Video Maker, etc)
    ========================================= */
 .tiktok-page, .video-maker-page, .gif-maker-page, .birthday-page, .instagram-page {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 0 40px 0;
 }
@@ -1133,8 +1133,9 @@ a {
    My Gallery Fix
    ========================================= */
 .me-section {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  width: 100%;
 }
 .me-header {
   display: flex;
