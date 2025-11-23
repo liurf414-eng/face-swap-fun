@@ -12,6 +12,8 @@ import AIStudioPage from './pages/AIStudioPage'
 import TikTokPage from './pages/TikTokPage'
 import InstagramPage from './pages/InstagramPage'
 import BirthdayPage from './pages/BirthdayPage'
+import GifMakerPage from './pages/GifMakerPage'
+import VideoMakerPage from './pages/VideoMakerPage'
 
 // 默认模板（回退方案）
 const defaultTemplates = [
@@ -108,7 +110,9 @@ function App() {
   const isTikTok = currentPath === '/face-swap-for-tiktok';
   const isInstagram = currentPath === '/face-swap-for-instagram';
   const isBirthday = currentPath === '/birthday-face-swap-video';
-  const isHome = currentPath === '/' || (!isAIStudio && !isMyVideos && !isTikTok && !isInstagram && !isBirthday);
+  const isGifMaker = currentPath === '/face-swap-gif-maker';
+  const isVideoMaker = currentPath === '/face-swap-video-maker';
+  const isHome = currentPath === '/' || (!isAIStudio && !isMyVideos && !isTikTok && !isInstagram && !isBirthday && !isGifMaker && !isVideoMaker);
 
   // 分类名称映射
   const categoryMap = {
@@ -1256,6 +1260,16 @@ function App() {
         {isBirthday && (
           <BirthdayPage />
         )}
+
+        {/* === Gif Maker Page === */}
+        {isGifMaker && (
+          <GifMakerPage />
+        )}
+
+        {/* === Video Maker Page === */}
+        {isVideoMaker && (
+          <VideoMakerPage />
+        )}
         
         {/* === Home Page (Face Swap) === */}
         {isHome && (
@@ -1264,8 +1278,8 @@ function App() {
             {!selectedTemplate && (
               <div className="compact-banner">
                 <div className="compact-banner-content">
-                  <h1 className="compact-title">Create Magic with AI Face Swap</h1>
-                  <p className="compact-subtitle">Instant • Free • No Watermark</p>
+                  <h1 className="compact-title">AI Face Swap Meme Generator</h1>
+                  <p className="compact-subtitle">Put Your Face into Any Meme • Online GIF & Video Maker • No Watermark</p>
                 </div>
                 <div className="compact-actions">
                   <button 
@@ -1274,7 +1288,7 @@ function App() {
                       document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
                     }}
                   >
-                    ⚡ Start Creating
+                    ⚡ Make a Meme Now
                   </button>
                 </div>
               </div>

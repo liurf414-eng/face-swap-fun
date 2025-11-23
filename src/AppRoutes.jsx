@@ -20,6 +20,8 @@ function AppRoutes() {
       <Route path="/face-swap-for-tiktok" element={<App />} />
       <Route path="/face-swap-for-instagram" element={<App />} />
       <Route path="/birthday-face-swap-video" element={<App />} />
+      <Route path="/face-swap-gif-maker" element={<App />} />
+      <Route path="/face-swap-video-maker" element={<App />} />
 
       {/* 独立页面 (暂时保持无Sidebar状态，或者是全屏落地页) */}
       <Route path="/templates/:categorySlug" element={<CategoryPage />} />
