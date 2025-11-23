@@ -1342,9 +1342,7 @@ function App() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         aria-label="Search templates"
-                        aria-describedby="search-description"
                       />
-                      <span id="search-description" className="sr-only">Search for video templates by name or category</span>
                       {searchQuery && (
                         <button
                           className="clear-search"
