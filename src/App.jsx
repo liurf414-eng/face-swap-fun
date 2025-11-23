@@ -1149,11 +1149,15 @@ function App() {
     <div className="app">
       {/* 粒子背景已移除 - 深色主题不需要 */}
 
-      {/* 顶部导航栏 */}
+      {/* 顶部导航栏 - 右侧用户信息 */}
       <div className="top-navbar">
-        <div className="top-navbar-logo">
-          🎭 FaceAI Hub
+        {/* 积分显示 (模拟) */}
+        <div className="credits-pill">
+          <span className="credits-icon">⚡</span>
+          <span className="credits-text">Credits:</span>
+          <span className="credits-count">{user ? Math.max(0, (user ? 6 : 3) - generationCount) : 3}</span>
         </div>
+
         <div className="top-navbar-actions">
           {user ? (
             <div className="user-menu">
@@ -1186,54 +1190,63 @@ function App() {
       </div>
 
       <div className="app-body">
-      {/* 左侧导航栏 - 全新设计 (Creator Studio Sidebar) */}
+      {/* 左侧导航栏 - MindVideo Style */}
       <div className="sidebar">
-        <nav className="sidebar-nav">
-          <div className="sidebar-section-title">TOOLS</div>
-          <Link to="/" className={`nav-item ${!isAIStudio && !isMyVideos ? 'active' : ''}`}>
-            🎭 Face Swap
-          </Link>
-          
-          <Link to="/ai-studio" className={`nav-item ${isAIStudio ? 'active' : ''}`}>
-            ✨ AI Studio
-          </Link>
-          
-          <div className="sidebar-divider"></div>
-          
-          {user && (
-            <>
-              <div className="sidebar-section-title">ASSETS</div>
-              <Link to="/my-videos" className={`nav-item ${isMyVideos ? 'active' : ''}`}>
-                👤 My Gallery
-              </Link>
-              <div className="sidebar-divider"></div>
-            </>
-          )}
+        <div className="sidebar-header">
+          <div className="sidebar-logo">
+            🎭 FaceAI Hub
+          </div>
+        </div>
 
-          <div className="sidebar-section-title">CATEGORIES</div>
-          <div className="sidebar-scroll-area">
-            <Link to="/templates/emotional-reactions" className="nav-item-link">😄 Emotional Reactions</Link>
-            <Link to="/templates/burlesque-dance" className="nav-item-link">💃 Burlesque Dance</Link>
-            <Link to="/templates/duo-interaction" className="nav-item-link">👫 Duo Interaction</Link>
-            <Link to="/templates/magic-effects" className="nav-item-link">✨ Magic Effects</Link>
-            <Link to="/templates/sci-fi-effects" className="nav-item-link">🚀 Sci-Fi Effects</Link>
-            <Link to="/templates/slapstick-comedy" className="nav-item-link">😂 Slapstick Comedy</Link>
-            <Link to="/templates/style-makeovers" className="nav-item-link">👗 Style Makeovers</Link>
+        <nav className="sidebar-nav">
+          <div className="nav-group">
+            <div className="nav-group-title">Creation Center</div>
+            <Link to="/" className={`nav-item ${isHome ? 'active' : ''}`}>
+              <span className="nav-icon">🎭</span> Face Swap
+            </Link>
+            <Link to="/ai-studio" className={`nav-item ${isAIStudio ? 'active' : ''}`}>
+              <span className="nav-icon">✨</span> AI Studio
+            </Link>
           </div>
 
-          <div className="sidebar-divider"></div>
+          <div className="nav-group">
+            <div className="nav-group-title">Video AI</div>
+            <Link to="/face-swap-video-maker" className={`nav-item ${isVideoMaker ? 'active' : ''}`}>
+              <span className="nav-icon">🎬</span> Video Maker
+            </Link>
+            <Link to="/face-swap-for-tiktok" className={`nav-item ${isTikTok ? 'active' : ''}`}>
+              <span className="nav-icon">📱</span> TikTok Trends
+            </Link>
+          </div>
 
-          <div className="sidebar-section-title">POPULAR</div>
-          <Link to="/face-swap-for-tiktok" className={`nav-item-link ${isTikTok ? 'active' : ''}`}>📱 TikTok</Link>
-          <Link to="/face-swap-for-instagram" className={`nav-item-link ${isInstagram ? 'active' : ''}`}>📸 Instagram</Link>
-          <Link to="/birthday-face-swap-video" className={`nav-item-link ${isBirthday ? 'active' : ''}`}>🎂 Birthday</Link>
+          <div className="nav-group">
+            <div className="nav-group-title">Image AI</div>
+            <Link to="/face-swap-gif-maker" className={`nav-item ${isGifMaker ? 'active' : ''}`}>
+              <span className="nav-icon">🎞️</span> GIF Maker
+            </Link>
+          </div>
+
+          {user && (
+            <div className="nav-group">
+              <div className="nav-group-title">Assets</div>
+              <Link to="/my-videos" className={`nav-item ${isMyVideos ? 'active' : ''}`}>
+                <span className="nav-icon">📂</span> My Gallery
+              </Link>
+            </div>
+          )}
         </nav>
         
         <div className="sidebar-footer">
-          {!user && (
-            <button className="sidebar-login" onClick={handleGoogleSignInClick}>
-              Log In
+          {!user ? (
+            <button className="btn-upgrade" onClick={handleGoogleSignInClick}>
+              Sign In to Save
             </button>
+          ) : (
+            <div className="upgrade-card">
+              <div className="upgrade-title">Pro Plan</div>
+              <div className="upgrade-desc">Unlock 4K Export</div>
+              <button className="btn-upgrade">Upgrade Now</button>
+            </div>
           )}
         </div>
       </div>
@@ -1274,35 +1287,54 @@ function App() {
         {/* === Home Page (Face Swap) === */}
         {isHome && (
           <>
-            {/* Main Content - Compact Banner */}
+            {/* Main Content - MindVideo Style Hero */}
             {!selectedTemplate && (
-              <div className="compact-banner">
-                <div className="compact-banner-content">
-                  <h1 className="compact-title">AI Face Swap Meme Generator</h1>
-                  <p className="compact-subtitle">Put Your Face into Any Meme • Online GIF & Video Maker • No Watermark</p>
+              <>
+                <div className="hero-banner">
+                  <div className="hero-bg-glow"></div>
+                  <div className="hero-content">
+                    <span className="hero-badge">NEW RELEASE</span>
+                    <h1 className="hero-title">Free Use Google Nano Banana Pro!</h1>
+                    <p className="hero-desc">Everyone can now use the powerful Google Nano Banana Pro image model for free — generate hyper-realistic AI images in seconds!</p>
+                    <button className="hero-btn" onClick={() => document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' })}>Use Now!</button>
+                  </div>
+                  <div style={{fontSize: '120px', opacity: 0.9, filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))'}}>🍌</div>
                 </div>
-                <div className="compact-actions">
-                  <button 
-                    className="compact-btn-primary"
-                    onClick={() => {
-                      document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                  >
-                    ⚡ Make a Meme Now
-                  </button>
+
+                <h2 className="section-title">Creative Tools</h2>
+                <div className="tools-grid">
+                  <Link to="/ai-studio" className="tool-card">
+                    <div className="tool-icon">🖼️</div>
+                    <div className="tool-info">
+                      <h3>AI Image Gen</h3>
+                      <p>Quickly generate your AI images from text or images.</p>
+                    </div>
+                  </Link>
+                  <Link to="/" className="tool-card">
+                    <div className="tool-icon">🎥</div>
+                    <div className="tool-info">
+                      <h3>AI Video Generator</h3>
+                      <p>Turn text or images into stunning videos with AI.</p>
+                    </div>
+                  </Link>
+                  <Link to="/face-swap-video-maker" className="tool-card">
+                    <div className="tool-icon">⚡</div>
+                    <div className="tool-info">
+                      <h3>AI Video Effects</h3>
+                      <p>Explore various AI effects to easily create cool videos.</p>
+                    </div>
+                  </Link>
+                  <Link to="/face-swap-gif-maker" className="tool-card">
+                    <div className="tool-icon">🔊</div>
+                    <div className="tool-info">
+                      <h3>AI Audio Generator</h3>
+                      <p>One-click dubbing and dynamic sound effects.</p>
+                    </div>
+                  </Link>
                 </div>
-              </div>
-            )}
-    
-            {/* New: Quick Links Bar for SEO & Internal Linking */}
-            {!selectedTemplate && (
-              <div className="quick-links-bar">
-                <span className="quick-links-label">🔥 Trending:</span>
-                <Link to="/face-swap-for-tiktok" className="quick-link">TikTok Face Swap</Link>
-                <Link to="/templates/emotional-reactions" className="quick-link">Reaction Memes</Link>
-                <Link to="/birthday-face-swap-video" className="quick-link">Birthday Videos</Link>
-                <Link to="/face-swap-for-instagram" className="quick-link">Instagram Reels</Link>
-              </div>
+                
+                <h2 className="section-title">Hot Templates</h2>
+              </>
             )}
     
             {!isOnline && (
