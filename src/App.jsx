@@ -1289,15 +1289,12 @@ function App() {
             {/* Main Content - MindVideo Style Hero */}
             {!selectedTemplate && (
               <>
-                <div className="hero-banner">
+                <div className="hero-banner" style={{ justifyContent: 'center' }}>
                   <div className="hero-bg-glow"></div>
-                  <div className="hero-content">
-                    <span className="hero-badge">100% FREE</span>
-                    <h1 className="hero-title">AI Face Swap & Meme Generator</h1>
-                    <p className="hero-desc">Create hilarious memes, swap faces in videos, and generate AI photos with our free, powerful face swap tools. No watermark, high quality, and easy to use.</p>
-                    <button className="hero-btn" onClick={() => document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' })}>Start Creating</button>
+                  <div className="hero-content" style={{ maxWidth: '100%', textAlign: 'center', margin: '0 auto' }}>
+                    <h1 className="hero-title" style={{ whiteSpace: 'nowrap', fontSize: '2.8rem', marginBottom: '12px' }}>AI Face Swap Meme Generator</h1>
+                    <p className="hero-desc" style={{ margin: '0 auto', maxWidth: '800px' }}>Create hilarious memes, swap faces in videos, and generate AI photos with our free, powerful face swap tools. No watermark, high quality, and easy to use.</p>
                   </div>
-                  <div style={{fontSize: '120px', opacity: 0.9, filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))'}}>🎭</div>
                 </div>
 
                 <h2 className="section-title">Creative Tools</h2>
