@@ -65,6 +65,28 @@ function App() {
   const [result, setResult] = useState(null)
   const [processingStatus, setProcessingStatus] = useState('')
   const videoRef = useRef(null)
+  
+  // Refs for scroll preservation
+  const mainContentRef = useRef(null)
+  const scrollPositionRef = useRef(0)
+
+  // Handle template selection with scroll preservation
+  const handleSelectTemplate = (template) => {
+    if (mainContentRef.current) {
+      scrollPositionRef.current = mainContentRef.current.scrollTop
+    }
+    setSelectedTemplate(template)
+  }
+
+  // Restore scroll position when returning to template list
+  useEffect(() => {
+    if (!selectedTemplate && mainContentRef.current) {
+      requestAnimationFrame(() => {
+        mainContentRef.current.scrollTop = scrollPositionRef.current
+      })
+    }
+  }, [selectedTemplate])
+
   const [progress, setProgress] = useState(0)  // 新增：进度百分比
   const [elapsedTime, setElapsedTime] = useState(0)  // 已用时间（秒）
   const [estimatedTotalTime, setEstimatedTotalTime] = useState(20)  // 预计总时间（秒）
@@ -1311,7 +1333,7 @@ function App() {
               </div>
             )}
     
-            <main className="main">
+            <main className="main-content" ref={mainContentRef}>
               <div className={`content-wrapper ${selectedTemplate ? 'template-selected' : ''}`}>
                 {/* 模板列表模式 - 使用 display:none 代替条件渲染以保持滚动位置 */}
                 <section 
@@ -1393,7 +1415,7 @@ function App() {
                   <TemplateGrid
                     sortedCategories={sortedCategories}
                     selectedTemplate={selectedTemplate}
-                    onSelectTemplate={setSelectedTemplate}
+                    onSelectTemplate={handleSelectTemplate}
                     categoryPages={categoryPages}
                     onCategoryPageChange={handleCategoryPageChange}
                     onTouchStart={handleTouchStart}
