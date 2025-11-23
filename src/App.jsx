@@ -1292,12 +1292,12 @@ function App() {
                 <div className="hero-banner">
                   <div className="hero-bg-glow"></div>
                   <div className="hero-content">
-                    <span className="hero-badge">NEW RELEASE</span>
-                    <h1 className="hero-title">Free Use Google Nano Banana Pro!</h1>
-                    <p className="hero-desc">Everyone can now use the powerful Google Nano Banana Pro image model for free — generate hyper-realistic AI images in seconds!</p>
-                    <button className="hero-btn" onClick={() => document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' })}>Use Now!</button>
+                    <span className="hero-badge">100% FREE</span>
+                    <h1 className="hero-title">AI Face Swap & Meme Generator</h1>
+                    <p className="hero-desc">Create hilarious memes, swap faces in videos, and generate AI photos with our free, powerful face swap tools. No watermark, high quality, and easy to use.</p>
+                    <button className="hero-btn" onClick={() => document.querySelector('.templates-section')?.scrollIntoView({ behavior: 'smooth' })}>Start Creating</button>
                   </div>
-                  <div style={{fontSize: '120px', opacity: 0.9, filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))'}}>🍌</div>
+                  <div style={{fontSize: '120px', opacity: 0.9, filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))'}}>🎭</div>
                 </div>
 
                 <h2 className="section-title">Creative Tools</h2>
