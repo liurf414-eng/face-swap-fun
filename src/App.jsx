@@ -1313,9 +1313,12 @@ function App() {
     
             <main className="main">
               <div className={`content-wrapper ${selectedTemplate ? 'template-selected' : ''}`}>
-                {/* 模板列表模式 */}
-                {!selectedTemplate && (
-                  <section className="templates-section" aria-label="Short video template selection">
+                {/* 模板列表模式 - 使用 display:none 代替条件渲染以保持滚动位置 */}
+                <section 
+                  className="templates-section" 
+                  aria-label="Short video template selection"
+                  style={{ display: selectedTemplate ? 'none' : 'block' }}
+                >
                   <div className="section-header">
                     <h2 id="templates-heading">Choose AI Face Swap Video Templates</h2>
                     {selectedTemplate && (
@@ -1400,7 +1403,6 @@ function App() {
                     onToggleFavorite={handleToggleFavorite}
                   />
                   </section>
-                )}
       
                 {/* 全屏制作模式 */}
                 {selectedTemplate && (
