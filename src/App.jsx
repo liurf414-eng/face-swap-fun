@@ -1149,47 +1149,6 @@ function App() {
     <div className="app">
       {/* 粒子背景已移除 - 深色主题不需要 */}
 
-      {/* 顶部导航栏 - 右侧用户信息 */}
-      <div className="top-navbar">
-        {/* 积分显示 (模拟) */}
-        <div className="credits-pill">
-          <span className="credits-icon">⚡</span>
-          <span className="credits-text">Credits:</span>
-          <span className="credits-count">{user ? Math.max(0, (user ? 6 : 3) - generationCount) : 3}</span>
-        </div>
-
-        <div className="top-navbar-actions">
-          {user ? (
-            <div className="user-menu">
-              <button 
-                className="user-menu-trigger"
-                onClick={() => {
-                  const menu = document.querySelector('.user-dropdown')
-                  menu.classList.toggle('show')
-                }}
-              >
-                <img src={user.picture} alt={user.name} className="user-avatar" />
-                <span className="user-name">{user.name}</span>
-                <span className="dropdown-arrow">▼</span>
-              </button>
-              <div className="user-dropdown">
-                <button className="dropdown-item" onClick={handleSignOut}>
-                  🚪 Logout
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button 
-              className="login-btn"
-              onClick={handleGoogleSignInClick}
-            >
-              Log In
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="app-body">
       {/* 左侧导航栏 - MindVideo Style */}
       <div className="sidebar">
         <div className="sidebar-header">
@@ -1250,6 +1209,46 @@ function App() {
           )}
         </div>
       </div>
+
+      <div className="app-body">
+        {/* Top Navbar moved here */}
+        <div className="top-navbar">
+          <div className="credits-pill">
+            <span className="credits-icon">⚡</span>
+            <span className="credits-text">Credits:</span>
+            <span className="credits-count">{user ? Math.max(0, (user ? 6 : 3) - generationCount) : 3}</span>
+          </div>
+
+          <div className="top-navbar-actions">
+            {user ? (
+              <div className="user-menu">
+                <button 
+                  className="user-menu-trigger"
+                  onClick={() => {
+                    const menu = document.querySelector('.user-dropdown')
+                    menu.classList.toggle('show')
+                  }}
+                >
+                  <img src={user.picture} alt={user.name} className="user-avatar" />
+                  <span className="user-name">{user.name}</span>
+                  <span className="dropdown-arrow">▼</span>
+                </button>
+                <div className="user-dropdown">
+                  <button className="dropdown-item" onClick={handleSignOut}>
+                    🚪 Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button 
+                className="login-btn"
+                onClick={handleGoogleSignInClick}
+              >
+                Log In
+              </button>
+            )}
+          </div>
+        </div>
 
       {/* 主内容区域 - 移除巨大的Hero，改为紧凑横幅 */}
       <div className="main-content">
