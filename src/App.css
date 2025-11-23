@@ -541,7 +541,7 @@ a {
   border: 1px solid var(--border-color);
 }
 .preview-box {
-  aspect-ratio: 9/16;
+  height: 400px;
   background: #000;
   border-radius: 8px;
   overflow: hidden;
