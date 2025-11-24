@@ -15,6 +15,7 @@ function AppRoutes() {
       <Route path="/" element={<App />} />
       <Route path="/ai-studio" element={<App />} />
       <Route path="/my-videos" element={<App />} />
+      <Route path="/community" element={<App />} />
       
       {/* P2级别：长尾关键词页面 - 现在集成到App布局中 */}
       <Route path="/face-swap-for-tiktok" element={<App />} />

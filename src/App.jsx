@@ -14,6 +14,7 @@ import InstagramPage from './pages/InstagramPage'
 import BirthdayPage from './pages/BirthdayPage'
 import GifMakerPage from './pages/GifMakerPage'
 import VideoMakerPage from './pages/VideoMakerPage'
+import CommunityPage from './pages/CommunityPage'
 
 // 默认模板（回退方案）
 const defaultTemplates = [
@@ -129,12 +130,13 @@ function App() {
   const currentPath = location.pathname;
   const isAIStudio = currentPath === '/ai-studio';
   const isMyVideos = currentPath === '/my-videos';
+  const isCommunity = currentPath === '/community';
   const isTikTok = currentPath === '/face-swap-for-tiktok';
   const isInstagram = currentPath === '/face-swap-for-instagram';
   const isBirthday = currentPath === '/birthday-face-swap-video';
   const isGifMaker = currentPath === '/face-swap-gif-maker';
   const isVideoMaker = currentPath === '/face-swap-video-maker';
-  const isHome = currentPath === '/' || (!isAIStudio && !isMyVideos && !isTikTok && !isInstagram && !isBirthday && !isGifMaker && !isVideoMaker);
+  const isHome = currentPath === '/' || (!isAIStudio && !isMyVideos && !isTikTok && !isInstagram && !isBirthday && !isGifMaker && !isVideoMaker && !isCommunity);
 
   // 分类名称映射
   const categoryMap = {
@@ -172,6 +174,33 @@ function App() {
       }, 500);
     }
   }, [location, navigate]);
+
+  useEffect(() => {
+    if (
+      currentPath === '/' &&
+      location.state?.fromCommunity &&
+      location.state?.templateId &&
+      templates.length > 0
+    ) {
+      const templateId = Number(location.state.templateId)
+      const matchedTemplate = templates.find((tpl) => tpl.id === templateId)
+
+      if (matchedTemplate) {
+        if (mainContentRef.current) {
+          scrollPositionRef.current = mainContentRef.current.scrollTop
+        }
+
+        setSelectedTemplate(matchedTemplate)
+        requestAnimationFrame(() => {
+          document.querySelector('.creation-mode-container')?.scrollIntoView({ behavior: 'smooth' })
+        })
+      } else {
+        toast.info('未找到对应模板，请稍后再试')
+      }
+
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [currentPath, location, templates, navigate])
 
   // Auto-scroll removed based on user feedback
   useEffect(() => {
@@ -1213,6 +1242,13 @@ function App() {
             </Link>
           </div>
 
+          <div className="nav-group">
+            <div className="nav-group-title">Community</div>
+            <Link to="/community" className={`nav-item ${isCommunity ? 'active' : ''}`}>
+              <span className="nav-icon">🌐</span> Community
+            </Link>
+          </div>
+
           {user && (
             <div className="nav-group">
               <div className="nav-group-title">Assets</div>
@@ -1309,6 +1345,14 @@ function App() {
         {/* === Video Maker Page === */}
         {isVideoMaker && (
           <VideoMakerPage />
+        )}
+
+        {/* === Community Page === */}
+        {isCommunity && (
+          <CommunityPage
+            user={user}
+            onLogin={handleGoogleSignInClick}
+          />
         )}
         
         {/* === Home Page (Face Swap) === */}
