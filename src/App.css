@@ -1749,3 +1749,76 @@ a {
   }
 }
 
+/* === AI Studio Upload Box Styles === */
+.studio-upload-box {
+  width: 100%;
+  height: 160px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.studio-upload-box:hover {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.studio-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.studio-upload-label:hover {
+  color: white;
+}
+
+.studio-uploaded-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.studio-uploaded-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+}
+
+.studio-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.studio-remove-btn:hover {
+  background: #ef4444;
+  transform: scale(1.1);
+}
+

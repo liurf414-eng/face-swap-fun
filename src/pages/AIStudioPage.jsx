@@ -48,9 +48,21 @@ function AIStudioPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
+  const [uploadedImage, setUploadedImage] = useState(null); // For Edit mode
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => setUploadedImage(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleGenerate = () => {
     if (!prompt) return;
+    if (mode === 'edit' && !uploadedImage) return; // Edit mode requires image
+
     setIsGenerating(true);
     setProgress(0);
     setResult(null);
@@ -74,10 +86,10 @@ function AIStudioPage() {
             : styleImages;
             
           setResult({
-            type: mode,
-            url: mode === 'image' 
-              ? randomImage
-              : 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbW50eHR4eXh4eXh4eXh4eXh4eXh4eXh4eXh4eXh4eXh4eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7btP1aG4yd8RQ06s/giphy.mp4'
+            type: mode === 'video' ? 'video' : 'image',
+            url: mode === 'video' 
+              ? 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbW50eHR4eXh4eXh4eXh4eXh4eXh4eXh4eXh4eXh4eXh4eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7btP1aG4yd8RQ06s/giphy.mp4'
+              : randomImage // In edit mode, this would be the edited image
           });
         }, 500);
       }
@@ -178,6 +190,27 @@ function AIStudioPage() {
           </div>
 
           <div className="control-scroll-area">
+            {/* Image Upload for Edit Mode */}
+            {mode === 'edit' && (
+              <div className="control-group">
+                <label>Upload Image to Edit</label>
+                <div className="studio-upload-box">
+                  {uploadedImage ? (
+                    <div className="studio-uploaded-preview">
+                      <img src={uploadedImage} alt="Upload" />
+                      <button onClick={() => setUploadedImage(null)} className="studio-remove-btn">✕</button>
+                    </div>
+                  ) : (
+                    <label className="studio-upload-label">
+                      <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
+                      <span className="upload-icon">📤</span>
+                      <span>Click to Upload Image</span>
+                    </label>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Prompt Input */}
             <div className="control-group">
               <div className="label-row">
@@ -193,7 +226,9 @@ function AIStudioPage() {
                 className="prompt-input"
                 placeholder={mode === 'image' 
                   ? "Describe the image you want to create... (e.g., A futuristic cyberpunk city with neon lights)" 
-                  : "Describe the video... (e.g., A cinematic drone shot of a mountain peak at sunset)"}
+                  : mode === 'video'
+                    ? "Describe the video... (e.g., A cinematic drone shot of a mountain peak at sunset)"
+                    : "Describe how to edit this image... (e.g., Add a futuristic cyberpunk background)"}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 rows={4}
@@ -239,15 +274,15 @@ function AIStudioPage() {
             <button 
               className={`generate-magic-btn ${isGenerating ? 'generating' : ''}`}
               onClick={handleGenerate}
-              disabled={isGenerating || !prompt}
+              disabled={isGenerating || !prompt || (mode === 'edit' && !uploadedImage)}
             >
               {isGenerating ? (
                 <>
                   <div className="spinner-small"></div>
-                  Creating Magic... {Math.round(progress)}%
+                  {mode === 'edit' ? 'Editing Image...' : 'Creating Magic...'} {Math.round(progress)}%
                 </>
               ) : (
-                <>✨ Generate {mode === 'image' ? 'Image' : 'Video'}</>
+                <>✨ {mode === 'edit' ? 'Edit Image' : `Generate ${mode === 'video' ? 'Video' : 'Image'}`}</>
               )}
             </button>
             {isGenerating && (
