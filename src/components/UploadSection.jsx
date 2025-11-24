@@ -1,4 +1,5 @@
 import { toast } from 'react-toastify'
+import imageCompression from 'browser-image-compression'
 
 function UploadSection({ 
   isDuoInteraction, 
@@ -31,12 +32,32 @@ function UploadSection({
       return
     }
 
-    // 直接读取文件
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      onImageUpload(e.target.result, isSecond)
+    // 图片压缩：为了适应 Vercel Serverless Payload 限制 (4.5MB)
+    // 我们设定目标为 1.5MB，既保证质量又安全
+    const options = {
+      maxSizeMB: 1.5,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+      initialQuality: 0.8
     }
-    reader.readAsDataURL(file)
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        onImageUpload(e.target.result, isSecond)
+      }
+      reader.readAsDataURL(compressedFile)
+    } catch (error) {
+      console.error('Image compression failed:', error);
+      // 降级：尝试直接使用原图
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        onImageUpload(e.target.result, isSecond)
+      }
+      reader.readAsDataURL(file)
+    }
   }
   const handleImageUpload = async (e, isSecond = false) => {
     const file = e.target.files[0]
