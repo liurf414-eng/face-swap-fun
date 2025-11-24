@@ -76,19 +76,21 @@ function UploadSection({
           style={{ display: 'none' }}
         />
         {image ? (
-          <>
+          <div style={{ width: '100%', height: '100%', position: 'relative' }}>
             <img 
               src={image} 
               alt={`Uploaded ${label.toLowerCase()} for face swap`}
               title={`${label} - Ready for face swap`}
             />
-            <button 
-              className="change-photo-btn-small"
-              onClick={() => document.getElementById(id).click()}
-            >
-              Change Photo
-            </button>
-          </>
+            <div className="upload-overlay">
+              <button 
+                className="change-photo-btn-modern"
+                onClick={() => document.getElementById(id).click()}
+              >
+                ✏️ Change Photo
+              </button>
+            </div>
+          </div>
         ) : (
           <label htmlFor={id} className="upload-button-inline">
             📤 Click to Upload<br/>or Drag & Drop
