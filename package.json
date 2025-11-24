@@ -33,6 +33,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-helmet-async": "^2.0.5",
+    "react-masonry-css": "^1.0.16",
     "react-router-dom": "^7.9.6",
     "react-toastify": "^11.0.5",
     "vite": "^7.1.9"

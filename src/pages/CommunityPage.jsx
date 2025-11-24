@@ -1,81 +1,157 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import Masonry from 'react-masonry-css'
 import { communityPosts } from '../data/communityPosts'
 
-const DEFAULT_BATCH = 6
+const DEFAULT_BATCH = 8 // 增加每批加载数量
 
-function CommunityPostCard({ post, onUseTemplate, onShare }) {
+// 详情弹窗组件
+function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare }) {
+  if (!isOpen || !post) return null
+
   return (
-    <article className="community-card">
-      <div className="community-media">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <button className="modal-close-btn" onClick={onClose}>✕</button>
+        
+        <div className="modal-grid">
+          {/* 左侧：大图/视频 */}
+          <div className="modal-media-section">
+            <video
+              src={post.clipUrl}
+              autoPlay
+              loop
+              controls
+              playsInline
+              className="modal-video"
+            />
+          </div>
+          
+          {/* 右侧：详细信息 */}
+          <div className="modal-info-section">
+            <div className="modal-header">
+              <h2>{post.title}</h2>
+              <div className="modal-author">
+                <img src={post.author.avatar} alt={post.author.name} />
+                <div className="author-details">
+                  <strong>{post.author.name}</strong>
+                  <span>{post.author.handle}</span>
+                </div>
+                <button className="follow-btn">Follow</button>
+              </div>
+            </div>
+            
+            <div className="modal-scroll-area">
+              <p className="modal-desc">{post.description}</p>
+              
+              <div className="modal-prompt-box">
+                <div className="prompt-header">
+                  <span className="magic-icon">✨</span>
+                  <span>Used Prompt</span>
+                </div>
+                <p className="prompt-content">{post.prompt}</p>
+              </div>
+              
+              <div className="modal-tags">
+                {post.tags.map(tag => (
+                  <span key={tag} className="tag-pill small">#{tag}</span>
+                ))}
+              </div>
+              
+              <div className="modal-stats">
+                <div className="stat-item">
+                  <span className="stat-value">{post.metrics.likes.toLocaleString()}</span>
+                  <span className="stat-label">Likes</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-value">{post.metrics.remixes.toLocaleString()}</span>
+                  <span className="stat-label">Remixes</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-value">{post.metrics.views.toLocaleString()}</span>
+                  <span className="stat-label">Views</span>
+                </div>
+              </div>
+
+              {/* 模拟评论区 */}
+              <div className="modal-comments-preview">
+                <h4>Comments (3)</h4>
+                <div className="comment-item">
+                  <div className="comment-avatar">😎</div>
+                  <div className="comment-content">
+                    <strong>User_882</strong>
+                    <p>This is hilarious! 😂</p>
+                  </div>
+                </div>
+                <div className="comment-item">
+                  <div className="comment-avatar">🔥</div>
+                  <div className="comment-content">
+                    <strong>MemeKing</strong>
+                    <p>Can I use this template?</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-footer-actions">
+              <button 
+                className="remix-btn-large"
+                onClick={() => onUseTemplate(post.templateId)}
+              >
+                ⚡ Remix this
+              </button>
+              <div className="secondary-actions">
+                <button className="icon-action-btn" onClick={() => onShare(post)}>
+                  🔗 Share
+                </button>
+                <button className="icon-action-btn">
+                  ❤️ Like
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CommunityPostCard({ post, onClick }) {
+  return (
+    <article className="community-card" onClick={() => onClick(post)}>
+      <div className="community-media-wrapper">
         <video
           src={post.clipUrl}
           autoPlay
           loop
           muted
           playsInline
-          preload="metadata"
+          className="card-video"
         />
-        <div className="community-media-top">
-          {post.isFeatured && (
-            <span className="pill pill-featured">Community Selected</span>
-          )}
-          <span className="pill">{post.templateName}</span>
+        {/* 悬停遮罩 */}
+        <div className="card-hover-overlay">
+          <div className="overlay-content">
+            <button className="overlay-remix-btn">⚡ Remix</button>
+            <div className="overlay-stats">
+              <span>❤️ {post.metrics.likes}</span>
+              <span>👀 {post.metrics.views}</span>
+            </div>
+          </div>
         </div>
-        <div className="community-media-bottom">
-          <span className="pill pill-dark">{post.soundtrack}</span>
+        
+        <div className="card-badges-top">
+          {post.isFeatured && (
+            <span className="badge-featured">🌟 Featured</span>
+          )}
         </div>
       </div>
 
-      <div className="community-body">
-        <div className="community-title-row">
-          <div>
-            <h3>{post.title}</h3>
-            <p className="community-desc">{post.description}</p>
-          </div>
-          <span className="post-time">{post.createdAt}</span>
-        </div>
-
-        <div className="community-author">
-          <div className="author-info">
-            <img src={post.author.avatar} alt={post.author.name} />
-            <div>
-              <strong>{post.author.name}</strong>
-              <span>{post.author.handle}</span>
-            </div>
-          </div>
-          <div className="prompt-chip">
-            <span className="chip-label">Prompt</span>
-            <span className="chip-text">{post.prompt}</span>
-          </div>
-        </div>
-
-        <div className="community-tags-row">
-          {post.tags.map((tag) => (
-            <span key={tag} className="tag-pill small">{`#${tag}`}</span>
-          ))}
-        </div>
-
-        <div className="community-metrics">
-          <span>❤️ {post.metrics.likes.toLocaleString()}</span>
-          <span>🔁 {post.metrics.remixes.toLocaleString()}</span>
-          <span>👀 {post.metrics.views.toLocaleString()}</span>
-        </div>
-
-        <div className="community-actions">
-          <button
-            className="use-template-btn"
-            onClick={() => onUseTemplate(post.templateId)}
-          >
-            使用此模板
-          </button>
-          <button
-            className="ghost-btn"
-            onClick={() => onShare(post)}
-          >
-            分享
-          </button>
+      <div className="card-mini-info">
+        <div className="card-title">{post.title}</div>
+        <div className="card-author-row">
+          <img src={post.author.avatar} alt="" />
+          <span>{post.author.name}</span>
         </div>
       </div>
     </article>
@@ -87,6 +163,7 @@ function CommunityPage({ user, onLogin }) {
   const [activeTab, setActiveTab] = useState('forYou')
   const [selectedTag, setSelectedTag] = useState('all')
   const [visibleCount, setVisibleCount] = useState(DEFAULT_BATCH)
+  const [selectedPost, setSelectedPost] = useState(null) // 控制弹窗
 
   const tags = useMemo(() => {
     const unique = new Set()
@@ -117,40 +194,36 @@ function CommunityPage({ user, onLogin }) {
   }
 
   const handleShare = async (post) => {
-    const text = `快看 ${post.author.name} 在 FaceAI Hub 里的创作《${post.title}》`
+    const text = `Check out ${post.author.name}'s creation "${post.title}" on FaceAI Hub`
     const url = `${window.location.origin}/community`
     try {
       if (navigator.share) {
-        await navigator.share({
-          title: post.title,
-          text,
-          url
-        })
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(`${text} - ${url}`)
-        toast.success('链接已复制')
+        await navigator.share({ title: post.title, text, url })
       } else {
-        toast.info('当前浏览器不支持分享，请手动复制链接')
+        await navigator.clipboard.writeText(`${text} - ${url}`)
+        toast.success('Link copied to clipboard!')
       }
     } catch (error) {
-      console.error('分享失败', error)
-      toast.error('分享失败，请稍后重试')
+      console.error('Share failed', error)
     }
   }
 
-  const communityStats = [
-    { label: '创作者', value: '2.6K+' },
-    { label: '社区模板', value: '980+' },
-    { label: '近7日二创', value: '32K+' }
-  ]
+  // Masonry 断点设置
+  const breakpointColumnsObj = {
+    default: 4,
+    1600: 4,
+    1200: 3,
+    900: 2,
+    500: 1
+  };
 
   return (
     <main className="community-page">
       <header className="community-hero">
         <div>
           <p className="section-label">Community Selected</p>
-          <h1>FaceAI Hub 社区</h1>
-          <p>查看全球创作者的最新换脸作品，随手复刻或加入挑战，灵感永不停机。</p>
+          <h1>FaceAI Hub Community</h1>
+          <p>Discover global creations, remix trending memes, and join the fun.</p>
           <div className="community-socials">
             <a href="https://www.instagram.com" target="_blank" rel="noreferrer">Instagram</a>
             <a href="https://www.youtube.com" target="_blank" rel="noreferrer">YouTube</a>
@@ -158,12 +231,9 @@ function CommunityPage({ user, onLogin }) {
           </div>
         </div>
         <div className="community-stats">
-          {communityStats.map((stat) => (
-            <div key={stat.label} className="stat-card">
-              <strong>{stat.value}</strong>
-              <span>{stat.label}</span>
-            </div>
-          ))}
+          <div className="stat-card"><strong>2.6K+</strong><span>Creators</span></div>
+          <div className="stat-card"><strong>980+</strong><span>Templates</span></div>
+          <div className="stat-card"><strong>32K+</strong><span>Remixes</span></div>
         </div>
       </header>
 
@@ -182,9 +252,6 @@ function CommunityPage({ user, onLogin }) {
             Friends
           </button>
         </div>
-        <div className="tab-status">
-          {activeTab === 'friends' ? '好友实时动态' : '社区精选内容'}
-        </div>
       </div>
 
       <div className="community-tags">
@@ -194,50 +261,61 @@ function CommunityPage({ user, onLogin }) {
             className={`tag-pill ${selectedTag === tag ? 'active' : ''}`}
             onClick={() => setSelectedTag(tag)}
           >
-            {tag === 'all' ? '全部' : `#${tag}`}
+            {tag === 'all' ? 'All' : `#${tag}`}
           </button>
         ))}
       </div>
 
       {showFriendsGate ? (
         <div className="community-gate">
-          <h3>登录即可查看好友流</h3>
-          <p>连接 Google 账号即可同步点赞、收藏与合拍记录。</p>
+          <h3>Sign in to see friends' activity</h3>
+          <p>Connect your account to see what your friends are creating.</p>
           <button className="use-template-btn" onClick={onLogin}>
-            立即登录
+            Sign In
           </button>
         </div>
       ) : (
         <>
-          <div className="community-grid">
+          <Masonry
+            breakpointCols={breakpointColumnsObj}
+            className="my-masonry-grid"
+            columnClassName="my-masonry-grid_column"
+          >
             {visiblePosts.map((post) => (
               <CommunityPostCard
                 key={post.id}
                 post={post}
-                onUseTemplate={handleUseTemplate}
-                onShare={handleShare}
+                onClick={setSelectedPost}
               />
             ))}
-          </div>
+          </Masonry>
 
           {visiblePosts.length === 0 && (
             <div className="community-empty">
-              <p>暂无匹配的作品，换个标签看看？</p>
+              <p>No posts found. Try a different tag.</p>
             </div>
           )}
 
           {hasMore && (
             <div className="community-load-more">
               <button onClick={() => setVisibleCount((prev) => prev + DEFAULT_BATCH)}>
-                加载更多
+                Load More
               </button>
             </div>
           )}
         </>
       )}
+
+      {/* 详情弹窗 */}
+      <CommunityDetailModal
+        post={selectedPost}
+        isOpen={!!selectedPost}
+        onClose={() => setSelectedPost(null)}
+        onUseTemplate={handleUseTemplate}
+        onShare={handleShare}
+      />
     </main>
   )
 }
 
 export default CommunityPage
-
