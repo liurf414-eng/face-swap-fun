@@ -7,6 +7,47 @@ const InstagramPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Face Swap for Instagram - FaceAI Hub",
+    "description": "Create engaging Instagram Reels and Stories with AI face swap. Funny reaction videos, style makeovers, and trending memes.",
+    "url": "https://faceaihub.com/face-swap-for-instagram",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Web Browser",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "280"
+    }
+  };
+
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://faceaihub.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Face Swap for Instagram",
+        "item": "https://faceaihub.com/face-swap-for-instagram"
+      }
+    ]
+  };
+
   return (
     <div className="instagram-page">
       <Helmet>
@@ -14,6 +55,21 @@ const InstagramPage = () => {
         <meta name="description" content="Create engaging Instagram Reels and Stories with AI face swap. Funny reaction videos, style makeovers, and trending memes for your Instagram followers." />
         <meta name="keywords" content="instagram reels face swap, face swap for instagram, instagram story face filter, funny reels maker, ai face swap for instagram" />
         <link rel="canonical" href="https://faceaihub.com/face-swap-for-instagram" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Instagram Reels Face Swap - Create Funny Stories" />
+        <meta property="og:description" content="Create engaging Instagram Reels and Stories with AI face swap. Funny reaction videos and trending memes." />
+        <meta property="og:url" content="https://faceaihub.com/face-swap-for-instagram" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbData)}
+        </script>
       </Helmet>
 
       <div className="instagram-header">

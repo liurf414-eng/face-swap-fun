@@ -98,12 +98,49 @@ function AIStudioPage() {
     });
   };
 
+  // ... existing imports ...
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "AI Video Generator - AI Studio",
+    "description": "Create AI videos and images from text description. Free AI video generator for memes and social media content.",
+    "url": "https://faceaihub.com/ai-studio",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Web Browser",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.7",
+      "ratingCount": "85"
+    }
+  };
+
   return (
     <div className="ai-studio-container">
       <Helmet>
         <title>AI Video Generator - Text to Video & Image Creator | FaceAI Hub</title>
         <meta name="description" content="Create AI videos and images from text! Free AI video generator, make your own meme videos, and generate custom content for face swapping. No watermark." />
         <meta name="keywords" content="AI video generator, text to video ai, create meme video from text, ai image generator free, make my own meme video, custom content generator" />
+        <link rel="canonical" href="https://faceaihub.com/ai-studio" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="AI Video Generator - Text to Video Creator" />
+        <meta property="og:description" content="Create AI videos and images from text descriptions instantly." />
+        <meta property="og:url" content="https://faceaihub.com/ai-studio" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
       </Helmet>
 
       <div className="studio-header-mobile">

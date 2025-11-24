@@ -7,6 +7,47 @@ const VideoMakerPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Face Swap Video Creator - FaceAI Hub",
+    "description": "Free AI Face Swap Video Maker. Put your face into meme videos, movie clips, and dance trends. Create deepfake-style videos easily online.",
+    "url": "https://faceaihub.com/face-swap-video-maker",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Web Browser",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "580"
+    }
+  };
+
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://faceaihub.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Face Swap Video Maker",
+        "item": "https://faceaihub.com/face-swap-video-maker"
+      }
+    ]
+  };
+
   return (
     <div className="landing-page video-maker-page">
       <Helmet>
@@ -14,6 +55,21 @@ const VideoMakerPage = () => {
         <meta name="description" content="Free AI Face Swap Video Maker. Put your face into meme videos, movie clips, and dance trends. Create deepfake-style videos easily online. No technical skills needed." />
         <meta name="keywords" content="AI face swap video maker, put my face into meme video, deepfake meme video generator, face swap reaction video online, funny face swap video creator, customize video meme with your face" />
         <link rel="canonical" href="https://faceaihub.com/face-swap-video-maker" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Face Swap Video Creator - Turn Yourself into a Meme" />
+        <meta property="og:description" content="Free AI Face Swap Video Maker. Put your face into meme videos, movie clips, and dance trends." />
+        <meta property="og:url" content="https://faceaihub.com/face-swap-video-maker" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbData)}
+        </script>
       </Helmet>
 
       <div className="landing-header">

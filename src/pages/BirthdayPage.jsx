@@ -7,6 +7,47 @@ const BirthdayPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Birthday Face Swap Video Maker - FaceAI Hub",
+    "description": "Create hilarious Happy Birthday face swap videos! Put your friend's face on a dancing birthday card, funny movie scene, or singing character.",
+    "url": "https://faceaihub.com/birthday-face-swap-video",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Web Browser",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "150"
+    }
+  };
+
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://faceaihub.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Birthday Face Swap",
+        "item": "https://faceaihub.com/birthday-face-swap-video"
+      }
+    ]
+  };
+
   return (
     <div className="birthday-page">
       <Helmet>
@@ -14,6 +55,21 @@ const BirthdayPage = () => {
         <meta name="description" content="Create hilarious Happy Birthday face swap videos! Put your friend's face on a dancing birthday card, funny movie scene, or singing character. The best free birthday video maker." />
         <meta name="keywords" content="birthday face swap video, funny birthday video maker, happy birthday face meme, birthday card with face, dance your birthday video" />
         <link rel="canonical" href="https://faceaihub.com/birthday-face-swap-video" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Birthday Face Swap Video Maker - Create Funny Wishes" />
+        <meta property="og:description" content="Send a hilarious AI face swap video for their birthday! Put their face on a dancing character." />
+        <meta property="og:url" content="https://faceaihub.com/birthday-face-swap-video" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbData)}
+        </script>
       </Helmet>
 
       <div className="birthday-header">

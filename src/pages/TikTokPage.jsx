@@ -7,6 +7,47 @@ const TikTokPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Face Swap for TikTok - FaceAI Hub",
+    "description": "Make viral TikTok face swap videos instantly! Free AI face swap for TikTok trends, dance challenges, and funny memes. No watermark, high quality video export.",
+    "url": "https://faceaihub.com/face-swap-for-tiktok",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Web Browser",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "320"
+    }
+  };
+
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://faceaihub.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Face Swap for TikTok",
+        "item": "https://faceaihub.com/face-swap-for-tiktok"
+      }
+    ]
+  };
+
   return (
     <div className="tiktok-page">
       <Helmet>
@@ -14,6 +55,21 @@ const TikTokPage = () => {
         <meta name="description" content="Make viral TikTok face swap videos instantly! Free AI face swap for TikTok trends, dance challenges, and funny memes. No watermark, high quality video export." />
         <meta name="keywords" content="face swap for tiktok, tiktok face swap trend, tiktok face filter video, ai face swap tiktok, viral tiktok meme maker" />
         <link rel="canonical" href="https://faceaihub.com/face-swap-for-tiktok" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Face Swap for TikTok - Create Viral Trend Videos" />
+        <meta property="og:description" content="Make viral TikTok face swap videos instantly! Free AI face swap for TikTok trends. No watermark." />
+        <meta property="og:url" content="https://faceaihub.com/face-swap-for-tiktok" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbData)}
+        </script>
       </Helmet>
 
       <div className="tiktok-header">

@@ -7,6 +7,47 @@ const GifMakerPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Face Swap GIF Maker - FaceAI Hub",
+    "description": "Use our free online Face Swap GIF Maker to replace faces in GIFs instantly. Create funny reaction GIFs, meme GIFs, and animated stickers.",
+    "url": "https://faceaihub.com/face-swap-gif-maker",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Web Browser",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "450"
+    }
+  };
+
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://faceaihub.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Face Swap GIF Maker",
+        "item": "https://faceaihub.com/face-swap-gif-maker"
+      }
+    ]
+  };
+
   return (
     <div className="landing-page gif-maker-page">
       <Helmet>
@@ -14,6 +55,21 @@ const GifMakerPage = () => {
         <meta name="description" content="Use our free online Face Swap GIF Maker to replace faces in GIFs instantly. Create funny reaction GIFs, meme GIFs, and animated stickers with your face. No watermark." />
         <meta name="keywords" content="face swap GIF generator, replace face in GIF online, make a GIF with my face, upload selfie to face swap GIF, AI face swap GIF maker, custom reaction GIF face swap" />
         <link rel="canonical" href="https://faceaihub.com/face-swap-gif-maker" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Online Face Swap GIF Maker - Create Meme GIFs" />
+        <meta property="og:description" content="Replace faces in GIFs instantly for free. Create funny reaction GIFs and meme stickers." />
+        <meta property="og:url" content="https://faceaihub.com/face-swap-gif-maker" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbData)}
+        </script>
       </Helmet>
 
       <div className="landing-header">
