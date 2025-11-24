@@ -147,7 +147,7 @@ function LazyVideoCard({ template, isSelected, onSelect, isFavorited, onToggleFa
         <div 
           style={{ 
             width: '100%', 
-            height: '400px', 
+            height: '320px', 
             background: 'var(--bg-accent)',
             display: 'flex',
             alignItems: 'center',
