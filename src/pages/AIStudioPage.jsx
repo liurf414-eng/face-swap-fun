@@ -227,22 +227,6 @@ function AIStudioPage() {
               />
             </div>
 
-            {/* Style Selection */}
-            <div className="control-group">
-              <label>Style</label>
-              <div className="style-grid">
-                {STYLE_PRESETS.map(style => (
-                  <button
-                    key={style.id}
-                    className={`style-card ${selectedStyle === style.id ? 'active' : ''}`}
-                    onClick={() => setSelectedStyle(style.id)}
-                  >
-                    <span className="style-name">{style.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Aspect Ratio */}
             <div className="control-group">
               <label>Aspect Ratio</label>
