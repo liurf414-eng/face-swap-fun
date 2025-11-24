@@ -213,15 +213,7 @@ function AIStudioPage() {
 
             {/* Prompt Input */}
             <div className="control-group">
-              <div className="label-row">
-                <label>Prompt</label>
-                <button 
-                  className="magic-enhance-btn"
-                  onClick={() => setPrompt(prev => prev + ", 8k resolution, highly detailed, cinematic lighting")}
-                >
-                  ✨ Enhance
-                </button>
-              </div>
+              <label>Prompt</label>
               <textarea 
                 className="prompt-input"
                 placeholder={mode === 'image' 
@@ -245,7 +237,6 @@ function AIStudioPage() {
                     className={`style-card ${selectedStyle === style.id ? 'active' : ''}`}
                     onClick={() => setSelectedStyle(style.id)}
                   >
-                    <span className="style-icon">{style.icon}</span>
                     <span className="style-name">{style.name}</span>
                   </button>
                 ))}
