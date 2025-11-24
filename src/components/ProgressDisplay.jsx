@@ -1,4 +1,14 @@
-import { memo } from 'react'
+import { memo, useState, useEffect } from 'react'
+
+const TIPS = [
+  "Did you know? AI analyzes thousands of facial points.",
+  "Creating magic... this usually takes about 30-60 seconds.",
+  "Almost there! We are rendering your masterpiece.",
+  "Fun fact: The first face swap technology appeared in the 90s.",
+  "Refining details for the best quality...",
+  "Synthesizing expressions...",
+  "Matching lighting conditions..."
+]
 
 const ProgressDisplay = memo(function ProgressDisplay({ 
   progress, 
@@ -6,60 +16,50 @@ const ProgressDisplay = memo(function ProgressDisplay({
   elapsedTime, 
   predictedTotalTime 
 }) {
-  // 计算进度圆的stroke-dashoffset
-  const circumference = 2 * Math.PI * 50
-  const displayProgress = parseFloat(progress.toFixed(1))
-  const offset = circumference * (1 - displayProgress / 100)
+  const [tipIndex, setTipIndex] = useState(0)
+  
+  // Rotate tips every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTipIndex(prev => (prev + 1) % TIPS.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
-  const timeDisplay = predictedTotalTime > 0
-    ? `${elapsedTime.toFixed(1)}s / ${predictedTotalTime.toFixed(1)}s`
-    : `${elapsedTime.toFixed(1)}s / ...`
-
+  const displayProgress = Math.min(Math.max(0, parseFloat(progress)), 99.5)
+  const remainingTime = Math.max(0, predictedTotalTime - elapsedTime)
+  
   return (
-    <div className="processing-status-inline">
-      <h3><span className="step-badge">Step 3</span>Generating Your Video...</h3>
-      <div className="circular-progress-container">
-        <svg className="circular-progress" viewBox="0 0 120 120">
-          <circle
-            cx="60"
-            cy="60"
-            r="50"
-            fill="none"
-            stroke="rgba(102, 126, 234, 0.1)"
-            strokeWidth="8"
-          />
-          <circle
-            cx="60"
-            cy="60"
-            r="50"
-            fill="none"
-            stroke="url(#gradient)"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            transform="rotate(-90 60 60)"
-            style={{
-              transition: 'stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-              animation: 'progressPulse 2s ease-in-out infinite'
-            }}
-          />
-          <defs>
-            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#8b5cf6" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="circular-progress-content">
-          <div className="progress-percentage">{displayProgress.toFixed(1)}%</div>
+    <div className="processing-container">
+      <div className="processing-header">
+        <h3 className="processing-title">
+          <span className="spinner-icon">⚡</span>
+          Creating Your Video...
+        </h3>
+        <span className="processing-percent">{displayProgress.toFixed(0)}%</span>
+      </div>
+      
+      <div className="progress-bar-track">
+        <div 
+          className="progress-bar-fill"
+          style={{ width: `${displayProgress}%` }}
+        >
+          <div className="progress-bar-glow"></div>
         </div>
       </div>
-      <p className="processing-text">{processingStatus || 'Processing your video...'}</p>
-      <div className="prediction-info">{timeDisplay}</div>
+      
+      <div className="processing-info">
+        <p className="processing-status">{processingStatus || 'Processing...'}</p>
+        <p className="processing-time">
+          Estimated remaining: ~{remainingTime.toFixed(0)}s
+        </p>
+      </div>
+      
+      <div className="processing-tip">
+        💡 {TIPS[tipIndex]}
+      </div>
     </div>
   )
 })
 
 export default ProgressDisplay
-

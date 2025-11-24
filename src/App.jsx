@@ -1500,24 +1500,34 @@ function App() {
                           <div className="generate-section-full">
                             <div className="action-card-inline">
                               <h3><span className="step-badge">Step 3</span>Generate</h3>
-                              <div className="usage-info">
-                                <span className="usage-text">
-                                  Remaining: <strong>{remainingGenerations}</strong> / {MAX_GENERATIONS}
-                                </span>
-                                {limitReached && (
-                                  <span className="usage-warning">⚠️ Limit Reached</span>
-                                )}
-                              </div>
                               
-                              <button
-                                className="generate-button"
-                                onClick={handleGenerate}
-                                disabled={!canGenerate}
-                              >
-                                {generateButtonLabel}
-                              </button>
-                              
-                              <div className="prediction-info">Estimated time: {timeDisplay}</div>
+                              {isProcessing ? (
+                                <ProgressDisplay 
+                                  progress={scriptedProgress} 
+                                  processingStatus={processingStatus} 
+                                  elapsedTime={clientElapsedTime} 
+                                  predictedTotalTime={predictedTotalTime}
+                                />
+                              ) : (
+                                <>
+                                  <div className="usage-info">
+                                    <span className="usage-text">
+                                      Remaining: <strong>{remainingGenerations}</strong> / {MAX_GENERATIONS}
+                                    </span>
+                                    {limitReached && (
+                                      <span className="usage-warning">⚠️ Limit Reached</span>
+                                    )}
+                                  </div>
+                                  
+                                  <button
+                                    className="generate-button"
+                                    onClick={handleGenerate}
+                                    disabled={!canGenerate}
+                                  >
+                                    {generateButtonLabel}
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </div>
                         </>
