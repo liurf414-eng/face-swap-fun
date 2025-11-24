@@ -128,7 +128,6 @@ function LazyVideoCard({ template, isSelected, onSelect, isFavorited, onToggleFa
           title={`${template.name} face swap video template preview`}
           style={{ 
             width: '100%', 
-            height: '200px', 
             objectFit: 'cover',
             opacity: isLoaded ? 1 : 0.7,
             transition: 'opacity 0.3s ease'
@@ -148,7 +147,7 @@ function LazyVideoCard({ template, isSelected, onSelect, isFavorited, onToggleFa
         <div 
           style={{ 
             width: '100%', 
-            height: '200px', 
+            height: '400px', 
             background: 'var(--bg-accent)',
             display: 'flex',
             alignItems: 'center',
