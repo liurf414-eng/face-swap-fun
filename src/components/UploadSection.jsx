@@ -33,11 +33,12 @@ function UploadSection({
     }
 
     // 图片压缩：为了适应 Vercel Serverless Payload 限制 (4.5MB)
-    // 我们设定目标为 1.5MB，既保证质量又安全
+    // 我们设定目标为 1MB，既保证质量又安全
     const options = {
-      maxSizeMB: 1.5,
+      maxSizeMB: 1,
       maxWidthOrHeight: 1920,
       useWebWorker: true,
+      fileType: 'image/jpeg', // 强制转换为 JPEG，确保后端兼容性和更小的体积
       initialQuality: 0.8
     }
 

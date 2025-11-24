@@ -29,31 +29,38 @@ function isValidUrl(url) {
   if (!url || typeof url !== 'string') return false
   
   try {
-    const urlObj = new URL(url)
-    // 只允许http和https协议
-    if (!['http:', 'https:'].includes(urlObj.protocol)) {
-      return false
-    }
-    // URL长度限制（防止DoS）
-    if (url.length > 2048) {
-      return false
-    }
     // 检查是否为数据URL（base64图片）
     if (url.startsWith('data:image/')) {
       // 验证数据URL格式
       const dataUrlPattern = /^data:image\/(jpeg|jpg|png|webp|gif);base64,/
       if (!dataUrlPattern.test(url)) {
+        console.warn('Invalid Data URL format:', url.substring(0, 50))
         return false
       }
       // 数据URL大小限制（10MB）
       const base64Data = url.split(',')[1]
       if (base64Data && base64Data.length > 10 * 1024 * 1024) {
+        console.warn('Data URL too large:', base64Data.length)
         return false
       }
       return true
     }
+
+    const urlObj = new URL(url)
+    // 只允许http和https协议
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      console.warn('Invalid protocol:', urlObj.protocol)
+      return false
+    }
+    // URL长度限制（防止DoS）
+    if (url.length > 2048) {
+      console.warn('URL too long')
+      return false
+    }
+    
     return true
   } catch {
+    console.warn('URL parse failed')
     return false
   }
 }
