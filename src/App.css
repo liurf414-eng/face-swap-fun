@@ -862,6 +862,7 @@ a {
   resize: none;
   font-size: 0.9rem;
   line-height: 1.5;
+  min-height: 120px;
 }
 .prompt-input:focus { outline: none; border-color: var(--primary); }
 

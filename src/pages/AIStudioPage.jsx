@@ -223,7 +223,7 @@ function AIStudioPage() {
                     : "Describe how to edit this image... (e.g., Add a futuristic cyberpunk background)"}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                rows={4}
+                rows={6}
               />
             </div>
 
