@@ -8,19 +8,18 @@ const DEFAULT_BATCH = 8 // 增加每批加载数量
 
 const getFreshnessScore = (label) => {
   if (!label) return Number.MAX_SAFE_INTEGER
-  if (label.includes('分钟')) {
-    const value = parseInt(label, 10)
+  const lower = label.toLowerCase()
+  const value = parseInt(lower, 10)
+  if (lower.includes('min')) {
     return Number.isNaN(value) ? 90 : value
   }
-  if (label.includes('小时')) {
-    const value = parseInt(label, 10)
+  if (lower.includes('hour')) {
     return Number.isNaN(value) ? 180 : value * 60
   }
-  if (label.includes('天')) {
-    const value = parseInt(label, 10)
+  if (lower.includes('day')) {
     return Number.isNaN(value) ? 1440 : value * 24 * 60
   }
-  if (label.includes('昨天')) {
+  if (lower.includes('yesterday')) {
     return 24 * 60
   }
   return Number.MAX_SAFE_INTEGER
@@ -199,7 +198,7 @@ function CommunityPage({ user, onLogin }) {
   const activityMessages = useMemo(() => {
     return communityPosts.map((post, index) => ({
       id: `${post.id}-${index}`,
-      text: `${post.author.name} 刚刚 remix 了「${post.templateName}」 · +${post.metrics.remixes} 次`,
+      text: `${post.author.name} just remixed “${post.templateName}” · +${post.metrics.remixes} remixes`,
     }))
   }, [communityPosts])
 
@@ -324,7 +323,7 @@ function CommunityPage({ user, onLogin }) {
       {currentActivity && (
         <div className="community-activity-bar">
           <span className="activity-dot" />
-          <span className="activity-label">实时动态</span>
+          <span className="activity-label">Live feed</span>
           <div className="activity-marquee">
             <span key={currentActivity.id} className="activity-item">
               {currentActivity.text}
@@ -379,19 +378,19 @@ function CommunityPage({ user, onLogin }) {
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="搜索创作、作者或 #标签"
+                placeholder="Search creations, creators, or #tags"
               />
             </div>
             <div className="community-sort">
-              <label htmlFor="community-sort">排序</label>
+              <label htmlFor="community-sort">Sort</label>
               <select
                 id="community-sort"
                 value={sortBy}
                 onChange={(event) => setSortBy(event.target.value)}
               >
-                <option value="trending">热门趋势</option>
-                <option value="latest">最新发布</option>
-                <option value="remixes">最多 Remix</option>
+                <option value="trending">Trending</option>
+                <option value="latest">Latest</option>
+                <option value="remixes">Most remixed</option>
               </select>
             </div>
           </div>

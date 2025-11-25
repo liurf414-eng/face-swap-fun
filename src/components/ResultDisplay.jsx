@@ -19,7 +19,7 @@ const ResultDisplay = memo(function ResultDisplay({ result, selectedTemplate, on
   useEffect(() => {
     if (result && videoRef.current && isVideoUrl(result.url)) {
       videoRef.current.play().catch(err => {
-        console.warn('视频自动播放被阻止:', err)
+        console.warn('Video autoplay blocked:', err)
       })
     }
     // 生成分享链接

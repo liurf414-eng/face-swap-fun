@@ -16,43 +16,43 @@ import GifMakerPage from './pages/GifMakerPage'
 import VideoMakerPage from './pages/VideoMakerPage'
 import CommunityPage from './pages/CommunityPage'
 
-// 默认模板（回退方案）
+// Default templates as a fallback
 const defaultTemplates = [
-  // 搞笑魔性类 - 真人表情
-  { id: 1, name: '惊讶瞪眼', gifUrl: 'https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.mp4', category: '搞笑', type: 'video' },
-  { id: 2, name: '尴尬微笑', gifUrl: 'https://media.giphy.com/media/KupdfnqWuMpNS/giphy.mp4', category: '搞笑', type: 'video' },
-  { id: 3, name: '点头认同', gifUrl: 'https://media.giphy.com/media/KEYEpIngcmXlHetDqz/giphy.mp4', category: '搞笑', type: 'video' },
-  { id: 4, name: '捂嘴偷笑', gifUrl: 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.mp4', category: '搞笑', type: 'video' },
-  { id: 5, name: '大笑不止', gifUrl: 'https://media.giphy.com/media/3o7btNhMBytxAM6YBa/giphy.mp4', category: '搞笑', type: 'video' },
-  { id: 6, name: '笑到流泪', gifUrl: 'https://media.giphy.com/media/Q7ozWVYCR0nyW2rvPW/giphy.mp4', category: '搞笑', type: 'video' },
-  { id: 7, name: '翻白眼', gifUrl: 'https://media.giphy.com/media/Fjr6v88OPk7U4/giphy.mp4', category: '搞笑', type: 'video' },
-  { id: 8, name: '无语表情', gifUrl: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.mp4', category: '搞笑', type: 'video' },
-  { id: 9, name: '疯狂大笑', gifUrl: 'https://media.giphy.com/media/O5NyCibf93upy/giphy.mp4', category: '搞笑', type: 'video' },
-  { id: 10, name: '憋笑脸', gifUrl: 'https://media.giphy.com/media/9MFsKQ8A6HCN2/giphy.mp4', category: '搞笑', type: 'video' },
+  // Fun & meme-worthy expressions
+  { id: 1, name: 'Wide-Eyed Surprise', gifUrl: 'https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.mp4', category: 'Humor', type: 'video' },
+  { id: 2, name: 'Awkward Smile', gifUrl: 'https://media.giphy.com/media/KupdfnqWuMpNS/giphy.mp4', category: 'Humor', type: 'video' },
+  { id: 3, name: 'Nodding Approval', gifUrl: 'https://media.giphy.com/media/KEYEpIngcmXlHetDqz/giphy.mp4', category: 'Humor', type: 'video' },
+  { id: 4, name: 'Stifled Giggle', gifUrl: 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.mp4', category: 'Humor', type: 'video' },
+  { id: 5, name: 'Bursting Laughter', gifUrl: 'https://media.giphy.com/media/3o7btNhMBytxAM6YBa/giphy.mp4', category: 'Humor', type: 'video' },
+  { id: 6, name: 'Laughing Tears', gifUrl: 'https://media.giphy.com/media/Q7ozWVYCR0nyW2rvPW/giphy.mp4', category: 'Humor', type: 'video' },
+  { id: 7, name: 'Eye Roll', gifUrl: 'https://media.giphy.com/media/Fjr6v88OPk7U4/giphy.mp4', category: 'Humor', type: 'video' },
+  { id: 8, name: 'Speechless Face', gifUrl: 'https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.mp4', category: 'Humor', type: 'video' },
+  { id: 9, name: 'Wild Laugh', gifUrl: 'https://media.giphy.com/media/O5NyCibf93upy/giphy.mp4', category: 'Humor', type: 'video' },
+  { id: 10, name: 'Trying Not To Laugh', gifUrl: 'https://media.giphy.com/media/9MFsKQ8A6HCN2/giphy.mp4', category: 'Humor', type: 'video' },
 
-  // 酷炫表情类 - 真人表情
-  { id: 11, name: '戴墨镜', gifUrl: 'https://media.giphy.com/media/1jkSrMMRP53fSke11n/giphy.mp4', category: '酷炫', type: 'video' },
-  { id: 12, name: '自信眨眼', gifUrl: 'https://media.giphy.com/media/l0Iy67evoh42GvFiU/giphy.mp4', category: '酷炫', type: 'video' },
-  { id: 13, name: '点头微笑', gifUrl: 'https://media.giphy.com/media/111ebonMs90YLu/giphy.mp4', category: '酷炫', type: 'video' },
-  { id: 14, name: '飞吻', gifUrl: 'https://media.giphy.com/media/xUOrw5LIxb8S9X1LGg/giphy.mp4', category: '酷炫', type: 'video' },
-  { id: 15, name: '竖大拇指', gifUrl: 'https://media.giphy.com/media/3oEdva9BUHPIs2SkGk/giphy.mp4', category: '酷炫', type: 'video' },
-  { id: 16, name: '酷炫转头', gifUrl: 'https://media.giphy.com/media/26ybw9bHdgFUUoXAc/giphy.mp4', category: '酷炫', type: 'video' },
-  { id: 17, name: '挑眉', gifUrl: 'https://media.giphy.com/media/5XZatgyewAMaQ/giphy.mp4', category: '酷炫', type: 'video' },
-  { id: 18, name: '微笑点头', gifUrl: 'https://media.giphy.com/media/S3Ot3hZ5bcy8o/giphy.mp4', category: '酷炫', type: 'video' },
-  { id: 19, name: '自信笑容', gifUrl: 'https://media.giphy.com/media/l0HlPystfePnYIxWg/giphy.mp4', category: '酷炫', type: 'video' },
-  { id: 20, name: '眨眼微笑', gifUrl: 'https://media.giphy.com/media/l0MYMizgnsTpoMuoo/giphy.mp4', category: '酷炫', type: 'video' },
+  // Stylish reactions
+  { id: 11, name: 'Sunglasses Pose', gifUrl: 'https://media.giphy.com/media/1jkSrMMRP53fSke11n/giphy.mp4', category: 'Cool', type: 'video' },
+  { id: 12, name: 'Confident Wink', gifUrl: 'https://media.giphy.com/media/l0Iy67evoh42GvFiU/giphy.mp4', category: 'Cool', type: 'video' },
+  { id: 13, name: 'Nod & Smile', gifUrl: 'https://media.giphy.com/media/111ebonMs90YLu/giphy.mp4', category: 'Cool', type: 'video' },
+  { id: 14, name: 'Blowing Kiss', gifUrl: 'https://media.giphy.com/media/xUOrw5LIxb8S9X1LGg/giphy.mp4', category: 'Cool', type: 'video' },
+  { id: 15, name: 'Thumbs Up', gifUrl: 'https://media.giphy.com/media/3oEdva9BUHPIs2SkGk/giphy.mp4', category: 'Cool', type: 'video' },
+  { id: 16, name: 'Dramatic Head Turn', gifUrl: 'https://media.giphy.com/media/26ybw9bHdgFUUoXAc/giphy.mp4', category: 'Cool', type: 'video' },
+  { id: 17, name: 'Raised Brow', gifUrl: 'https://media.giphy.com/media/5XZatgyewAMaQ/giphy.mp4', category: 'Cool', type: 'video' },
+  { id: 18, name: 'Smiling Nod', gifUrl: 'https://media.giphy.com/media/S3Ot3hZ5bcy8o/giphy.mp4', category: 'Cool', type: 'video' },
+  { id: 19, name: 'Confident Grin', gifUrl: 'https://media.giphy.com/media/l0HlPystfePnYIxWg/giphy.mp4', category: 'Cool', type: 'video' },
+  { id: 20, name: 'Winking Smile', gifUrl: 'https://media.giphy.com/media/l0MYMizgnsTpoMuoo/giphy.mp4', category: 'Cool', type: 'video' },
 
-  // 情绪表达类 - 真人表情
-  { id: 21, name: '开心大笑', gifUrl: 'https://media.giphy.com/media/l0MYu38R0PPhIXqlO/giphy.mp4', category: '情绪', type: 'video' },
-  { id: 22, name: '惊讶张嘴', gifUrl: 'https://media.giphy.com/media/3o72F8t9TDi2xVnxOE/giphy.mp4', category: '情绪', type: 'video' },
-  { id: 23, name: '思考表情', gifUrl: 'https://media.giphy.com/media/l0HlDHQEiIdY3kxlm/giphy.mp4', category: '情绪', type: 'video' },
-  { id: 24, name: '疑惑皱眉', gifUrl: 'https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.mp4', category: '情绪', type: 'video' },
-  { id: 25, name: '伤心哭泣', gifUrl: 'https://media.giphy.com/media/d2lcHJTG5Tscg/giphy.mp4', category: '情绪', type: 'video' },
-  { id: 26, name: '生气皱眉', gifUrl: 'https://media.giphy.com/media/l0HlQ7LRalQqdWfao/giphy.mp4', category: '情绪', type: 'video' },
-  { id: 27, name: '害羞脸红', gifUrl: 'https://media.giphy.com/media/l0MYEqEzwMWFCg8rm/giphy.mp4', category: '情绪', type: 'video' },
-  { id: 28, name: '兴奋欢呼', gifUrl: 'https://media.giphy.com/media/l0Iy2MnL9ejDrf73i/giphy.mp4', category: '情绪', type: 'video' },
-  { id: 29, name: '得意笑容', gifUrl: 'https://media.giphy.com/media/l0Ex8CNFvRJ87Mvfy/giphy.mp4', category: '情绪', type: 'video' },
-  { id: 30, name: '甜美微笑', gifUrl: 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.mp4', category: '情绪', type: 'video' }
+  // Emotional reactions
+  { id: 21, name: 'Joyful Laugh', gifUrl: 'https://media.giphy.com/media/l0MYu38R0PPhIXqlO/giphy.mp4', category: 'Emotion', type: 'video' },
+  { id: 22, name: 'Surprised Gasp', gifUrl: 'https://media.giphy.com/media/3o72F8t9TDi2xVnxOE/giphy.mp4', category: 'Emotion', type: 'video' },
+  { id: 23, name: 'Thinking Face', gifUrl: 'https://media.giphy.com/media/l0HlDHQEiIdY3kxlm/giphy.mp4', category: 'Emotion', type: 'video' },
+  { id: 24, name: 'Confused Frown', gifUrl: 'https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.mp4', category: 'Emotion', type: 'video' },
+  { id: 25, name: 'Crying Sadness', gifUrl: 'https://media.giphy.com/media/d2lcHJTG5Tscg/giphy.mp4', category: 'Emotion', type: 'video' },
+  { id: 26, name: 'Angry Scowl', gifUrl: 'https://media.giphy.com/media/l0HlQ7LRalQqdWfao/giphy.mp4', category: 'Emotion', type: 'video' },
+  { id: 27, name: 'Blushing Shy', gifUrl: 'https://media.giphy.com/media/l0MYEqEzwMWFCg8rm/giphy.mp4', category: 'Emotion', type: 'video' },
+  { id: 28, name: 'Excited Cheer', gifUrl: 'https://media.giphy.com/media/l0Iy2MnL9ejDrf73i/giphy.mp4', category: 'Emotion', type: 'video' },
+  { id: 29, name: 'Smug Smile', gifUrl: 'https://media.giphy.com/media/l0Ex8CNFvRJ87Mvfy/giphy.mp4', category: 'Emotion', type: 'video' },
+  { id: 30, name: 'Sweet Smile', gifUrl: 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.mp4', category: 'Emotion', type: 'video' }
 ]
 
 function App() {
@@ -143,12 +143,15 @@ function App() {
     'duo': 'Duo Interaction',
     'Duo Interaction': 'Duo Interaction',
     'funny': 'Funny & Crazy',
+    'Humor': 'Funny & Crazy',
     'Emotional Reactions': 'Emotional Reactions',
+    'Emotion': 'Emotional Reactions',
     'Magic Effects': 'Magic Effects',
     'Slapstick': 'Slapstick Comedy',
     'Slapstick Comedy': 'Slapstick Comedy',
     'stylemakeovers': 'Style Makeovers',
-    'Style Makeovers': 'Style Makeovers'
+    'Style Makeovers': 'Style Makeovers',
+    'Cool': 'Style Makeovers'
   }
 
   // Handle data from AI Studio
@@ -195,7 +198,7 @@ function App() {
           document.querySelector('.creation-mode-container')?.scrollIntoView({ behavior: 'smooth' })
         })
       } else {
-        toast.info('未找到对应模板，请稍后再试')
+        toast.info('Template not found. Please try again later.')
       }
 
       navigate(location.pathname, { replace: true, state: {} })
@@ -225,7 +228,7 @@ function App() {
             }))
             setTemplates(mappedData)
             setIsLoading(false)
-            console.log('✅ 从缓存加载模板:', mappedData.length, '个')
+            console.log('✅ Loaded templates from cache:', mappedData.length)
             
             // 后台更新缓存
             fetch('/templates.json')
@@ -270,7 +273,7 @@ function App() {
         }))
         setTemplates(mappedData)
         setIsLoading(false)
-        console.log('✅ 成功加载模板:', mappedData.length, '个')
+        console.log('✅ Loaded templates from API:', mappedData.length)
       } catch (err) {
         console.error('Failed to load templates:', err)
         
@@ -285,7 +288,7 @@ function App() {
             }))
             setTemplates(mappedData)
             setIsLoading(false)
-            console.log('⚠️ 使用过期缓存数据')
+            console.log('⚠️ Using expired cache data')
             return
           } catch (e) {
             // 缓存数据损坏
@@ -318,7 +321,7 @@ function App() {
   // Google 登录
   const handleGoogleSignIn = async (response) => {
     try {
-      console.log('Google登录响应:', response)
+      console.log('Google login response:', response)
       const userInfo = {
         email: response.email,
         name: response.name,
@@ -333,16 +336,16 @@ function App() {
       const savedVideos = localStorage.getItem('myVideos') || '[]'
       setMyVideos(JSON.parse(savedVideos))
       
-      console.log('✅ 登录成功:', userInfo)
+      console.log('✅ Login success:', userInfo)
     } catch (error) {
-      console.error('登录失败:', error)
+      console.error('Login failed:', error)
       toast.error('Login failed. Please try again.')
     }
   }
 
   // 点击登录按钮时的处理
   const handleGoogleSignInClick = async () => {
-    console.log('点击登录按钮')
+    console.log('Login button clicked')
     
     // 使用 Google Identity Services (GIS)
     if (window.google && window.google.accounts) {
@@ -352,7 +355,7 @@ function App() {
           client_id: '457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com',
           scope: 'openid email profile',
           callback: async (response) => {
-            console.log('Token 响应:', response)
+            console.log('Token response:', response)
             
             if (response.access_token) {
               // 使用 token 获取用户信息
@@ -363,7 +366,7 @@ function App() {
                   }
                 })
                 const userInfo = await userInfoResponse.json()
-                console.log('用户信息:', userInfo)
+                console.log('User info:', userInfo)
                 
                 // 设置用户信息
                 const userData = {
@@ -380,21 +383,21 @@ function App() {
                 setMyVideos(JSON.parse(savedVideos))
                 
                 // 显示欢迎信息（可选）
-                console.log('✅ 登录成功！欢迎 ' + userInfo.name + '!')
+                console.log('✅ Login successful! Welcome ' + userInfo.name + '!')
               } catch (error) {
-                console.error('获取用户信息失败:', error)
-                toast.warning('登录成功，但无法获取用户信息')
+                console.error('Failed to fetch user info:', error)
+                toast.warning('Login succeeded but we could not load your profile.')
               }
             }
           }
         }).requestAccessToken({ prompt: 'consent' })
       } catch (error) {
-        console.error('OAuth2 错误:', error)
-        toast.error('登录功能暂时不可用，请稍后重试')
+        console.error('OAuth2 error:', error)
+        toast.error('Login is temporarily unavailable. Please try again later.')
       }
     } else {
-      console.error('Google API 未加载')
-      toast.error('Google 登录功能暂时不可用，请刷新页面重试')
+      console.error('Google API not loaded')
+      toast.error('Google login is temporarily unavailable. Please refresh and try again.')
     }
   }
 
@@ -410,7 +413,7 @@ function App() {
     }
   }
 
-  // 保存生成的视频到"我的"列表
+  // Save generated videos to the "My Videos" list
   const saveVideoToMyList = (videoData) => {
     if (!user) return
     
@@ -467,7 +470,7 @@ function App() {
       // 自动显示 One Tap 提示（可选）
       if (!user) {
         window.google.accounts.id.prompt((notification) => {
-          console.log('One Tap提示状态:', notification)
+          console.log('One Tap prompt status:', notification)
         })
       }
     }
@@ -487,7 +490,7 @@ function App() {
 
     // 如果日期不是今天，重置计数
     if (storedDate !== todayDate) {
-      console.log('新的一天，重置生成次数')
+      console.log('New day detected, reset generation count')
       localStorage.setItem('faceSwapLastDate', todayDate)
       localStorage.setItem('faceSwapGenerationCount', '0')
       setGenerationCount(0)
@@ -827,7 +830,7 @@ function App() {
     
     const isDuo = selectedTemplate?.category === 'Duo Interaction'
     if (!selectedTemplate || !uploadedImage || (isDuo && !uploadedImage2)) {
-      toast.warning(isDuo ? '请先选择模板并上传两张照片！' : '请先选择模板并上传照片！')
+      toast.warning(isDuo ? 'Please choose a template and upload two photos first!' : 'Please choose a template and upload a photo first!')
       return
     }
 
@@ -835,9 +838,9 @@ function App() {
     const maxGenerations = user ? 6 : 3
     if (generationCount >= maxGenerations) {
       if (!user) {
-        toast.warning(`免费额度已用完（${maxGenerations}次）。如需继续使用，请登录账号获得更多额度！`, { autoClose: 5000 })
+        toast.warning(`Free quota used up (${maxGenerations} runs). Sign in to unlock more!`, { autoClose: 5000 })
       } else {
-        toast.info(`您的免费额度已用完（${maxGenerations}次）。感谢您的使用！`, { autoClose: 5000 })
+        toast.info(`Your free quota (${maxGenerations} runs) is finished. Thanks for creating!`, { autoClose: 5000 })
       }
       return
     }
@@ -870,7 +873,7 @@ function App() {
     try {
       // 检查网络状态
       if (!navigator.onLine) {
-        throw new Error('网络连接已断开，请检查您的网络连接')
+        throw new Error('Network connection lost. Please check your internet.')
       }
 
       // 提交换脸任务（添加超时控制）
@@ -894,9 +897,9 @@ function App() {
       } catch (fetchError) {
         clearTimeout(timeoutId)
         if (fetchError.name === 'AbortError') {
-          throw new Error('请求超时，请检查网络连接或稍后重试')
+          throw new Error('Request timed out. Please check your connection or try again later.')
         } else if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('fetch failed')) {
-          throw new Error('无法连接到服务器，请检查网络连接或稍后重试')
+          throw new Error('Unable to reach the server. Please check your connection or try again later.')
         } else {
           throw new Error(`网络错误: ${fetchError.message}`)
         }
@@ -939,14 +942,14 @@ function App() {
             
             // 检查最大轮询次数
             if (pollAttempts > MAX_POLL_ATTEMPTS) {
-              throw new Error('处理超时，请稍后重试')
+              throw new Error('Processing timeout. Please try again later.')
             }
 
             // 检查网络状态
             if (!navigator.onLine) {
               consecutiveErrors++
               if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-                throw new Error('网络连接已断开，请检查您的网络连接')
+                throw new Error('Network connection lost. Please check your internet.')
               }
               // 网络断开时，延长重试间隔
               setTimeout(pollTask, 5000)
@@ -970,7 +973,7 @@ function App() {
                   fetchError.message.includes('Failed to fetch') || 
                   fetchError.message.includes('fetch failed')) {
                 if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-                  throw new Error('无法连接到服务器，请检查网络连接或稍后重试')
+                  throw new Error('Unable to reach the server. Please check your connection or try again later.')
                 }
                 // 网络错误时，延长重试间隔
                 console.warn(`轮询错误 (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}):`, fetchError.message)
@@ -1016,7 +1019,7 @@ function App() {
               }
               setResult(result)
               
-              // 保存到"我的"列表（如果已登录）
+              // Save to "My Videos" if the user is logged in
               if (user) {
                 saveVideoToMyList(result)
               }
@@ -1034,7 +1037,7 @@ function App() {
               setTimeout(() => {
                 if (videoRef.current && isVideoUrl(result.url)) {
                   videoRef.current.play().catch(err => {
-                    console.warn('视频自动播放被阻止:', err)
+                    console.warn('Video autoplay blocked:', err)
                   })
                 }
               }, 100)
@@ -1062,9 +1065,9 @@ function App() {
           setScriptedProgress(5.0)
           
           // 提供更友好的错误提示
-          let errorMessage = error.message || '未知错误'
+          let errorMessage = error.message || 'Unknown error'
           if (errorMessage.includes('fetch failed') || errorMessage.includes('Failed to fetch')) {
-            errorMessage = '无法连接到服务器，请检查网络连接或稍后重试'
+            errorMessage = 'Unable to reach the server. Please check your connection or try again later.'
           }
           
             toast.error(`生成失败: ${errorMessage}`, { autoClose: 5000 })
@@ -1101,7 +1104,7 @@ function App() {
         setTimeout(() => {
           if (videoRef.current && isVideoUrl(result.url)) {
             videoRef.current.play().catch(err => {
-              console.warn('视频自动播放被阻止:', err)
+              console.warn('Video autoplay blocked:', err)
             })
           }
         }, 100)
@@ -1114,7 +1117,7 @@ function App() {
       }
 
     } catch (error) {
-      console.error('换脸错误:', error)
+      console.error('Face swap error:', error)
       setProcessingStatus('')
       setIsProcessing(false)
       setProcessingStartTime(null)
@@ -1122,9 +1125,9 @@ function App() {
       setScriptedProgress(5.0)
       
       // 提供更友好的错误提示
-      let errorMessage = error.message || '未知错误'
+      let errorMessage = error.message || 'Unknown error'
       if (errorMessage.includes('fetch failed') || errorMessage.includes('Failed to fetch')) {
-        errorMessage = '无法连接到服务器，请检查网络连接或稍后重试'
+        errorMessage = 'Unable to reach the server. Please check your connection or try again later.'
       }
       
       toast.error(`生成失败: ${errorMessage}`, { autoClose: 5000 })
@@ -1166,8 +1169,8 @@ function App() {
       // 释放 blob URL
       window.URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('下载失败:', error)
-      toast.error('下载失败，请稍后重试')
+      console.error('Download failed:', error)
+      toast.error('Download failed. Please try again later.')
     }
   }
 
@@ -1196,8 +1199,8 @@ function App() {
       // 释放 blob URL
       window.URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('下载失败:', error)
-      toast.error('下载失败，请稍后重试')
+      console.error('Download failed:', error)
+      toast.error('Download failed. Please try again later.')
     }
   }
 
