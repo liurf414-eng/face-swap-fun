@@ -1901,6 +1901,112 @@ a {
   margin-bottom: 16px;
 }
 
+.community-activity-bar {
+  margin: 24px 0;
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(15,15,26,0.65);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 10px rgba(34,211,238,0.9);
+  animation: activityPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes activityPulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0.2; }
+}
+
+.activity-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+}
+
+.activity-marquee {
+  overflow: hidden;
+  flex: 1;
+}
+
+.activity-item {
+  display: inline-block;
+  white-space: nowrap;
+  color: #f5f5f5;
+  font-weight: 600;
+  animation: tickerFade 4.5s ease forwards;
+}
+
+@keyframes tickerFade {
+  0% { transform: translateY(12px); opacity: 0; }
+  20% { transform: translateY(0); opacity: 1; }
+  80% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-12px); opacity: 0; }
+}
+
+.community-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-input-modern {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+}
+
+.search-icon {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.search-input-modern input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.community-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+}
+
+.community-sort select {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  padding: 8px 16px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .tab-buttons {
   display: inline-flex;
   background: rgba(255,255,255,0.06);

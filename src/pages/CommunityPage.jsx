@@ -6,6 +6,26 @@ import { communityPosts } from '../data/communityPosts'
 
 const DEFAULT_BATCH = 8 // 增加每批加载数量
 
+const getFreshnessScore = (label) => {
+  if (!label) return Number.MAX_SAFE_INTEGER
+  if (label.includes('分钟')) {
+    const value = parseInt(label, 10)
+    return Number.isNaN(value) ? 90 : value
+  }
+  if (label.includes('小时')) {
+    const value = parseInt(label, 10)
+    return Number.isNaN(value) ? 180 : value * 60
+  }
+  if (label.includes('天')) {
+    const value = parseInt(label, 10)
+    return Number.isNaN(value) ? 1440 : value * 24 * 60
+  }
+  if (label.includes('昨天')) {
+    return 24 * 60
+  }
+  return Number.MAX_SAFE_INTEGER
+}
+
 // 详情弹窗组件
 function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare }) {
   if (!isOpen || !post) return null
@@ -117,9 +137,15 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare })
   )
 }
 
-function CommunityPostCard({ post, onClick }) {
+function CommunityPostCard({ post, onClick, onRemix }) {
+  const handleCardClick = () => onClick(post)
+  const handleRemixClick = (event) => {
+    event.stopPropagation()
+    onRemix(post.templateId)
+  }
+
   return (
-    <article className="community-card" onClick={() => onClick(post)}>
+    <article className="community-card" onClick={handleCardClick}>
       <div className="community-media-wrapper">
         <video
           src={post.clipUrl}
@@ -132,7 +158,9 @@ function CommunityPostCard({ post, onClick }) {
         {/* 悬停遮罩 */}
         <div className="card-hover-overlay">
           <div className="overlay-content">
-            <button className="overlay-remix-btn">⚡ Remix</button>
+            <button className="overlay-remix-btn" onClick={handleRemixClick}>
+              ⚡ Remix
+            </button>
             <div className="overlay-stats">
               <span>❤️ {post.metrics.likes}</span>
               <span>👀 {post.metrics.views}</span>
@@ -164,12 +192,30 @@ function CommunityPage({ user, onLogin }) {
   const [selectedTag, setSelectedTag] = useState('all')
   const [visibleCount, setVisibleCount] = useState(DEFAULT_BATCH)
   const [selectedPost, setSelectedPost] = useState(null) // 控制弹窗
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('trending')
+  const [activityIndex, setActivityIndex] = useState(0)
+
+  const activityMessages = useMemo(() => {
+    return communityPosts.map((post, index) => ({
+      id: `${post.id}-${index}`,
+      text: `${post.author.name} 刚刚 remix 了「${post.templateName}」 · +${post.metrics.remixes} 次`,
+    }))
+  }, [communityPosts])
 
   const tags = useMemo(() => {
     const unique = new Set()
     communityPosts.forEach((post) => post.tags.forEach((tag) => unique.add(tag)))
     return ['all', ...unique]
-  }, [])
+  }, [communityPosts])
+
+  useEffect(() => {
+    if (!activityMessages.length) return
+    const timer = setInterval(() => {
+      setActivityIndex((prev) => (prev + 1) % activityMessages.length)
+    }, 4500)
+    return () => clearInterval(timer)
+  }, [activityMessages.length])
 
   const tabPosts = useMemo(() => {
     const base = activeTab === 'friends'
@@ -181,13 +227,51 @@ function CommunityPage({ user, onLogin }) {
     return base.filter((post) => post.tags.includes(selectedTag))
   }, [activeTab, selectedTag])
 
-  const visiblePosts = tabPosts.slice(0, visibleCount)
-  const hasMore = visibleCount < tabPosts.length
+  const filteredPosts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+    if (!query) return tabPosts
+    return tabPosts.filter((post) => {
+      const searchable = [
+        post.title,
+        post.description,
+        post.author.name,
+        post.author.handle,
+        post.prompt,
+        post.tags.join(' ')
+      ]
+      return searchable.some((field) => {
+        if (!field) return false
+        return field.toLowerCase().includes(query)
+      })
+    })
+  }, [tabPosts, searchQuery])
+
+  const sortedPosts = useMemo(() => {
+    const posts = [...filteredPosts]
+    if (sortBy === 'latest') {
+      return posts.sort(
+        (a, b) => getFreshnessScore(a.createdAt) - getFreshnessScore(b.createdAt)
+      )
+    }
+    if (sortBy === 'remixes') {
+      return posts.sort((a, b) => b.metrics.remixes - a.metrics.remixes)
+    }
+    return posts.sort((a, b) => {
+      const scoreA = a.metrics.likes * 2 + a.metrics.remixes * 6 + a.metrics.views
+      const scoreB = b.metrics.likes * 2 + b.metrics.remixes * 6 + b.metrics.views
+      return scoreB - scoreA
+    })
+  }, [filteredPosts, sortBy])
+
+  const visiblePosts = sortedPosts.slice(0, visibleCount)
+  const hasMore = visibleCount < sortedPosts.length
   const showFriendsGate = activeTab === 'friends' && !user
 
   useEffect(() => {
     setVisibleCount(DEFAULT_BATCH)
-  }, [activeTab, selectedTag])
+  }, [activeTab, selectedTag, searchQuery, sortBy])
+
+  const currentActivity = activityMessages[activityIndex]
 
   const handleUseTemplate = (templateId) => {
     navigate('/', { state: { fromCommunity: true, templateId } })
@@ -237,6 +321,18 @@ function CommunityPage({ user, onLogin }) {
         </div>
       </header>
 
+      {currentActivity && (
+        <div className="community-activity-bar">
+          <span className="activity-dot" />
+          <span className="activity-label">实时动态</span>
+          <div className="activity-marquee">
+            <span key={currentActivity.id} className="activity-item">
+              {currentActivity.text}
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="community-tab-bar">
         <div className="tab-buttons">
           <button
@@ -276,6 +372,30 @@ function CommunityPage({ user, onLogin }) {
         </div>
       ) : (
         <>
+          <div className="community-controls">
+            <div className="search-input-modern">
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="搜索创作、作者或 #标签"
+              />
+            </div>
+            <div className="community-sort">
+              <label htmlFor="community-sort">排序</label>
+              <select
+                id="community-sort"
+                value={sortBy}
+                onChange={(event) => setSortBy(event.target.value)}
+              >
+                <option value="trending">热门趋势</option>
+                <option value="latest">最新发布</option>
+                <option value="remixes">最多 Remix</option>
+              </select>
+            </div>
+          </div>
+
           <Masonry
             breakpointCols={breakpointColumnsObj}
             className="my-masonry-grid"
@@ -286,6 +406,7 @@ function CommunityPage({ user, onLogin }) {
                 key={post.id}
                 post={post}
                 onClick={setSelectedPost}
+                onRemix={handleUseTemplate}
               />
             ))}
           </Masonry>

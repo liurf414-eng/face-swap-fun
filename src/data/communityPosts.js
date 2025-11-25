@@ -139,7 +139,7 @@ export const communityPosts = [
     tags: ['gif', 'reaction', 'team'],
     isFeatured: true,
     isFriendPost: false,
-    clipUrl: 'https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-banana .mp4',
+    clipUrl: 'https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/man-banana.mp4',
     prompt: '把队友脸换到滑稽香蕉皮摔倒镜头',
     soundtrack: 'Cartoon SFX'
   },
@@ -163,7 +163,7 @@ export const communityPosts = [
     tags: ['creator', 'promo', 'sci-fi'],
     isFeatured: false,
     isFriendPost: true,
-    clipUrl: 'https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/woman-wear-futuristic armor.mp4',
+    clipUrl: 'https://pub-d13aea5d949d4ec79ba60a1e36ea96d4.r2.dev/templates/woman-wear-futuristic-armor.mp4',
     prompt: '生成太空机甲女主播预告，灯光酷炫',
     soundtrack: 'Future Bass'
   },
