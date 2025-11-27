@@ -305,16 +305,50 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
           ) : (
             <div className="empty-state-container">
               <div className="empty-state-content">
-                <div className="empty-icon">🎨</div>
-                <h3>Ready to Create?</h3>
-                <p>Enter a prompt on the left to start generating amazing AI content.</p>
+                <div className="empty-icon">
+                  {mode === 'image' ? '🎨' : mode === 'video' ? '🎬' : '🪄'}
+                </div>
+                <h3>
+                  {mode === 'image' ? 'Ready to Create Images?' :
+                   mode === 'video' ? 'Ready to Create Videos?' :
+                   'Ready to Transform Images?'}
+                </h3>
+                <p>
+                  {mode === 'image' ? 'Enter a prompt on the left to start generating amazing AI images.' :
+                   mode === 'video' ? 'Enter a prompt on the left to start generating amazing AI videos.' :
+                   'Upload an image and describe how to transform it into a video.'}
+                </p>
                 <div className="example-prompts">
-                  <span onClick={() => setPrompt("A cute cat astronaut on Mars, cinematic lighting, 8k")}>
-                    Try: "A cute cat astronaut on Mars"
-                  </span>
-                  <span onClick={() => setPrompt("Cyberpunk street food vendor, neon lights, rainy night, highly detailed")}>
-                    Try: "Cyberpunk street food vendor"
-                  </span>
+                  {mode === 'image' && (
+                    <>
+                      <span onClick={() => setPrompt("A cute cat astronaut on Mars, cinematic lighting, 8k")}>
+                        Try: "A cute cat astronaut on Mars"
+                      </span>
+                      <span onClick={() => setPrompt("Cyberpunk street food vendor, neon lights, rainy night, highly detailed")}>
+                        Try: "Cyberpunk street food vendor"
+                      </span>
+                    </>
+                  )}
+                  {mode === 'video' && (
+                    <>
+                      <span onClick={() => setPrompt("A cinematic drone shot of a mountain peak at sunset, smooth camera movement, epic landscape")}>
+                        Try: "Cinematic mountain peak at sunset"
+                      </span>
+                      <span onClick={() => setPrompt("A futuristic cityscape with flying cars, dynamic camera angles, neon lights")}>
+                        Try: "Futuristic cityscape with flying cars"
+                      </span>
+                    </>
+                  )}
+                  {mode === 'edit' && (
+                    <>
+                      <span onClick={() => setPrompt("Make the person dance smoothly, add flowing effects, create smooth movement")}>
+                        Try: "Make the person dance smoothly"
+                      </span>
+                      <span onClick={() => setPrompt("Animate the background, add flowing effects, create smooth movement")}>
+                        Try: "Animate the background"
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
