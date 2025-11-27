@@ -1327,7 +1327,7 @@ function App() {
             </Link>
             {user && (
               <Link to="/my-videos" className={`nav-item ${isMyVideos ? 'active' : ''}`}>
-                <span className="nav-icon">📂</span> Gallery
+                <span className="nav-icon">📂</span> Me
               </Link>
             )}
           </div>
