@@ -39,9 +39,9 @@ const MOCK_RESULTS = {
   'default': 'https://images.unsplash.com/photo-1635322966219-b75ed372eb01?q=80&w=1000&auto=format&fit=crop'
 };
 
-function AIStudioPage() {
+function AIStudioPage({ mode: initialMode = 'image' }) {
   const navigate = useNavigate();
-  const [mode, setMode] = useState('image'); // 'image' | 'video' | 'edit'
+  const [mode] = useState(initialMode); // 'image' | 'video' | 'edit' - now controlled by route
   const [prompt, setPrompt] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('cinematic');
   const [aspectRatio, setAspectRatio] = useState('9:16');
@@ -163,30 +163,11 @@ function AIStudioPage() {
         {/* Left Panel: Controls */}
         <div className="studio-controls glass-panel">
           <div className="controls-header">
-            <h2>Create Magic</h2>
-            <div className="mode-switch">
-              <button 
-                className={`mode-btn ${mode === 'image' ? 'active' : ''}`}
-                onClick={() => { setMode('image'); setResult(null); }}
-                title="Text to Image"
-              >
-                🖼️ Image
-              </button>
-              <button 
-                className={`mode-btn ${mode === 'video' ? 'active' : ''}`}
-                onClick={() => { setMode('video'); setResult(null); }}
-                title="Text to Video"
-              >
-                🎥 Video
-              </button>
-              <button 
-                className={`mode-btn ${mode === 'edit' ? 'active' : ''}`}
-                onClick={() => { setMode('edit'); setResult(null); }}
-                title="AI Editor"
-              >
-                🪄 Edit
-              </button>
-            </div>
+            <h2>
+              {mode === 'image' ? 'Text to Image' : 
+               mode === 'video' ? 'Text to Video' : 
+               'Image to Video'}
+            </h2>
           </div>
 
           <div className="control-scroll-area">

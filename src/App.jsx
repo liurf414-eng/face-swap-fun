@@ -1319,43 +1319,28 @@ function App() {
             <Link to="/" className={`nav-item ${isHome ? 'active' : ''}`}>
               <span className="nav-icon">🎭</span> Face Swap
             </Link>
-            <Link to="/ai-studio" className={`nav-item ${isAIStudio ? 'active' : ''}`}>
-              <span className="nav-icon">✨</span> AI Studio
-            </Link>
-          </div>
-
-          <div className="nav-group">
-            <div className="nav-group-title">Video AI</div>
-            <Link to="/face-swap-video-maker" className={`nav-item ${isVideoMaker ? 'active' : ''}`}>
-              <span className="nav-icon">🎬</span> Video Maker
-            </Link>
-            <Link to="/face-swap-for-tiktok" className={`nav-item ${isTikTok ? 'active' : ''}`}>
-              <span className="nav-icon">📱</span> TikTok Trends
-            </Link>
-          </div>
-
-          <div className="nav-group">
-            <div className="nav-group-title">Image AI</div>
-            <Link to="/face-swap-gif-maker" className={`nav-item ${isGifMaker ? 'active' : ''}`}>
-              <span className="nav-icon">🎞️</span> GIF Maker
-            </Link>
-          </div>
-
-          <div className="nav-group">
-            <div className="nav-group-title">Community</div>
             <Link to="/community" className={`nav-item ${isCommunity ? 'active' : ''}`}>
               <span className="nav-icon">🌐</span> Community
             </Link>
+            {user && (
+              <Link to="/my-videos" className={`nav-item ${isMyVideos ? 'active' : ''}`}>
+                <span className="nav-icon">📂</span> Gallery
+              </Link>
+            )}
           </div>
 
-          {user && (
-            <div className="nav-group">
-              <div className="nav-group-title">Assets</div>
-              <Link to="/my-videos" className={`nav-item ${isMyVideos ? 'active' : ''}`}>
-                <span className="nav-icon">📂</span> My Gallery
-              </Link>
-            </div>
-          )}
+          <div className="nav-group">
+            <div className="nav-group-title">AI Studio</div>
+            <Link to="/ai-studio/text-to-image" className={`nav-item ${isTextToImage ? 'active' : ''}`}>
+              <span className="nav-icon">🖼️</span> Text to Image
+            </Link>
+            <Link to="/ai-studio/text-to-video" className={`nav-item ${isTextToVideo ? 'active' : ''}`}>
+              <span className="nav-icon">🎥</span> Text to Video
+            </Link>
+            <Link to="/ai-studio/image-to-video" className={`nav-item ${isImageToVideo ? 'active' : ''}`}>
+              <span className="nav-icon">🪄</span> Image to Video
+            </Link>
+          </div>
         </nav>
         
         <div className="sidebar-footer">
