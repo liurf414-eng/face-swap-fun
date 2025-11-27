@@ -2485,6 +2485,26 @@ a {
   transform: translateY(0);
 }
 
+.overlay-create-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 24px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transform: translateY(10px);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.overlay-create-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.community-card:hover .overlay-create-btn {
+  transform: translateY(0);
+}
+
 .overlay-stats {
   display: flex;
   gap: 12px;

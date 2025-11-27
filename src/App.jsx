@@ -15,6 +15,7 @@ import BirthdayPage from './pages/BirthdayPage'
 import GifMakerPage from './pages/GifMakerPage'
 import VideoMakerPage from './pages/VideoMakerPage'
 import CommunityPage from './pages/CommunityPage'
+import CreateFromCommunityPage from './pages/CreateFromCommunityPage'
 
 // Default templates as a fallback
 const defaultTemplates = [
@@ -136,6 +137,7 @@ function App() {
   const isTextToImage = currentPath === '/ai-studio/text-to-image';
   const isTextToVideo = currentPath === '/ai-studio/text-to-video';
   const isImageToVideo = currentPath === '/ai-studio/image-to-video';
+  const isCreateFromCommunity = currentPath === '/create-from-community';
   const isMyVideos = currentPath === '/my-videos';
   const isCommunity = currentPath === '/community';
   const isTikTok = currentPath === '/face-swap-for-tiktok';
@@ -1441,6 +1443,14 @@ function App() {
           <CommunityPage
             user={user}
             onLogin={handleGoogleSignInClick}
+          />
+        )}
+
+        {/* === Create From Community Page === */}
+        {isCreateFromCommunity && (
+          <CreateFromCommunityPage
+            user={user}
+            templates={templates}
           />
         )}
         

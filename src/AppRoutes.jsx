@@ -17,6 +17,7 @@ function AppRoutes() {
       <Route path="/ai-studio/text-to-video" element={<App />} />
       <Route path="/ai-studio/image-to-video" element={<App />} />
       <Route path="/ai-studio" element={<Navigate to="/ai-studio/text-to-image" replace />} />
+      <Route path="/create-from-community" element={<App />} />
       <Route path="/my-videos" element={<App />} />
       <Route path="/community" element={<App />} />
       

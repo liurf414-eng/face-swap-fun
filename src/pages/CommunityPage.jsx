@@ -27,7 +27,8 @@ const getFreshnessScore = (label) => {
 }
 
 // 详情弹窗组件
-function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, onLike, isLiked, extraViews = 0, extraShares = 0 }) {
+function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, onLike, isLiked, extraViews = 0, extraShares = 0, onCreateFromCommunity }) {
+  const navigate = useNavigate()
   if (!isOpen || !post) return null
 
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
@@ -169,6 +170,14 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, o
               >
                 ⚡ Remix this
               </button>
+              {onCreateFromCommunity && (
+                <button 
+                  className="create-btn-large"
+                  onClick={() => onCreateFromCommunity(post)}
+                >
+                  🎨 Create from this
+                </button>
+              )}
               <div className="secondary-actions">
                 <button className="icon-action-btn" onClick={() => onShare(post)}>
                   🔗 Share
@@ -189,7 +198,7 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, o
   )
 }
 
-function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews = 0, extraShares = 0, isNew = false }) {
+function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews = 0, extraShares = 0, isNew = false, onCreateFromCommunity }) {
   const handleCardClick = () => onClick(post)
   const handleRemixClick = (event) => {
     event.stopPropagation()
@@ -460,6 +469,24 @@ function CommunityPage({ user, onLogin }) {
     })
   }
 
+  const handleCreateFromCommunity = (post) => {
+    // Determine if post is image or video
+    const isVideo = post.clipUrl.includes('.mp4') || 
+                    post.clipUrl.includes('.webm') || 
+                    post.clipUrl.includes('.mov') ||
+                    post.clipUrl.includes('video')
+    
+    navigate('/create-from-community', {
+      state: {
+        sourceContent: {
+          type: isVideo ? 'video' : 'image',
+          url: post.clipUrl
+        },
+        sourcePost: post
+      }
+    })
+  }
+
   const handleShare = async (post) => {
     const text = `Check out ${post.author.name}'s creation "${post.title}" on FaceAI Hub`
     const url = `${window.location.origin}/community`
@@ -603,6 +630,7 @@ function CommunityPage({ user, onLogin }) {
                 extraViews={viewCounts[post.id] || 0}
                 extraShares={shareCounts[post.id] || 0}
                 isNew={post.createdAt === 'Just now'}
+                onCreateFromCommunity={handleCreateFromCommunity}
               />
             ))}
           </Masonry>
@@ -634,6 +662,7 @@ function CommunityPage({ user, onLogin }) {
         isLiked={selectedPost ? likedPosts.has(selectedPost.id) : false}
         extraViews={selectedPost ? viewCounts[selectedPost.id] || 0 : 0}
         extraShares={selectedPost ? shareCounts[selectedPost.id] || 0 : 0}
+        onCreateFromCommunity={handleCreateFromCommunity}
       />
     </main>
   )
