@@ -137,15 +137,35 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
   return (
     <div className="ai-studio-container">
       <Helmet>
-        <title>AI Video Generator - Text to Video & Image Creator | FaceAI Hub</title>
-        <meta name="description" content="Create AI videos and images from text! Free AI video generator, make your own meme videos, and generate custom content for face swapping. No watermark." />
-        <meta name="keywords" content="AI video generator, text to video ai, create meme video from text, ai image generator free, make my own meme video, custom content generator" />
-        <link rel="canonical" href="https://faceaihub.com/ai-studio" />
+        <title>
+          {mode === 'image' ? 'Text to Image Generator - AI Image Creator | FaceAI Hub' :
+           mode === 'video' ? 'Text to Video Generator - AI Video Creator | FaceAI Hub' :
+           'Image to Video Generator - Convert Image to Video | FaceAI Hub'}
+        </title>
+        <meta name="description" content={
+          mode === 'image' ? 'Create AI images from text descriptions! Free AI image generator, generate custom images for face swapping. No watermark.' :
+          mode === 'video' ? 'Create AI videos from text descriptions! Free AI video generator, make your own meme videos. No watermark.' :
+          'Convert images to videos with AI! Upload an image and describe the animation you want. Free AI image to video converter.'
+        } />
+        <meta name="keywords" content={
+          mode === 'image' ? 'AI image generator, text to image, create image from text, ai image creator free' :
+          mode === 'video' ? 'AI video generator, text to video ai, create meme video from text, ai video creator free' :
+          'image to video, convert image to video, animate image, ai image to video converter'
+        } />
+        <link rel="canonical" href={`https://faceaihub.com/ai-studio/${mode === 'image' ? 'text-to-image' : mode === 'video' ? 'text-to-video' : 'image-to-video'}`} />
         
         {/* Open Graph */}
-        <meta property="og:title" content="AI Video Generator - Text to Video Creator" />
-        <meta property="og:description" content="Create AI videos and images from text descriptions instantly." />
-        <meta property="og:url" content="https://faceaihub.com/ai-studio" />
+        <meta property="og:title" content={
+          mode === 'image' ? 'Text to Image Generator - AI Image Creator' :
+          mode === 'video' ? 'Text to Video Generator - AI Video Creator' :
+          'Image to Video Generator - Convert Image to Video'
+        } />
+        <meta property="og:description" content={
+          mode === 'image' ? 'Create AI images from text descriptions instantly.' :
+          mode === 'video' ? 'Create AI videos from text descriptions instantly.' :
+          'Convert images to videos with AI animation.'
+        } />
+        <meta property="og:url" content={`https://faceaihub.com/ai-studio/${mode === 'image' ? 'text-to-image' : mode === 'video' ? 'text-to-video' : 'image-to-video'}`} />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
 
@@ -156,7 +176,11 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
       </Helmet>
 
       <div className="studio-header-mobile">
-        <h1>✨ AI Studio</h1>
+        <h1>
+          {mode === 'image' ? '✨ Text to Image' :
+           mode === 'video' ? '✨ Text to Video' :
+           '✨ Image to Video'}
+        </h1>
       </div>
 
       <div className="studio-layout">
@@ -194,14 +218,18 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
 
             {/* Prompt Input */}
             <div className="control-group">
-              <label>Prompt</label>
+              <label>
+                {mode === 'image' ? 'Image Prompt' :
+                 mode === 'video' ? 'Video Prompt' :
+                 'Animation Prompt'}
+              </label>
               <textarea 
                 className="prompt-input"
                 placeholder={mode === 'image' 
                   ? "Describe the image you want to create... (e.g., A futuristic cyberpunk city with neon lights)" 
                   : mode === 'video'
-                    ? "Describe the video... (e.g., A cinematic drone shot of a mountain peak at sunset)"
-                    : "Describe how to edit this image... (e.g., Add a futuristic cyberpunk background)"}
+                    ? "Describe the video you want to create... (e.g., A cinematic drone shot of a mountain peak at sunset)"
+                    : "Describe how to animate this image... (e.g., Make the person dance, add flowing effects, create smooth movement)"}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 rows={6}
