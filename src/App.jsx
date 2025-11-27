@@ -1607,10 +1607,15 @@ function App() {
                           onCreateNew={(resetAll) => {
                             setResult(null);
                             if (resetAll) {
-                              setSelectedTemplate(null);
+                              if (cameFromCommunity) {
+                                navigate('/community')
+                                setCameFromCommunity(false)
+                              } else {
+                                setSelectedTemplate(null)
+                              }
                               setUploadedImage(null);
                               setUploadedImage2(null);
-                            setForcePlusOneMode(false);
+                              setForcePlusOneMode(false);
                             }
                           }}
                           isDuoInteraction={isDuoInteraction}
