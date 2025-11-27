@@ -132,7 +132,10 @@ function App() {
 
   // 确定当前页面类型
   const currentPath = location.pathname;
-  const isAIStudio = currentPath === '/ai-studio';
+  const isAIStudio = currentPath.startsWith('/ai-studio');
+  const isTextToImage = currentPath === '/ai-studio/text-to-image';
+  const isTextToVideo = currentPath === '/ai-studio/text-to-video';
+  const isImageToVideo = currentPath === '/ai-studio/image-to-video';
   const isMyVideos = currentPath === '/my-videos';
   const isCommunity = currentPath === '/community';
   const isTikTok = currentPath === '/face-swap-for-tiktok';
