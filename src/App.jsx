@@ -77,6 +77,7 @@ function App() {
       scrollPositionRef.current = mainContentRef.current.scrollTop
     }
     setForcePlusOneMode(false)
+    setCameFromCommunity(false)  // 从模板列表选择时，清除社区标记
     setSelectedTemplate(template)
   }
 
@@ -106,6 +107,7 @@ function App() {
   const [showMyVideos, setShowMyVideos] = useState(false)  // 新增：显示我的视频
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
   const [forcePlusOneMode, setForcePlusOneMode] = useState(false)
+  const [cameFromCommunity, setCameFromCommunity] = useState(false)  // 记住是否从社区来的
   const [favoriteTemplates, setFavoriteTemplates] = useState([])  // 新增：收藏的模板ID列表
   const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
   const TEMPLATES_PER_PAGE = 6
@@ -188,15 +190,20 @@ function App() {
       templates.length > 0
     ) {
       const templateId = Number(location.state.templateId)
+      console.log('🔍 Looking for template ID:', templateId)
+      console.log('📋 Available template IDs:', templates.map(t => t.id))
+      
       const matchedTemplate = templates.find((tpl) => tpl.id === templateId)
 
       if (matchedTemplate) {
+        console.log('✅ Found template:', matchedTemplate.name)
         if (mainContentRef.current) {
           scrollPositionRef.current = mainContentRef.current.scrollTop
         }
 
         const plusOneRequested = Boolean(location.state.plusOne)
         setForcePlusOneMode(plusOneRequested)
+        setCameFromCommunity(true)  // 标记从社区来的
         if (plusOneRequested) {
           toast.info('Plus One enabled: upload two faces to join this remix.')
         }
@@ -206,8 +213,10 @@ function App() {
           document.querySelector('.creation-mode-container')?.scrollIntoView({ behavior: 'smooth' })
         })
       } else {
+        console.warn('❌ Template not found. ID:', templateId, 'Available IDs:', templates.map(t => t.id))
         setForcePlusOneMode(false)
-        toast.info('Template not found. Please try again later.')
+        setCameFromCommunity(false)
+        toast.error(`Template ID ${templateId} not found. Please try again later.`)
       }
 
       navigate(location.pathname, { replace: true, state: {} })
@@ -1570,14 +1579,21 @@ function App() {
                       <button 
                         className="back-btn"
                         onClick={() => {
-                          setSelectedTemplate(null);
+                          if (cameFromCommunity) {
+                            // 如果是从社区来的，返回社区页面
+                            navigate('/community')
+                            setCameFromCommunity(false)
+                          } else {
+                            // 否则返回模板列表
+                            setSelectedTemplate(null)
+                          }
                           setUploadedImage(null);
                           setUploadedImage2(null);
                           setResult(null);
                           setForcePlusOneMode(false);
                         }}
                       >
-                        ← Back to Templates
+                        ← {cameFromCommunity ? 'Back to Community' : 'Back to Templates'}
                       </button>
                       <h2>Create Your Video</h2>
                     </div>
