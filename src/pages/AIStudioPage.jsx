@@ -219,17 +219,17 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
             {/* Prompt Input */}
             <div className="control-group">
               <label>
-                {mode === 'image' ? 'Image Prompt' :
-                 mode === 'video' ? 'Video Prompt' :
-                 'Animation Prompt'}
+                {mode === 'image' ? 'Prompt' :
+                 mode === 'video' ? 'Prompt' :
+                 'Transformation Prompt'}
               </label>
               <textarea 
                 className="prompt-input"
                 placeholder={mode === 'image' 
-                  ? "Describe the image you want to create... (e.g., A futuristic cyberpunk city with neon lights)" 
+                  ? "Describe the image you want to create... (e.g., A futuristic cyberpunk city with neon lights, cinematic lighting, highly detailed)" 
                   : mode === 'video'
-                    ? "Describe the video you want to create... (e.g., A cinematic drone shot of a mountain peak at sunset)"
-                    : "Describe how to animate this image... (e.g., Make the person dance, add flowing effects, create smooth movement)"}
+                    ? "Describe the video you want to create... (e.g., A cinematic drone shot of a mountain peak at sunset, smooth camera movement, epic landscape)"
+                    : "Describe how to transform this image into a video... (e.g., Make the person dance smoothly, add flowing effects, create smooth movement, animate the background)"}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 rows={6}
@@ -263,10 +263,14 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
               {isGenerating ? (
                 <>
                   <div className="spinner-small"></div>
-                  {mode === 'edit' ? 'Editing Image...' : 'Creating Magic...'} {Math.round(progress)}%
+                  {mode === 'image' ? 'Generating Image...' :
+                   mode === 'video' ? 'Generating Video...' :
+                   'Transforming to Video...'} {Math.round(progress)}%
                 </>
               ) : (
-                <>✨ {mode === 'edit' ? 'Edit Image' : `Generate ${mode === 'video' ? 'Video' : 'Image'}`}</>
+                <>✨ {mode === 'image' ? 'Generate Image' :
+                      mode === 'video' ? 'Generate Video' :
+                      'Transform to Video'}</>
               )}
             </button>
             {isGenerating && (
