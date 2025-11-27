@@ -1404,9 +1404,11 @@ function App() {
       {/* 主内容区域 - 移除巨大的Hero，改为紧凑横幅 */}
       <div className="main-content">
         
-        {/* === AI Studio Page === */}
-        {isAIStudio && (
-          <AIStudioPage />
+        {/* === AI Studio Pages === */}
+        {(isTextToImage || isTextToVideo || isImageToVideo) && (
+          <AIStudioPage 
+            mode={isTextToImage ? 'image' : isTextToVideo ? 'video' : 'edit'}
+          />
         )}
 
         {/* === TikTok Page === */}
