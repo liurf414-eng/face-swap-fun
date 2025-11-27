@@ -76,6 +76,7 @@ function App() {
     if (mainContentRef.current) {
       scrollPositionRef.current = mainContentRef.current.scrollTop
     }
+    setForcePlusOneMode(false)
     setSelectedTemplate(template)
   }
 
@@ -104,6 +105,7 @@ function App() {
   const [user, setUser] = useState(null)  // 新增：用户信息
   const [showMyVideos, setShowMyVideos] = useState(false)  // 新增：显示我的视频
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
+  const [forcePlusOneMode, setForcePlusOneMode] = useState(false)
   const [favoriteTemplates, setFavoriteTemplates] = useState([])  // 新增：收藏的模板ID列表
   const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
   const TEMPLATES_PER_PAGE = 6
@@ -113,7 +115,7 @@ function App() {
   const requestDebounceRef = useRef(null) // 防抖
   const remainingGenerations = Math.max(0, MAX_GENERATIONS - generationCount)
   const limitReached = generationCount >= MAX_GENERATIONS
-  const isDuoInteraction = selectedTemplate?.category === 'Duo Interaction'
+  const isDuoInteraction = forcePlusOneMode || selectedTemplate?.category === 'Duo Interaction'
   const hasRequiredImages = isDuoInteraction 
     ? (uploadedImage && uploadedImage2)
     : uploadedImage
@@ -193,11 +195,18 @@ function App() {
           scrollPositionRef.current = mainContentRef.current.scrollTop
         }
 
+        const plusOneRequested = Boolean(location.state.plusOne)
+        setForcePlusOneMode(plusOneRequested)
+        if (plusOneRequested) {
+          toast.info('Plus One enabled: upload two faces to join this remix.')
+        }
+
         setSelectedTemplate(matchedTemplate)
         requestAnimationFrame(() => {
           document.querySelector('.creation-mode-container')?.scrollIntoView({ behavior: 'smooth' })
         })
       } else {
+        setForcePlusOneMode(false)
         toast.info('Template not found. Please try again later.')
       }
 
@@ -1023,6 +1032,45 @@ function App() {
               if (user) {
                 saveVideoToMyList(result)
               }
+
+              // Auto-post to Community Feed (Simulated)
+              try {
+                const newPost = {
+                  id: `post-local-${Date.now()}`,
+                  templateId: selectedTemplate.id,
+                  templateName: selectedTemplate.name,
+                  title: `${user ? user.name.split(' ')[0] : 'Guest'}'s ${selectedTemplate.name} Remix`,
+                  description: `Just created this amazing face swap video using the ${selectedTemplate.name} template!`,
+                  author: user ? {
+                    name: user.name,
+                    avatar: user.picture,
+                    handle: `@${user.name.replace(/\s+/g, '').toLowerCase()}`
+                  } : {
+                    name: 'Anonymous Creator',
+                    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now(),
+                    handle: '@anonymous'
+                  },
+                  metrics: {
+                    likes: 0,
+                    remixes: 0,
+                    views: 0
+                  },
+                  createdAt: 'Just now',
+                  tags: ['remix', selectedTemplate.category.toLowerCase().split(' ')[0], 'new'],
+                  isFeatured: false,
+                  isFriendPost: false,
+                  clipUrl: result.url,
+                  prompt: `Face swap using ${selectedTemplate.name} template`,
+                  soundtrack: 'Original Audio',
+                  supportsPlusOne: isDuoInteraction
+                }
+                
+                const existingPosts = JSON.parse(localStorage.getItem('community_posts') || '[]')
+                localStorage.setItem('community_posts', JSON.stringify([newPost, ...existingPosts]))
+                toast.success('🎉 Published to Community Feed!')
+              } catch (err) {
+                console.error('Failed to auto-post to community', err)
+              }
               
             setIsProcessing(false)
             setProcessingStartTime(null)
@@ -1090,6 +1138,45 @@ function App() {
         
         if (user) {
           saveVideoToMyList(result)
+        }
+
+        // Auto-post to Community Feed (Simulated)
+        try {
+          const newPost = {
+            id: `post-local-${Date.now()}`,
+            templateId: selectedTemplate.id,
+            templateName: selectedTemplate.name,
+            title: `${user ? user.name.split(' ')[0] : 'Guest'}'s ${selectedTemplate.name} Remix`,
+            description: `Just created this amazing face swap video using the ${selectedTemplate.name} template!`,
+            author: user ? {
+              name: user.name,
+              avatar: user.picture,
+              handle: `@${user.name.replace(/\s+/g, '').toLowerCase()}`
+            } : {
+              name: 'Anonymous Creator',
+              avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now(),
+              handle: '@anonymous'
+            },
+            metrics: {
+              likes: 0,
+              remixes: 0,
+              views: 0
+            },
+            createdAt: 'Just now',
+            tags: ['remix', selectedTemplate.category.toLowerCase().split(' ')[0], 'new'],
+            isFeatured: false,
+            isFriendPost: false,
+            clipUrl: result.url,
+            prompt: `Face swap using ${selectedTemplate.name} template`,
+            soundtrack: 'Original Audio',
+            supportsPlusOne: isDuoInteraction
+          }
+          
+          const existingPosts = JSON.parse(localStorage.getItem('community_posts') || '[]')
+          localStorage.setItem('community_posts', JSON.stringify([newPost, ...existingPosts]))
+          toast.success('🎉 Published to Community Feed!')
+        } catch (err) {
+          console.error('Failed to auto-post to community', err)
         }
         
         setIsProcessing(false)
@@ -1397,7 +1484,9 @@ function App() {
                         onClick={() => {
                           setSelectedTemplate(null)
                           setUploadedImage(null)
+                        setUploadedImage2(null)
                           setResult(null)
+                        setForcePlusOneMode(false)
                         }}
                         aria-label="Clear selected template"
                         title="Clear selection"
@@ -1483,7 +1572,9 @@ function App() {
                         onClick={() => {
                           setSelectedTemplate(null);
                           setUploadedImage(null);
+                          setUploadedImage2(null);
                           setResult(null);
+                          setForcePlusOneMode(false);
                         }}
                       >
                         ← Back to Templates
@@ -1503,6 +1594,7 @@ function App() {
                               setSelectedTemplate(null);
                               setUploadedImage(null);
                               setUploadedImage2(null);
+                            setForcePlusOneMode(false);
                             }
                           }}
                           isDuoInteraction={isDuoInteraction}

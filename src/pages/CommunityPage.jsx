@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Masonry from 'react-masonry-css'
-import { communityPosts } from '../data/communityPosts'
+import { communityPosts as staticPosts } from '../data/communityPosts'
 
 const DEFAULT_BATCH = 8 // 增加每批加载数量
 
 const getFreshnessScore = (label) => {
   if (!label) return Number.MAX_SAFE_INTEGER
+  if (label === 'Just now') return 0 // Newest
   const lower = label.toLowerCase()
   const value = parseInt(lower, 10)
   if (lower.includes('min')) {
@@ -26,8 +27,21 @@ const getFreshnessScore = (label) => {
 }
 
 // 详情弹窗组件
-function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare }) {
+function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, onLike, isLiked, extraViews = 0 }) {
   if (!isOpen || !post) return null
+
+  const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
+  const displayViews = post.metrics.views + extraViews
+
+  const handleCopyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(post.prompt)
+      toast.success('Prompt copied to clipboard!')
+    } catch (error) {
+      console.error('Failed to copy prompt', error)
+      toast.error('Failed to copy prompt. Please try again.')
+    }
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -51,26 +65,60 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare })
           <div className="modal-info-section">
             <div className="modal-header">
               <h2>{post.title}</h2>
-              <div className="modal-author">
-                <img src={post.author.avatar} alt={post.author.name} />
-                <div className="author-details">
-                  <strong>{post.author.name}</strong>
-                  <span>{post.author.handle}</span>
+              <div className="modal-meta-header">
+                <div className="modal-author">
+                  <img src={post.author.avatar} alt={post.author.name} />
+                  <div className="author-details">
+                    <strong>{post.author.name}</strong>
+                    <span>{post.author.handle}</span>
+                  </div>
                 </div>
-                <button className="follow-btn">Follow</button>
+                <div className="modal-header-actions">
+                  {post.supportsPlusOne && (
+                    <span className="modal-chip">Plus One Ready</span>
+                  )}
+                  <button className="follow-btn">Follow</button>
+                </div>
               </div>
             </div>
             
             <div className="modal-scroll-area">
               <p className="modal-desc">{post.description}</p>
+
+              <div className="modal-meta-grid">
+                <div className="meta-item">
+                  <span className="meta-label">Template</span>
+                  <span className="meta-value">{post.templateName}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Soundtrack</span>
+                  <span className="meta-value">{post.soundtrack}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">Plus One</span>
+                  <span className={`meta-value ${post.supportsPlusOne ? 'text-positive' : ''}`}>
+                    {post.supportsPlusOne ? 'Available' : 'Solo'}
+                  </span>
+                </div>
+              </div>
               
               <div className="modal-prompt-box">
                 <div className="prompt-header">
                   <span className="magic-icon">✨</span>
                   <span>Used Prompt</span>
+                  <button className="prompt-copy-btn" onClick={handleCopyPrompt}>
+                    Copy Prompt
+                  </button>
                 </div>
                 <p className="prompt-content">{post.prompt}</p>
               </div>
+
+              {post.supportsPlusOne && (
+                <div className="plus-one-highlight">
+                  <strong>Plus One ready</strong>
+                  <p>Upload a second face to jump into this scene. Friends can remix with you for chain reactions.</p>
+                </div>
+              )}
               
               <div className="modal-tags">
                 {post.tags.map(tag => (
@@ -80,7 +128,7 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare })
               
               <div className="modal-stats">
                 <div className="stat-item">
-                  <span className="stat-value">{post.metrics.likes.toLocaleString()}</span>
+                  <span className="stat-value">{displayLikes.toLocaleString()}</span>
                   <span className="stat-label">Likes</span>
                 </div>
                 <div className="stat-item">
@@ -88,7 +136,7 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare })
                   <span className="stat-label">Remixes</span>
                 </div>
                 <div className="stat-item">
-                  <span className="stat-value">{post.metrics.views.toLocaleString()}</span>
+                  <span className="stat-value">{displayViews.toLocaleString()}</span>
                   <span className="stat-label">Views</span>
                 </div>
               </div>
@@ -116,7 +164,7 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare })
             <div className="modal-footer-actions">
               <button 
                 className="remix-btn-large"
-                onClick={() => onUseTemplate(post.templateId)}
+                onClick={() => onUseTemplate(post.templateId, { plusOne: post.supportsPlusOne })}
               >
                 ⚡ Remix this
               </button>
@@ -124,8 +172,12 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare })
                 <button className="icon-action-btn" onClick={() => onShare(post)}>
                   🔗 Share
                 </button>
-                <button className="icon-action-btn">
-                  ❤️ Like
+                <button 
+                  className={`icon-action-btn ${isLiked ? 'active-like' : ''}`}
+                  onClick={onLike}
+                  style={isLiked ? { color: '#ff4d4f', borderColor: '#ff4d4f', background: 'rgba(255, 77, 79, 0.1)' } : {}}
+                >
+                  {isLiked ? '❤️ Liked' : '🤍 Like'}
                 </button>
               </div>
             </div>
@@ -136,12 +188,19 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare })
   )
 }
 
-function CommunityPostCard({ post, onClick, onRemix }) {
+function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews = 0 }) {
   const handleCardClick = () => onClick(post)
   const handleRemixClick = (event) => {
     event.stopPropagation()
-    onRemix(post.templateId)
+    onRemix()
   }
+  const handleLikeClick = (event) => {
+    event.stopPropagation()
+    onLike && onLike()
+  }
+
+  const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
+  const displayViews = post.metrics.views + extraViews
 
   return (
     <article className="community-card" onClick={handleCardClick}>
@@ -161,15 +220,23 @@ function CommunityPostCard({ post, onClick, onRemix }) {
               ⚡ Remix
             </button>
             <div className="overlay-stats">
-              <span>❤️ {post.metrics.likes}</span>
-              <span>👀 {post.metrics.views}</span>
+              <span onClick={handleLikeClick} style={{ cursor: 'pointer' }}>
+                {isLiked ? '❤️' : '🤍'} {displayLikes}
+              </span>
+              <span>👀 {displayViews}</span>
             </div>
+            {post.supportsPlusOne && (
+              <span className="overlay-pill">Plus One ready</span>
+            )}
           </div>
         </div>
         
         <div className="card-badges-top">
           {post.isFeatured && (
             <span className="badge-featured">🌟 Featured</span>
+          )}
+          {post.supportsPlusOne && (
+            <span className="badge-plusone">Plus One</span>
           )}
         </div>
       </div>
@@ -194,19 +261,80 @@ function CommunityPage({ user, onLogin }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('trending')
   const [activityIndex, setActivityIndex] = useState(0)
+  const [allPosts, setAllPosts] = useState(staticPosts)
+  const [likedPosts, setLikedPosts] = useState(new Set())
+  const [viewCounts, setViewCounts] = useState({})
+
+  // Load local posts and interactions
+  useEffect(() => {
+    // Posts
+    const savedPosts = localStorage.getItem('community_posts')
+    if (savedPosts) {
+      try {
+        const parsed = JSON.parse(savedPosts)
+        if (Array.isArray(parsed)) {
+          setAllPosts([...parsed, ...staticPosts])
+        }
+      } catch (e) {
+        console.error('Failed to parse local community posts', e)
+      }
+    }
+
+    // Likes
+    const savedLikes = localStorage.getItem('user_likes')
+    if (savedLikes) {
+      try {
+        setLikedPosts(new Set(JSON.parse(savedLikes)))
+      } catch (e) {
+        console.error('Failed to parse likes', e)
+      }
+    }
+
+    // Views
+    const savedViews = localStorage.getItem('post_views')
+    if (savedViews) {
+      try {
+        setViewCounts(JSON.parse(savedViews))
+      } catch (e) {
+        console.error('Failed to parse views', e)
+      }
+    }
+  }, [])
+
+  const handleToggleLike = (postId) => {
+    setLikedPosts(prev => {
+      const next = new Set(prev)
+      if (next.has(postId)) {
+        next.delete(postId)
+      } else {
+        next.add(postId)
+      }
+      localStorage.setItem('user_likes', JSON.stringify([...next]))
+      return next
+    })
+  }
+
+  const handleViewPost = (post) => {
+    setSelectedPost(post)
+    setViewCounts(prev => {
+      const next = { ...prev, [post.id]: (prev[post.id] || 0) + 1 }
+      localStorage.setItem('post_views', JSON.stringify(next))
+      return next
+    })
+  }
 
   const activityMessages = useMemo(() => {
-    return communityPosts.map((post, index) => ({
+    return allPosts.map((post, index) => ({
       id: `${post.id}-${index}`,
       text: `${post.author.name} just remixed “${post.templateName}” · +${post.metrics.remixes} remixes`,
     }))
-  }, [communityPosts])
+  }, [allPosts])
 
   const tags = useMemo(() => {
     const unique = new Set()
-    communityPosts.forEach((post) => post.tags.forEach((tag) => unique.add(tag)))
+    allPosts.forEach((post) => post.tags.forEach((tag) => unique.add(tag)))
     return ['all', ...unique]
-  }, [communityPosts])
+  }, [allPosts])
 
   useEffect(() => {
     if (!activityMessages.length) return
@@ -218,13 +346,13 @@ function CommunityPage({ user, onLogin }) {
 
   const tabPosts = useMemo(() => {
     const base = activeTab === 'friends'
-      ? communityPosts.filter((post) => post.isFriendPost)
-      : communityPosts
+      ? allPosts.filter((post) => post.isFriendPost)
+      : allPosts
     if (selectedTag === 'all') {
       return base
     }
     return base.filter((post) => post.tags.includes(selectedTag))
-  }, [activeTab, selectedTag])
+  }, [activeTab, selectedTag, allPosts])
 
   const filteredPosts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
@@ -272,8 +400,14 @@ function CommunityPage({ user, onLogin }) {
 
   const currentActivity = activityMessages[activityIndex]
 
-  const handleUseTemplate = (templateId) => {
-    navigate('/', { state: { fromCommunity: true, templateId } })
+  const handleUseTemplate = (templateId, options = {}) => {
+    navigate('/', { 
+      state: { 
+        fromCommunity: true, 
+        templateId,
+        plusOne: Boolean(options.plusOne)
+      } 
+    })
   }
 
   const handleShare = async (post) => {
@@ -404,8 +538,11 @@ function CommunityPage({ user, onLogin }) {
               <CommunityPostCard
                 key={post.id}
                 post={post}
-                onClick={setSelectedPost}
-                onRemix={handleUseTemplate}
+                onClick={handleViewPost}
+                onRemix={() => handleUseTemplate(post.templateId, { plusOne: post.supportsPlusOne })}
+                onLike={() => handleToggleLike(post.id)}
+                isLiked={likedPosts.has(post.id)}
+                extraViews={viewCounts[post.id] || 0}
               />
             ))}
           </Masonry>
@@ -433,6 +570,9 @@ function CommunityPage({ user, onLogin }) {
         onClose={() => setSelectedPost(null)}
         onUseTemplate={handleUseTemplate}
         onShare={handleShare}
+        onLike={() => handleToggleLike(selectedPost.id)}
+        isLiked={selectedPost ? likedPosts.has(selectedPost.id) : false}
+        extraViews={selectedPost ? viewCounts[selectedPost.id] || 0 : 0}
       />
     </main>
   )
