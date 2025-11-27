@@ -41,7 +41,12 @@ const MOCK_RESULTS = {
 
 function AIStudioPage({ mode: initialMode = 'image' }) {
   const navigate = useNavigate();
-  const [mode] = useState(initialMode); // 'image' | 'video' | 'edit' - now controlled by route
+  const [mode, setMode] = useState(initialMode); // 'image' | 'video' | 'edit' - now controlled by route
+  
+  // Update mode when initialMode changes (route change)
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
   const [prompt, setPrompt] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('cinematic');
   const [aspectRatio, setAspectRatio] = useState('9:16');
