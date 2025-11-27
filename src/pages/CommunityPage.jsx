@@ -27,11 +27,12 @@ const getFreshnessScore = (label) => {
 }
 
 // 详情弹窗组件
-function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, onLike, isLiked, extraViews = 0 }) {
+function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, onLike, isLiked, extraViews = 0, extraShares = 0 }) {
   if (!isOpen || !post) return null
 
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
   const displayViews = post.metrics.views + extraViews
+  const displayShares = post.metrics.remixes + extraShares
 
   const handleCopyPrompt = async () => {
     try {
@@ -132,7 +133,7 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, o
                   <span className="stat-label">Likes</span>
                 </div>
                 <div className="stat-item">
-                  <span className="stat-value">{post.metrics.remixes.toLocaleString()}</span>
+                  <span className="stat-value">{displayShares.toLocaleString()}</span>
                   <span className="stat-label">Remixes</span>
                 </div>
                 <div className="stat-item">
@@ -188,7 +189,7 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, o
   )
 }
 
-function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews = 0 }) {
+function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews = 0, extraShares = 0, isNew = false }) {
   const handleCardClick = () => onClick(post)
   const handleRemixClick = (event) => {
     event.stopPropagation()
@@ -232,6 +233,9 @@ function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews
         </div>
         
         <div className="card-badges-top">
+          {isNew && (
+            <span className="badge-new">✨ New</span>
+          )}
           {post.isFeatured && (
             <span className="badge-featured">🌟 Featured</span>
           )}
@@ -264,41 +268,81 @@ function CommunityPage({ user, onLogin }) {
   const [allPosts, setAllPosts] = useState(staticPosts)
   const [likedPosts, setLikedPosts] = useState(new Set())
   const [viewCounts, setViewCounts] = useState({})
+  const [shareCounts, setShareCounts] = useState({})
+  const [lastCheckTime, setLastCheckTime] = useState(Date.now())
 
   // Load local posts and interactions
   useEffect(() => {
-    // Posts
-    const savedPosts = localStorage.getItem('community_posts')
-    if (savedPosts) {
-      try {
-        const parsed = JSON.parse(savedPosts)
-        if (Array.isArray(parsed)) {
-          setAllPosts([...parsed, ...staticPosts])
+    const loadData = () => {
+      // Posts
+      const savedPosts = localStorage.getItem('community_posts')
+      if (savedPosts) {
+        try {
+          const parsed = JSON.parse(savedPosts)
+          if (Array.isArray(parsed)) {
+            setAllPosts([...parsed, ...staticPosts])
+          }
+        } catch (e) {
+          console.error('Failed to parse local community posts', e)
         }
-      } catch (e) {
-        console.error('Failed to parse local community posts', e)
+      }
+
+      // Likes
+      const savedLikes = localStorage.getItem('user_likes')
+      if (savedLikes) {
+        try {
+          setLikedPosts(new Set(JSON.parse(savedLikes)))
+        } catch (e) {
+          console.error('Failed to parse likes', e)
+        }
+      }
+
+      // Views
+      const savedViews = localStorage.getItem('post_views')
+      if (savedViews) {
+        try {
+          setViewCounts(JSON.parse(savedViews))
+        } catch (e) {
+          console.error('Failed to parse views', e)
+        }
+      }
+
+      // Shares
+      const savedShares = localStorage.getItem('post_shares')
+      if (savedShares) {
+        try {
+          setShareCounts(JSON.parse(savedShares))
+        } catch (e) {
+          console.error('Failed to parse shares', e)
+        }
       }
     }
 
-    // Likes
-    const savedLikes = localStorage.getItem('user_likes')
-    if (savedLikes) {
-      try {
-        setLikedPosts(new Set(JSON.parse(savedLikes)))
-      } catch (e) {
-        console.error('Failed to parse likes', e)
-      }
-    }
+    loadData()
 
-    // Views
-    const savedViews = localStorage.getItem('post_views')
-    if (savedViews) {
-      try {
-        setViewCounts(JSON.parse(savedViews))
-      } catch (e) {
-        console.error('Failed to parse views', e)
+    // Check for new posts every 5 seconds
+    const interval = setInterval(() => {
+      const savedPosts = localStorage.getItem('community_posts')
+      if (savedPosts) {
+        try {
+          const parsed = JSON.parse(savedPosts)
+          if (Array.isArray(parsed)) {
+            const newPosts = [...parsed, ...staticPosts]
+            setAllPosts(prev => {
+              // Only update if there are actually new posts
+              if (newPosts.length !== prev.length) {
+                return newPosts
+              }
+              return prev
+            })
+          }
+        } catch (e) {
+          // Silent fail
+        }
       }
-    }
+    }, 5000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const handleToggleLike = (postId) => {
@@ -383,9 +427,15 @@ function CommunityPage({ user, onLogin }) {
     if (sortBy === 'remixes') {
       return posts.sort((a, b) => b.metrics.remixes - a.metrics.remixes)
     }
+    // Trending: boost new posts (createdAt === 'Just now' gets extra boost)
     return posts.sort((a, b) => {
-      const scoreA = a.metrics.likes * 2 + a.metrics.remixes * 6 + a.metrics.views
-      const scoreB = b.metrics.likes * 2 + b.metrics.remixes * 6 + b.metrics.views
+      const freshnessA = a.createdAt === 'Just now' ? 1000 : getFreshnessScore(a.createdAt)
+      const freshnessB = b.createdAt === 'Just now' ? 1000 : getFreshnessScore(b.createdAt)
+      const freshnessBoostA = freshnessA < 60 ? 50 : 0 // Boost posts less than 1 hour old
+      const freshnessBoostB = freshnessB < 60 ? 50 : 0
+      
+      const scoreA = (a.metrics.likes * 2 + a.metrics.remixes * 6 + a.metrics.views) + freshnessBoostA
+      const scoreB = (b.metrics.likes * 2 + b.metrics.remixes * 6 + b.metrics.views) + freshnessBoostB
       return scoreB - scoreA
     })
   }, [filteredPosts, sortBy])
@@ -420,8 +470,16 @@ function CommunityPage({ user, onLogin }) {
         await navigator.clipboard.writeText(`${text} - ${url}`)
         toast.success('Link copied to clipboard!')
       }
+      // Track share
+      setShareCounts(prev => {
+        const next = { ...prev, [post.id]: (prev[post.id] || 0) + 1 }
+        localStorage.setItem('post_shares', JSON.stringify(next))
+        return next
+      })
     } catch (error) {
-      console.error('Share failed', error)
+      if (error.name !== 'AbortError') {
+        console.error('Share failed', error)
+      }
     }
   }
 
@@ -543,6 +601,8 @@ function CommunityPage({ user, onLogin }) {
                 onLike={() => handleToggleLike(post.id)}
                 isLiked={likedPosts.has(post.id)}
                 extraViews={viewCounts[post.id] || 0}
+                extraShares={shareCounts[post.id] || 0}
+                isNew={post.createdAt === 'Just now'}
               />
             ))}
           </Masonry>
@@ -573,6 +633,7 @@ function CommunityPage({ user, onLogin }) {
         onLike={() => handleToggleLike(selectedPost.id)}
         isLiked={selectedPost ? likedPosts.has(selectedPost.id) : false}
         extraViews={selectedPost ? viewCounts[selectedPost.id] || 0 : 0}
+        extraShares={selectedPost ? shareCounts[selectedPost.id] || 0 : 0}
       />
     </main>
   )
