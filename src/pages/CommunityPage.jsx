@@ -28,7 +28,6 @@ const getFreshnessScore = (label) => {
 
 // 详情弹窗组件
 function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, onLike, isLiked, extraViews = 0, extraShares = 0, onCreateFromCommunity }) {
-  const navigate = useNavigate()
   if (!isOpen || !post) return null
 
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
@@ -229,6 +228,17 @@ function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews
             <button className="overlay-remix-btn" onClick={handleRemixClick}>
               ⚡ Remix
             </button>
+            {onCreateFromCommunity && (
+              <button 
+                className="overlay-create-btn" 
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onCreateFromCommunity(post)
+                }}
+              >
+                🎨 Create
+              </button>
+            )}
             <div className="overlay-stats">
               <span onClick={handleLikeClick} style={{ cursor: 'pointer' }}>
                 {isLiked ? '❤️' : '🤍'} {displayLikes}

@@ -145,7 +145,7 @@ function App() {
   const isBirthday = currentPath === '/birthday-face-swap-video';
   const isGifMaker = currentPath === '/face-swap-gif-maker';
   const isVideoMaker = currentPath === '/face-swap-video-maker';
-  const isHome = currentPath === '/' || (!isAIStudio && !isMyVideos && !isTikTok && !isInstagram && !isBirthday && !isGifMaker && !isVideoMaker && !isCommunity);
+  const isHome = currentPath === '/' || (!isAIStudio && !isMyVideos && !isTikTok && !isInstagram && !isBirthday && !isGifMaker && !isVideoMaker && !isCommunity && !isCreateFromCommunity);
 
   // 分类名称映射
   const categoryMap = {

@@ -16,6 +16,8 @@ function CreateFromCommunityPage({ user, templates = [] }) {
   
   const [prompt, setPrompt] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState(null)
+  const [creationMode, setCreationMode] = useState('prompt') // 'prompt' | 'template'
+  const [templateSearch, setTemplateSearch] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [progress, setProgress] = useState(0)
   const [processingStatus, setProcessingStatus] = useState('')
@@ -39,13 +41,33 @@ function CreateFromCommunityPage({ user, templates = [] }) {
   const hasSource = !!sourceContent
 
   // Check if user has provided either prompt or template
-  const canGenerate = hasSource && !isGenerating && (prompt.trim() || selectedTemplate)
+  const canGenerate = hasSource && !isGenerating && (
+    (creationMode === 'prompt' && prompt.trim()) ||
+    (creationMode === 'template' && selectedTemplate)
+  )
+
+  const filteredTemplates = useMemo(() => {
+    if (!templates || templates.length === 0) return []
+    const query = templateSearch.trim().toLowerCase()
+    if (!query) return templates
+    return templates.filter((template) => {
+      const searchable = [template.name, template.category, template.description, template.tags?.join(' ')]
+      return searchable.some((field) => field && field.toLowerCase().includes(query))
+    })
+  }, [templates, templateSearch])
+
+  const topTemplates = filteredTemplates.slice(0, 12)
 
   const handleGenerate = async () => {
-    if (!canGenerate) {
-      if (!prompt.trim() && !selectedTemplate) {
-        toast.warning('Please enter a prompt or select a video template')
-      }
+    if (!hasSource) return
+
+    if (creationMode === 'prompt' && !prompt.trim()) {
+      toast.warning('Please enter a prompt to continue')
+      return
+    }
+
+    if (creationMode === 'template' && !selectedTemplate) {
+      toast.warning('Please select a video template')
       return
     }
 
@@ -58,19 +80,15 @@ function CreateFromCommunityPage({ user, templates = [] }) {
 
     try {
       // Determine generation type
+      const usingPrompt = creationMode === 'prompt'
       let apiEndpoint = '/api/ai-create'
       let requestBody = {
-        prompt: prompt.trim() || (selectedTemplate ? `Apply ${selectedTemplate.name} template action` : 'Transform this content'),
+        prompt: usingPrompt ? prompt.trim() : `Apply ${selectedTemplate.name} motion to this ${isImage ? 'image' : 'video'}`,
         media: sourceContent.url,
         mediaType: isImage ? 'image' : 'video',
-      }
-
-      // If template is selected, we might need to use face-swap API instead
-      // For now, we'll use ai-create with template info in prompt
-      if (selectedTemplate && !prompt.trim()) {
-        // Use template-based generation (face swap style)
-        // This would need to be adapted based on your actual API
-        requestBody.prompt = `Apply ${selectedTemplate.name} template action to this ${isImage ? 'image' : 'video'}`
+        generationMode: creationMode,
+        templateId: !usingPrompt ? selectedTemplate.id : undefined,
+        templateName: !usingPrompt ? selectedTemplate.name : undefined
       }
 
       const response = await fetch(apiEndpoint, {
@@ -201,8 +219,10 @@ function CreateFromCommunityPage({ user, templates = [] }) {
         timestamp: new Date().toISOString(),
         userId: user.sub,
         source: 'community_creation',
-        prompt: prompt.trim() || (selectedTemplate ? `Template: ${selectedTemplate.name}` : ''),
-        templateId: selectedTemplate?.id
+        mode: creationMode,
+        prompt: creationMode === 'prompt' ? prompt.trim() : '',
+        templateId: creationMode === 'template' ? selectedTemplate?.id : undefined,
+        templateName: creationMode === 'template' ? selectedTemplate?.name : undefined
       }
       localStorage.setItem('myVideos', JSON.stringify([newItem, ...myVideos]))
       toast.success('Saved to Me page!')
@@ -213,13 +233,17 @@ function CreateFromCommunityPage({ user, templates = [] }) {
 
   const publishToCommunityFeed = (resultData) => {
     try {
-      const communityPosts = JSON.parse(localStorage.getItem('community_local_posts') || '[]')
+      const communityPosts = JSON.parse(localStorage.getItem('community_posts') || '[]')
       const newPost = {
         id: `local-post-${Date.now()}`,
         templateId: selectedTemplate?.id || sourcePost?.templateId,
         templateName: selectedTemplate?.name || sourcePost?.templateName || 'Community Creation',
-        title: prompt.trim() ? `"${prompt.substring(0, 50)}"` : `Remix of ${sourcePost?.title || 'Community Content'}`,
-        description: `Created from community ${isImage ? 'image' : 'video'}${prompt.trim() ? ` with prompt: ${prompt}` : selectedTemplate ? ` using ${selectedTemplate.name} template` : ''}`,
+        title: creationMode === 'prompt'
+          ? `"${prompt.substring(0, 50) || 'Prompt Remix'}"`
+          : `Motion remix with ${selectedTemplate?.name || 'template'}`,
+        description: creationMode === 'prompt'
+          ? `Created from community ${isImage ? 'image' : 'video'} with prompt: ${prompt}`
+          : `Applied ${selectedTemplate?.name || 'template'} action to this ${isImage ? 'image' : 'video'}`,
         author: {
           name: user.name,
           avatar: user.picture,
@@ -236,7 +260,7 @@ function CreateFromCommunityPage({ user, templates = [] }) {
         isFeatured: false,
         isFriendPost: true,
         clipUrl: resultData.url,
-        prompt: prompt.trim() || (selectedTemplate ? `Template: ${selectedTemplate.name}` : ''),
+        prompt: creationMode === 'prompt' ? prompt.trim() : `Template: ${selectedTemplate?.name}`,
         soundtrack: 'Original Audio',
         supportsPlusOne: selectedTemplate?.category === 'Duo Interaction'
       }
@@ -312,118 +336,155 @@ function CreateFromCommunityPage({ user, templates = [] }) {
           <p>Transform this {isImage ? 'image' : 'video'} with AI</p>
         </div>
 
-        {result ? (
-          <div className="result-section">
-            <ResultDisplay
-              result={result}
-              selectedTemplate={selectedTemplate}
-              onDownload={async () => {
-                try {
-                  const response = await fetch(result.url)
-                  const blob = await response.blob()
-                  const url = window.URL.createObjectURL(blob)
-                  const fileExtension = result.url.split('.').pop().split('?')[0]
-                  const fileName = `community-creation-${Date.now()}.${fileExtension}`
-                  const link = document.createElement('a')
-                  link.href = url
-                  link.download = fileName
-                  document.body.appendChild(link)
-                  link.click()
-                  document.body.removeChild(link)
-                  window.URL.revokeObjectURL(url)
-                } catch (error) {
-                  toast.error('Download failed')
-                }
-              }}
-              onCreateNew={() => {
-                setResult(null)
-                setPrompt('')
-                setSelectedTemplate(null)
-              }}
-              isDuoInteraction={false}
-              hasRequiredImages={true}
-              isProcessing={false}
-              limitReached={false}
-            />
-          </div>
-        ) : (
-          <div className="create-content">
-            {/* Source Preview */}
-            <div className="source-preview-section">
-              <h2>Source {isImage ? 'Image' : 'Video'}</h2>
+        <div className="create-grid">
+          <div className="create-left-column">
+            <section className="create-card source-card">
+              <div className="source-header">
+                <div>
+                  <p className="section-label">Step 1 · Source</p>
+                  <h2>{isImage ? 'Remixing an Image' : 'Remixing a Video'}</h2>
+                </div>
+                {sourcePost && (
+                  <div className="source-author">
+                    <img src={sourcePost.author.avatar} alt={sourcePost.author.name} />
+                    <div>
+                      <strong>{sourcePost.author.name}</strong>
+                      <span>{sourcePost.author.handle}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="source-preview">
                 {isImage ? (
                   <img src={sourceContent.url} alt="Source" />
                 ) : (
-                  <video src={sourceContent.url} controls />
+                  <video src={sourceContent.url} autoPlay loop muted controls />
                 )}
               </div>
-            </div>
-
-            {/* Prompt Input */}
-            <div className="prompt-section">
-              <h2>Option 1: Enter Prompt (Optional)</h2>
-              <p className="section-hint">
-                {isImage 
-                  ? 'Describe how to transform this image (e.g., "Make the person dance", "Add magical effects", "Change to cyberpunk style")'
-                  : 'Describe how to modify this video (e.g., "Add slow motion", "Change to black and white", "Add explosion effects")'}
-              </p>
-              <textarea
-                className="prompt-input-large"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder={isImage 
-                  ? "Describe how to transform this image... (e.g., Make the person dance smoothly, add flowing effects)"
-                  : "Describe how to modify this video... (e.g., Add slow motion, change style, add effects)"}
-                rows={6}
-              />
-            </div>
-
-            {/* Template Selector */}
-            <div className="template-section">
-              <h2>Option 2: Choose Video Template (Optional)</h2>
-              <p className="section-hint">
-                {isImage 
-                  ? 'Select a video template to apply its action to this image'
-                  : 'Select a video template to combine with this video'}
-              </p>
-              <div className="template-grid-mini">
-                {templates.slice(0, 12).map((template) => (
-                  <LazyVideoCard
-                    key={template.id}
-                    template={template}
-                    isSelected={selectedTemplate?.id === template.id}
-                    onSelect={() => setSelectedTemplate(template)}
-                    showLink={false}
-                  />
-                ))}
-              </div>
-              {templates.length > 12 && (
-                <button
-                  className="view-all-templates-btn"
-                  onClick={() => navigate('/')}
-                >
-                  View All Templates →
-                </button>
+              {sourcePost && (
+                <div className="source-meta">
+                  <p className="source-title">{sourcePost.title}</p>
+                  <div className="source-tags">
+                    {sourcePost.tags?.slice(0, 3).map(tag => (
+                      <span key={tag}>#{tag}</span>
+                    ))}
+                  </div>
+                </div>
               )}
-            </div>
+            </section>
 
-            {/* Publish Option */}
+            <section className="create-card mode-card">
+              <p className="section-label">Step 2 · Choose Method</p>
+              <div className="mode-toggle">
+                <button
+                  className={`mode-option ${creationMode === 'prompt' ? 'active' : ''}`}
+                  onClick={() => setCreationMode('prompt')}
+                >
+                  ✍️ Prompt Remix
+                </button>
+                <button
+                  className={`mode-option ${creationMode === 'template' ? 'active' : ''}`}
+                  onClick={() => setCreationMode('template')}
+                >
+                  🎬 Template Motion
+                </button>
+              </div>
+              <p className="mode-hint">
+                {creationMode === 'prompt'
+                  ? 'Describe how this content should change.'
+                  : 'Pick a motion template to apply to this content.'}
+              </p>
+            </section>
+
+            {creationMode === 'prompt' ? (
+              <section className="create-card prompt-card">
+                <div className="prompt-header">
+                  <h3>Describe your twist</h3>
+                  <span>{prompt.length}/500</span>
+                </div>
+                <textarea
+                  className="prompt-input-large"
+                  value={prompt}
+                  maxLength={500}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder={isImage 
+                    ? 'e.g., Make him blink and smile with neon cyberpunk lighting'
+                    : 'e.g., Slow motion hero entrance with smoke and dramatic lighting'}
+                  rows={6}
+                />
+                <div className="prompt-suggestions">
+                  {(isImage
+                    ? ['Animate this photo', 'Add cinematic lighting', 'Turn into a 3D render']
+                    : ['Add camera shake + zoom', 'Convert to anime fight scene', 'Add slow motion reveal']
+                  ).map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => {
+                        setCreationMode('prompt')
+                        setPrompt(suggestion)
+                      }}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ) : (
+              <section className="create-card template-card">
+                <div className="template-toolbar">
+                  <input
+                    type="text"
+                    className="template-search"
+                    placeholder="Search templates by name or category"
+                    value={templateSearch}
+                    onChange={(e) => setTemplateSearch(e.target.value)}
+                  />
+                  <span>{filteredTemplates.length} templates</span>
+                </div>
+                <div className="template-grid-mini">
+                  {topTemplates.map((template) => (
+                    <LazyVideoCard
+                      key={template.id}
+                      template={template}
+                      isSelected={selectedTemplate?.id === template.id}
+                      onSelect={() => {
+                        setCreationMode('template')
+                        setSelectedTemplate(template)
+                      }}
+                      showLink={false}
+                    />
+                  ))}
+                </div>
+                {filteredTemplates.length === 0 && (
+                  <p className="empty-text">No templates found. Try a different keyword.</p>
+                )}
+                {templates.length > topTemplates.length && (
+                  <button
+                    className="view-all-templates-btn"
+                    onClick={() => navigate('/')}
+                  >
+                    Browse full template library →
+                  </button>
+                )}
+              </section>
+            )}
+
             {user && (
-              <div className="publish-section">
+              <section className="create-card publish-card">
                 <label className="publish-checkbox">
                   <input
                     type="checkbox"
                     checked={publishToCommunity}
                     onChange={(e) => setPublishToCommunity(e.target.checked)}
                   />
-                  <span>Publish to Community after generation</span>
+                  <span>Publish to Community when finished</span>
                 </label>
-              </div>
+                <p className="publish-hint">Your result always saves to “Me”. Publishing is optional.</p>
+              </section>
             )}
 
-            {/* Generate Button */}
-            <div className="generate-section">
+            <section className="create-card generate-card">
               {isGenerating ? (
                 <ProgressDisplay
                   progress={scriptedProgress}
@@ -437,14 +498,70 @@ function CreateFromCommunityPage({ user, templates = [] }) {
                   onClick={handleGenerate}
                   disabled={!canGenerate}
                 >
-                  {!prompt.trim() && !selectedTemplate 
-                    ? '✍️ Enter prompt or select template' 
-                    : '✨ Generate'}
+                  {creationMode === 'prompt'
+                    ? (prompt.trim() ? '✨ Generate with Prompt' : '✍️ Enter a prompt to start')
+                    : (selectedTemplate ? '✨ Apply Template Motion' : '🎬 Select a template to start')}
                 </button>
               )}
-            </div>
+            </section>
           </div>
-        )}
+
+          <div className="create-right-column">
+            {result ? (
+              <ResultDisplay
+                result={result}
+                selectedTemplate={selectedTemplate}
+                onDownload={async () => {
+                  try {
+                    const response = await fetch(result.url)
+                    const blob = await response.blob()
+                    const url = window.URL.createObjectURL(blob)
+                    const fileExtension = result.url.split('.').pop().split('?')[0]
+                    const fileName = `community-creation-${Date.now()}.${fileExtension}`
+                    const link = document.createElement('a')
+                    link.href = url
+                    link.download = fileName
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                    window.URL.revokeObjectURL(url)
+                  } catch (error) {
+                    toast.error('Download failed')
+                  }
+                }}
+                onCreateNew={() => {
+                  setResult(null)
+                  setPrompt('')
+                  setSelectedTemplate(null)
+                  setCreationMode('prompt')
+                }}
+                isDuoInteraction={false}
+                hasRequiredImages
+                isProcessing={isGenerating}
+                limitReached={false}
+              />
+            ) : (
+              <div className="preview-card">
+                <div className="preview-media">
+                  {isImage ? (
+                    <img src={sourceContent.url} alt="Preview" />
+                  ) : (
+                    <video src={sourceContent.url} autoPlay loop muted controls />
+                  )}
+                </div>
+                <div className="preview-info">
+                  <h3>Ready to create?</h3>
+                  <p>Use a prompt or pick a motion template to twist this community creation.</p>
+                  <ul>
+                    <li>Prompt Remix: describe style, actions, or mood</li>
+                    <li>Template Motion: apply trending meme motions instantly</li>
+                    <li>Results auto-save to “Me” and can be published</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </main>
     </>
   )
