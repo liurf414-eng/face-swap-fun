@@ -1,8 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Masonry from 'react-masonry-css'
-import { communityPosts as staticPosts } from '../data/communityPosts'
+import { communityPosts as staticPosts, communityRemixMeta } from '../data/communityPosts'
+import { communityComments as initialComments } from '../data/communityComments'
+import RemixDrawer from '../components/RemixDrawer'
+import CommentComposer from '../components/comments/CommentComposer'
+import CommentList from '../components/comments/CommentList'
 
 const DEFAULT_BATCH = 8 // 增加每批加载数量
 
@@ -27,7 +31,20 @@ const getFreshnessScore = (label) => {
 }
 
 // 详情弹窗组件
-function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, onLike, isLiked, extraViews = 0, extraShares = 0, onCreateFromCommunity }) {
+function CommunityDetailModal({
+  post,
+  isOpen,
+  onClose,
+  onShare,
+  onLike,
+  isLiked,
+  extraViews = 0,
+  extraShares = 0,
+  onCreateFromCommunity,
+  comments = [],
+  onAddComment,
+  onOpenRemix,
+}) {
   if (!isOpen || !post) return null
 
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
@@ -142,30 +159,20 @@ function CommunityDetailModal({ post, isOpen, onClose, onUseTemplate, onShare, o
                 </div>
               </div>
 
-              {/* 模拟评论区 */}
-              <div className="modal-comments-preview">
-                <h4>Comments (3)</h4>
-                <div className="comment-item">
-                  <div className="comment-avatar">😎</div>
-                  <div className="comment-content">
-                    <strong>User_882</strong>
-                    <p>This is hilarious! 😂</p>
-                  </div>
-                </div>
-                <div className="comment-item">
-                  <div className="comment-avatar">🔥</div>
-                  <div className="comment-content">
-                    <strong>MemeKing</strong>
-                    <p>Can I use this template?</p>
-                  </div>
-                </div>
+              <div className="modal-comments-section">
+                <h4>评论 & 二创</h4>
+                <CommentComposer postId={post.id} onAddComment={onAddComment} />
+                <CommentList
+                  comments={comments}
+                  onRemix={(comment) => onOpenRemix?.(post, comment)}
+                />
               </div>
             </div>
             
             <div className="modal-footer-actions">
               <button 
                 className="remix-btn-large"
-                onClick={() => onUseTemplate(post.templateId, { plusOne: post.supportsPlusOne })}
+                onClick={() => onOpenRemix?.(post)}
               >
                 ⚡ Remix this
               </button>
@@ -280,7 +287,6 @@ function CommunityPage({ user, onLogin }) {
   const [activeTab, setActiveTab] = useState('forYou')
   const [selectedTag, setSelectedTag] = useState('all')
   const [visibleCount, setVisibleCount] = useState(DEFAULT_BATCH)
-  const [selectedPost, setSelectedPost] = useState(null) // 控制弹窗
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('trending')
   const [activityIndex, setActivityIndex] = useState(0)
@@ -289,6 +295,20 @@ function CommunityPage({ user, onLogin }) {
   const [viewCounts, setViewCounts] = useState({})
   const [shareCounts, setShareCounts] = useState({})
   const [lastCheckTime, setLastCheckTime] = useState(Date.now())
+  const [selectedPostId, setSelectedPostId] = useState(null)
+  const [commentsByPost, setCommentsByPost] = useState(initialComments)
+  const [activeRemixPostId, setActiveRemixPostId] = useState(null)
+  const [remixSeed, setRemixSeed] = useState(null)
+
+  const selectedPost = useMemo(() => {
+    if (!selectedPostId) return null
+    return allPosts.find((post) => post.id === selectedPostId) || null
+  }, [selectedPostId, allPosts])
+
+  const activeRemixPost = useMemo(() => {
+    if (!activeRemixPostId) return null
+    return allPosts.find(post => post.id === activeRemixPostId) || null
+  }, [activeRemixPostId, allPosts])
 
   // Load local posts and interactions
   useEffect(() => {
@@ -378,13 +398,24 @@ function CommunityPage({ user, onLogin }) {
   }
 
   const handleViewPost = (post) => {
-    setSelectedPost(post)
+    setSelectedPostId(post.id)
     setViewCounts(prev => {
       const next = { ...prev, [post.id]: (prev[post.id] || 0) + 1 }
       localStorage.setItem('post_views', JSON.stringify(next))
       return next
     })
   }
+
+  const handleAddComment = useCallback((postId, comment) => {
+    if (!postId) return
+    setCommentsByPost(prev => {
+      const existing = prev[postId] || []
+      return {
+        ...prev,
+        [postId]: [comment, ...existing],
+      }
+    })
+  }, [])
 
   const activityMessages = useMemo(() => {
     return allPosts.map((post, index) => ({
@@ -520,6 +551,25 @@ function CommunityPage({ user, onLogin }) {
     }
   }
 
+  const openRemixDrawer = (post, seed = null) => {
+    setActiveRemixPostId(post.id)
+    setRemixSeed(seed)
+  }
+
+  const closeRemixDrawer = () => {
+    setActiveRemixPostId(null)
+    setRemixSeed(null)
+  }
+
+  const handleRemixFinished = (remix) => {
+    if (!remix?.postId) return
+    handleAddComment(remix.postId, {
+      ...remix,
+      type: 'video',
+    })
+    closeRemixDrawer()
+  }
+
   // Masonry 断点设置
   const breakpointColumnsObj = {
     default: 4,
@@ -634,7 +684,7 @@ function CommunityPage({ user, onLogin }) {
                 key={post.id}
                 post={post}
                 onClick={handleViewPost}
-                onRemix={() => handleUseTemplate(post.templateId, { plusOne: post.supportsPlusOne })}
+                onRemix={() => openRemixDrawer(post)}
                 onLike={() => handleToggleLike(post.id)}
                 isLiked={likedPosts.has(post.id)}
                 extraViews={viewCounts[post.id] || 0}
@@ -665,14 +715,23 @@ function CommunityPage({ user, onLogin }) {
       <CommunityDetailModal
         post={selectedPost}
         isOpen={!!selectedPost}
-        onClose={() => setSelectedPost(null)}
-        onUseTemplate={handleUseTemplate}
+        onClose={() => setSelectedPostId(null)}
         onShare={handleShare}
-        onLike={() => handleToggleLike(selectedPost.id)}
+        onLike={() => selectedPost && handleToggleLike(selectedPost.id)}
         isLiked={selectedPost ? likedPosts.has(selectedPost.id) : false}
         extraViews={selectedPost ? viewCounts[selectedPost.id] || 0 : 0}
         extraShares={selectedPost ? shareCounts[selectedPost.id] || 0 : 0}
         onCreateFromCommunity={handleCreateFromCommunity}
+        comments={selectedPost ? commentsByPost[selectedPost.id] || [] : []}
+        onAddComment={handleAddComment}
+        onOpenRemix={openRemixDrawer}
+      />
+      <RemixDrawer
+        post={activeRemixPost}
+        open={Boolean(activeRemixPost)}
+        onClose={closeRemixDrawer}
+        onFinish={handleRemixFinished}
+        seed={remixSeed}
       />
     </main>
   )
