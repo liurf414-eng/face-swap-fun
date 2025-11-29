@@ -924,7 +924,7 @@ function App() {
         } else if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('fetch failed')) {
           throw new Error('Unable to reach the server. Please check your connection or try again later.')
         } else {
-          throw new Error(`网络错误: ${fetchError.message}`)
+          throw new Error(`Network error: ${fetchError.message}`)
         }
       }
       
@@ -1126,14 +1126,14 @@ function App() {
           setClientElapsedTime(0)
           setScriptedProgress(5.0)
           
-          // 提供更友好的错误提示
+          // Provide a clearer message to the user
           let errorMessage = error.message || 'Unknown error'
           if (errorMessage.includes('fetch failed') || errorMessage.includes('Failed to fetch')) {
             errorMessage = 'Unable to reach the server. Please check your connection or try again later.'
           }
           
-            toast.error(`生成失败: ${errorMessage}`, { autoClose: 5000 })
-          }
+          toast.error(`Generation failed: ${errorMessage}`, { autoClose: 5000 })
+        }
         }
 
         // 开始第一次轮询
@@ -1225,13 +1225,13 @@ function App() {
       setClientElapsedTime(0)
       setScriptedProgress(5.0)
       
-      // 提供更友好的错误提示
+      // Provide a clearer message to the user
       let errorMessage = error.message || 'Unknown error'
       if (errorMessage.includes('fetch failed') || errorMessage.includes('Failed to fetch')) {
         errorMessage = 'Unable to reach the server. Please check your connection or try again later.'
       }
       
-      toast.error(`生成失败: ${errorMessage}`, { autoClose: 5000 })
+      toast.error(`Generation failed: ${errorMessage}`, { autoClose: 5000 })
     }
   }, [
     isProcessing,

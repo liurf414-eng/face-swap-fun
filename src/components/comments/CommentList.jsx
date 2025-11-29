@@ -1,6 +1,6 @@
 export default function CommentList({ comments = [], onRemix }) {
   if (!comments.length) {
-    return <p className="comments-empty">还没有任何评论，快来抢首条二创！</p>
+    return <p className="comments-empty">No comments yet — be the first remix.</p>
   }
 
   return (
@@ -21,7 +21,7 @@ export default function CommentList({ comments = [], onRemix }) {
                 <video src={comment.mediaUrl} autoPlay loop muted controls />
                 {comment.prompt && <p className="prompt">Prompt: {comment.prompt}</p>}
                 <button className="ghost-btn" type="button" onClick={() => onRemix?.(comment)}>
-                  我也玩这个
+                  Remix this too
                 </button>
               </>
             ) : (

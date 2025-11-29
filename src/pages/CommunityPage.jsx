@@ -6,8 +6,15 @@ import { communityPosts as staticPosts, communityRemixMeta } from '../data/commu
 import RemixDrawer from '../components/RemixDrawer'
 import CommentComposer from '../components/comments/CommentComposer'
 import CommentList from '../components/comments/CommentList'
+import LiveFeed from '../components/community/LiveFeed'
 
 const DEFAULT_BATCH = 8 // 增加每批加载数量
+
+const HERO_STEPS = [
+  { title: 'Upload face', description: 'Drop selfies or generate in AI Studio' },
+  { title: 'Pick action', description: 'Choose trending template or write prompt' },
+  { title: 'Share remix', description: 'Post to community & download instantly' },
+]
 
 const buildInitialComments = () => {
   const result = {}
@@ -49,7 +56,7 @@ const getFreshnessScore = (label) => {
 }
 
 // 详情弹窗组件
-function CommunityDetailModal({
+function CommunityDetailPanel({
   post,
   isOpen,
   onClose,
@@ -63,7 +70,7 @@ function CommunityDetailModal({
   onAddComment,
   onOpenRemix,
 }) {
-  if (!isOpen || !post) return null
+  if (!post) return null
 
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
   const displayViews = post.metrics.views + extraViews
@@ -80,145 +87,116 @@ function CommunityDetailModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={onClose}>✕</button>
-        
-        <div className="modal-grid">
-          {/* 左侧：大图/视频 */}
-          <div className="modal-media-section">
+    <>
+      <aside className={`community-detail-panel ${isOpen ? 'open' : ''}`}>
+        <button className="panel-close" onClick={onClose}>Close</button>
+        <div className="detail-scroll">
+          <div className="detail-media">
             <video
               src={post.clipUrl}
               autoPlay
               loop
               controls
               playsInline
-              className="modal-video"
             />
           </div>
-          
-          {/* 右侧：详细信息 */}
-          <div className="modal-info-section">
-            <div className="modal-header">
+          <div className="detail-header">
+            <div>
+              <p className="label">Now remixing</p>
               <h2>{post.title}</h2>
-              <div className="modal-meta-header">
-                <div className="modal-author">
-                  <img src={post.author.avatar} alt={post.author.name} />
-                  <div className="author-details">
-                    <strong>{post.author.name}</strong>
-                    <span>{post.author.handle}</span>
-                  </div>
-                </div>
-                <div className="modal-header-actions">
-                  {post.supportsPlusOne && (
-                    <span className="modal-chip">Plus One Ready</span>
-                  )}
-                  <button className="follow-btn">Follow</button>
-                </div>
-              </div>
             </div>
-            
-            <div className="modal-scroll-area">
-              <p className="modal-desc">{post.description}</p>
-
-              <div className="modal-meta-grid">
-                <div className="meta-item">
-                  <span className="meta-label">Template</span>
-                  <span className="meta-value">{post.templateName}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="meta-label">Soundtrack</span>
-                  <span className="meta-value">{post.soundtrack}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="meta-label">Plus One</span>
-                  <span className={`meta-value ${post.supportsPlusOne ? 'text-positive' : ''}`}>
-                    {post.supportsPlusOne ? 'Available' : 'Solo'}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="modal-prompt-box">
-                <div className="prompt-header">
-                  <span className="magic-icon">✨</span>
-                  <span>Used Prompt</span>
-                  <button className="prompt-copy-btn" onClick={handleCopyPrompt}>
-                    Copy Prompt
-                  </button>
-                </div>
-                <p className="prompt-content">{post.prompt}</p>
-              </div>
-
-              {post.supportsPlusOne && (
-                <div className="plus-one-highlight">
-                  <strong>Plus One ready</strong>
-                  <p>Upload a second face to jump into this scene. Friends can remix with you for chain reactions.</p>
-                </div>
-              )}
-              
-              <div className="modal-tags">
-                {post.tags.map(tag => (
-                  <span key={tag} className="tag-pill small">#{tag}</span>
-                ))}
-              </div>
-              
-              <div className="modal-stats">
-                <div className="stat-item">
-                  <span className="stat-value">{displayLikes.toLocaleString()}</span>
-                  <span className="stat-label">Likes</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-value">{displayShares.toLocaleString()}</span>
-                  <span className="stat-label">Remixes</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-value">{displayViews.toLocaleString()}</span>
-                  <span className="stat-label">Views</span>
-                </div>
-              </div>
-
-              <div className="modal-comments-section">
-                <h4>评论 & 二创</h4>
-                <CommentComposer postId={post.id} onAddComment={onAddComment} />
-                <CommentList
-                  comments={comments}
-                  onRemix={(comment) => onOpenRemix?.(post, comment)}
-                />
-              </div>
+            <button className="follow-btn">Follow</button>
+          </div>
+          <div className="detail-author">
+            <img src={post.author.avatar} alt={post.author.name} />
+            <div>
+              <strong>{post.author.name}</strong>
+              <span>{post.author.handle}</span>
             </div>
-            
-            <div className="modal-footer-actions">
-              <button 
-                className="remix-btn-large"
-                onClick={() => onOpenRemix?.(post)}
-              >
-                ⚡ Remix this
-              </button>
-              {onCreateFromCommunity && (
-                <button 
-                  className="create-btn-large"
-                  onClick={() => onCreateFromCommunity(post)}
-                >
-                  🎨 Create from this
-                </button>
-              )}
-              <div className="secondary-actions">
-                <button className="icon-action-btn" onClick={() => onShare(post)}>
-                  🔗 Share
-                </button>
-                <button 
-                  className={`icon-action-btn ${isLiked ? 'active-like' : ''}`}
-                  onClick={onLike}
-                  style={isLiked ? { color: '#ff4d4f', borderColor: '#ff4d4f', background: 'rgba(255, 77, 79, 0.1)' } : {}}
-                >
-                  {isLiked ? '❤️ Liked' : '🤍 Like'}
-                </button>
-              </div>
+            {post.supportsPlusOne && <span className="pill">Plus One</span>}
+          </div>
+          <div className="detail-stats-row">
+            <div>
+              <span className="stat-value">{displayLikes.toLocaleString()}</span>
+              <span className="stat-label">Likes</span>
+            </div>
+            <div>
+              <span className="stat-value">{displayShares.toLocaleString()}</span>
+              <span className="stat-label">Remixes</span>
+            </div>
+            <div>
+              <span className="stat-value">{displayViews.toLocaleString()}</span>
+              <span className="stat-label">Views</span>
             </div>
           </div>
+
+          <div className="remix-steps-inline">
+            <div className="step-card">
+              <span>01</span>
+              <p>Upload face or use AI Studio</p>
+            </div>
+            <div className="step-card">
+              <span>02</span>
+              <p>Select template or prompt</p>
+            </div>
+            <div className="step-card">
+              <span>03</span>
+              <p>Share back to community</p>
+            </div>
+          </div>
+
+          <div className="detail-info-grid">
+            <div>
+              <p className="label">Template</p>
+              <p>{post.templateName}</p>
+            </div>
+            <div>
+              <p className="label">Soundtrack</p>
+              <p>{post.soundtrack}</p>
+            </div>
+            <div>
+              <p className="label">Prompt</p>
+              <button className="text-link" onClick={handleCopyPrompt}>Copy</button>
+            </div>
+          </div>
+          <p className="detail-description">{post.description}</p>
+          <div className="detail-tags">
+            {post.tags.map(tag => (
+              <span key={tag}>#{tag}</span>
+            ))}
+          </div>
+
+          <div className="detail-actions">
+            <button className="remix-btn-large" onClick={() => onOpenRemix?.(post)}>
+              Remix this
+            </button>
+            <button className="ghost-btn" onClick={() => onShare(post)}>Share</button>
+            <button
+              className={`ghost-btn ${isLiked ? 'active-like' : ''}`}
+              onClick={onLike}
+            >
+              {isLiked ? 'Liked' : 'Like'}
+            </button>
+          </div>
+
+          {onCreateFromCommunity && (
+            <button className="create-btn-large" onClick={() => onCreateFromCommunity(post)}>
+              Create from this
+            </button>
+          )}
+
+          <div className="modal-comments-section">
+            <h4>Remix comments</h4>
+            <CommentComposer postId={post.id} onAddComment={onAddComment} />
+            <CommentList
+              comments={comments}
+              onRemix={(comment) => onOpenRemix?.(post, comment)}
+            />
+          </div>
         </div>
-      </div>
-    </div>
+      </aside>
+      {isOpen && <div className="detail-panel-mask" onClick={onClose} />}
+    </>
   )
 }
 
@@ -307,7 +285,6 @@ function CommunityPage({ user, onLogin }) {
   const [visibleCount, setVisibleCount] = useState(DEFAULT_BATCH)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('trending')
-  const [activityIndex, setActivityIndex] = useState(0)
   const [allPosts, setAllPosts] = useState(staticPosts)
   const [likedPosts, setLikedPosts] = useState(new Set())
   const [viewCounts, setViewCounts] = useState({})
@@ -435,11 +412,26 @@ function CommunityPage({ user, onLogin }) {
     })
   }, [])
 
-  const activityMessages = useMemo(() => {
-    return allPosts.map((post, index) => ({
-      id: `${post.id}-${index}`,
-      text: `${post.author.name} just remixed “${post.templateName}” · +${post.metrics.remixes} remixes`,
-    }))
+  const liveFeedEvents = useMemo(() => {
+    const events = []
+    allPosts.forEach((post) => {
+      const meta = communityRemixMeta[post.id]
+      if (!meta) return
+      const chains = meta.remixChains || []
+      chains.forEach((chain) => {
+        events.push({
+          id: chain.id,
+          templateName: chain.templateName,
+          previewUrl: chain.previewUrl || post.clipUrl,
+          author: chain.author?.name || post.author.name,
+          prompt: chain.prompt,
+          timeAgo: chain.createdAt,
+          templateId: chain.templateId,
+          post,
+        })
+      })
+    })
+    return events.slice(0, 8)
   }, [allPosts])
 
   const tags = useMemo(() => {
@@ -447,14 +439,6 @@ function CommunityPage({ user, onLogin }) {
     allPosts.forEach((post) => post.tags.forEach((tag) => unique.add(tag)))
     return ['all', ...unique]
   }, [allPosts])
-
-  useEffect(() => {
-    if (!activityMessages.length) return
-    const timer = setInterval(() => {
-      setActivityIndex((prev) => (prev + 1) % activityMessages.length)
-    }, 4500)
-    return () => clearInterval(timer)
-  }, [activityMessages.length])
 
   const tabPosts = useMemo(() => {
     const base = activeTab === 'friends'
@@ -515,18 +499,6 @@ function CommunityPage({ user, onLogin }) {
   useEffect(() => {
     setVisibleCount(DEFAULT_BATCH)
   }, [activeTab, selectedTag, searchQuery, sortBy])
-
-  const currentActivity = activityMessages[activityIndex]
-
-  const handleUseTemplate = (templateId, options = {}) => {
-    navigate('/', { 
-      state: { 
-        fromCommunity: true, 
-        templateId,
-        plusOne: Boolean(options.plusOne)
-      } 
-    })
-  }
 
   const handleCreateFromCommunity = (post) => {
     // Determine if post is image or video
@@ -596,143 +568,156 @@ function CommunityPage({ user, onLogin }) {
     900: 2,
     500: 1
   };
+  const primaryPost = visiblePosts[0] || sortedPosts[0] || allPosts[0] || null
 
   return (
     <main className="community-page">
       <header className="community-hero">
-        <div>
-          <p className="section-label">Community Selected</p>
-          <h1>FaceAI Hub Community</h1>
-          <p>Discover global creations, remix trending memes, and join the fun.</p>
-          <div className="community-socials">
-            <a href="https://www.instagram.com" target="_blank" rel="noreferrer">Instagram</a>
-            <a href="https://www.youtube.com" target="_blank" rel="noreferrer">YouTube</a>
-            <a href="https://discord.com" target="_blank" rel="noreferrer">Discord</a>
+        <div className="hero-left">
+          <p className="section-label">Live Remix Studio</p>
+          <h1>Twist any video with one face</h1>
+          <p>Upload or auto-generate faces, drop them into trending templates, and post remixes in seconds.</p>
+          <div className="hero-actions">
+            <button
+              className="primary-btn"
+              onClick={() => primaryPost && openRemixDrawer(primaryPost)}
+              disabled={!primaryPost}
+            >
+              Start remixing
+            </button>
+            <button
+              className="ghost-btn"
+              onClick={() => navigate('/ai-studio/text-to-image')}
+            >
+              Launch AI Studio
+            </button>
           </div>
         </div>
-        <div className="community-stats">
-          <div className="stat-card"><strong>2.6K+</strong><span>Creators</span></div>
-          <div className="stat-card"><strong>980+</strong><span>Templates</span></div>
-          <div className="stat-card"><strong>32K+</strong><span>Remixes</span></div>
+        <div className="hero-steps-grid">
+          {HERO_STEPS.map((step, index) => (
+            <div className="hero-step-card" key={step.title}>
+              <span>{index + 1}</span>
+              <strong>{step.title}</strong>
+              <p>{step.description}</p>
+            </div>
+          ))}
         </div>
       </header>
 
-      {currentActivity && (
-        <div className="community-activity-bar">
-          <span className="activity-dot" />
-          <span className="activity-label">Live feed</span>
-          <div className="activity-marquee">
-            <span key={currentActivity.id} className="activity-item">
-              {currentActivity.text}
-            </span>
-          </div>
-        </div>
-      )}
-
-      <div className="community-tab-bar">
-        <div className="tab-buttons">
-          <button
-            className={activeTab === 'forYou' ? 'active' : ''}
-            onClick={() => setActiveTab('forYou')}
-          >
-            For You
-          </button>
-          <button
-            className={activeTab === 'friends' ? 'active' : ''}
-            onClick={() => setActiveTab('friends')}
-          >
-            Friends
-          </button>
-        </div>
-      </div>
-
-      <div className="community-tags">
-        {tags.map((tag) => (
-          <button
-            key={tag}
-            className={`tag-pill ${selectedTag === tag ? 'active' : ''}`}
-            onClick={() => setSelectedTag(tag)}
-          >
-            {tag === 'all' ? 'All' : `#${tag}`}
-          </button>
-        ))}
-      </div>
-
-      {showFriendsGate ? (
-        <div className="community-gate">
-          <h3>Sign in to see friends' activity</h3>
-          <p>Connect your account to see what your friends are creating.</p>
-          <button className="use-template-btn" onClick={onLogin}>
-            Sign In
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="community-controls">
-            <div className="search-input-modern">
-              <span className="search-icon">🔍</span>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search creations, creators, or #tags"
-              />
-            </div>
-            <div className="community-sort">
-              <label htmlFor="community-sort">Sort</label>
-              <select
-                id="community-sort"
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value)}
+      <div className="community-layout">
+        <section className="community-feed">
+          <div className="community-tab-bar">
+            <div className="tab-buttons">
+              <button
+                className={activeTab === 'forYou' ? 'active' : ''}
+                onClick={() => setActiveTab('forYou')}
               >
-                <option value="trending">Trending</option>
-                <option value="latest">Latest</option>
-                <option value="remixes">Most remixed</option>
-              </select>
-            </div>
-          </div>
-
-          <Masonry
-            breakpointCols={breakpointColumnsObj}
-            className="my-masonry-grid"
-            columnClassName="my-masonry-grid_column"
-          >
-            {visiblePosts.map((post) => (
-              <CommunityPostCard
-                key={post.id}
-                post={post}
-                onClick={handleViewPost}
-                onRemix={() => openRemixDrawer(post)}
-                onLike={() => handleToggleLike(post.id)}
-                isLiked={likedPosts.has(post.id)}
-                extraViews={viewCounts[post.id] || 0}
-                extraShares={shareCounts[post.id] || 0}
-                isNew={post.createdAt === 'Just now'}
-                onCreateFromCommunity={handleCreateFromCommunity}
-              />
-            ))}
-          </Masonry>
-
-          {visiblePosts.length === 0 && (
-            <div className="community-empty">
-              <p>No posts found. Try a different tag.</p>
-            </div>
-          )}
-
-          {hasMore && (
-            <div className="community-load-more">
-              <button onClick={() => setVisibleCount((prev) => prev + DEFAULT_BATCH)}>
-                Load More
+                For You
+              </button>
+              <button
+                className={activeTab === 'friends' ? 'active' : ''}
+                onClick={() => setActiveTab('friends')}
+              >
+                Friends
               </button>
             </div>
-          )}
-        </>
-      )}
+            <div className="tab-secondary">
+              <div className="search-input-modern">
+                <span className="search-icon">🔍</span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search creators or #tags"
+                />
+              </div>
+              <div className="community-sort">
+                <label htmlFor="community-sort">Sort</label>
+                <select
+                  id="community-sort"
+                  value={sortBy}
+                  onChange={(event) => setSortBy(event.target.value)}
+                >
+                  <option value="trending">Trending</option>
+                  <option value="latest">Latest</option>
+                  <option value="remixes">Most remixed</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
-      {/* 详情弹窗 */}
-      <CommunityDetailModal
+          <div className="community-tags">
+            {tags.map((tag) => (
+              <button
+                key={tag}
+                className={`tag-pill ${selectedTag === tag ? 'active' : ''}`}
+                onClick={() => setSelectedTag(tag)}
+              >
+                {tag === 'all' ? 'All topics' : `#${tag}`}
+              </button>
+            ))}
+          </div>
+
+          {showFriendsGate ? (
+            <div className="community-gate">
+              <h3>Sign in to see friends' activity</h3>
+              <p>Connect your account to see what your friends are remixing.</p>
+              <button className="primary-btn" onClick={onLogin}>
+                Sign In
+              </button>
+            </div>
+          ) : (
+            <>
+              <Masonry
+                breakpointCols={breakpointColumnsObj}
+                className="my-masonry-grid"
+                columnClassName="my-masonry-grid_column"
+              >
+                {visiblePosts.map((post) => (
+                  <CommunityPostCard
+                    key={post.id}
+                    post={post}
+                    onClick={handleViewPost}
+                    onRemix={() => openRemixDrawer(post)}
+                    onLike={() => handleToggleLike(post.id)}
+                    isLiked={likedPosts.has(post.id)}
+                    extraViews={viewCounts[post.id] || 0}
+                    extraShares={shareCounts[post.id] || 0}
+                    isNew={post.createdAt === 'Just now'}
+                    onCreateFromCommunity={handleCreateFromCommunity}
+                  />
+                ))}
+              </Masonry>
+
+              {visiblePosts.length === 0 && (
+                <div className="community-empty">
+                  <p>No posts found. Try a different tag.</p>
+                </div>
+              )}
+
+              {hasMore && (
+                <div className="community-load-more">
+                  <button onClick={() => setVisibleCount((prev) => prev + DEFAULT_BATCH)}>
+                    Load More
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        <LiveFeed
+          events={liveFeedEvents}
+          onRemix={(event) => openRemixDrawer(event.post, {
+            templateId: event.templateId,
+            prompt: event.prompt,
+          })}
+        />
+      </div>
+
+      <CommunityDetailPanel
         post={selectedPost}
-        isOpen={!!selectedPost}
+        isOpen={Boolean(selectedPost)}
         onClose={() => setSelectedPostId(null)}
         onShare={handleShare}
         onLike={() => selectedPost && handleToggleLike(selectedPost.id)}

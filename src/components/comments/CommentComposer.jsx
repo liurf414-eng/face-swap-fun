@@ -34,7 +34,7 @@ export default function CommentComposer({ postId, onAddComment }) {
 
   const handleCreationSubmit = async () => {
     if (!creationTemplateId && meta?.type === 'video') {
-      alert('请选择一个模板动作')
+      alert('Please choose a template action')
       return
     }
     setIsSubmitting(true)
@@ -64,21 +64,21 @@ export default function CommentComposer({ postId, onAddComment }) {
           className={activeTab === tabs.TEXT ? 'active' : ''}
           onClick={() => setActiveTab(tabs.TEXT)}
         >
-          文字评论
+          Text comment
         </button>
         <button
           type="button"
           className={activeTab === tabs.CREATION ? 'active' : ''}
           onClick={() => setActiveTab(tabs.CREATION)}
         >
-          创作回应
+          Remix response
         </button>
       </div>
 
       {activeTab === tabs.TEXT ? (
         <div className="text-panel">
           <textarea
-            placeholder="分享你的想法..."
+            placeholder="Share your thoughts..."
             value={text}
             onChange={e => setText(e.target.value)}
           />
@@ -88,12 +88,12 @@ export default function CommentComposer({ postId, onAddComment }) {
             onClick={handleTextSubmit}
             disabled={isSubmitting}
           >
-            发布
+            Post
           </button>
         </div>
       ) : (
         <div className="creation-panel">
-          <label>动作模板</label>
+          <label>Action template</label>
           <select
             value={creationTemplateId}
             onChange={e => setCreationTemplateId(e.target.value)}
@@ -104,9 +104,9 @@ export default function CommentComposer({ postId, onAddComment }) {
               </option>
             ))}
           </select>
-          <label>提示词 / 二创说明</label>
+          <label>Prompt / remix notes</label>
           <textarea
-            placeholder="例如：slow motion punchline reaction"
+            placeholder="e.g., slow motion punchline reaction"
             value={creationPrompt}
             onChange={e => setCreationPrompt(e.target.value)}
           />
@@ -116,7 +116,7 @@ export default function CommentComposer({ postId, onAddComment }) {
             onClick={handleCreationSubmit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? '生成中...' : '生成并评论'}
+            {isSubmitting ? 'Generating...' : 'Generate & comment'}
           </button>
         </div>
       )}

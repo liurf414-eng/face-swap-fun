@@ -13,7 +13,7 @@ const creationModes = {
 
 function TemplatePicker({ templates = [], selectedId, onSelect }) {
   if (!templates.length) {
-    return <p className="remix-empty">暂无可用模板</p>
+    return <p className="remix-empty">No templates available</p>
   }
 
   return (
@@ -52,21 +52,21 @@ function CreationForm({
     <div className="remix-form">
       {supportsPromptMode && (
         <div className="form-row">
-          <label>创作模式</label>
+          <label>Creation mode</label>
           <div className="mode-toggle">
             <button
               type="button"
               className={creationMode === creationModes.TEMPLATE ? 'active' : ''}
               onClick={() => setCreationMode(creationModes.TEMPLATE)}
             >
-              视频模板
+              Video template
             </button>
             <button
               type="button"
               className={creationMode === creationModes.PROMPT ? 'active' : ''}
               onClick={() => setCreationMode(creationModes.PROMPT)}
             >
-              Prompt 合成
+              Prompt blend
             </button>
           </div>
         </div>
@@ -75,7 +75,7 @@ function CreationForm({
       {(creationMode === creationModes.TEMPLATE || !supportsPromptMode) && (
         <>
           <div className="form-row">
-            <label>选择动作模板</label>
+            <label>Select action template</label>
             <TemplatePicker
               templates={meta?.availableActions}
               selectedId={templateId}
@@ -83,10 +83,10 @@ function CreationForm({
             />
           </div>
           <div className="form-row">
-            <label>描述（可选）</label>
+            <label>Description (optional)</label>
             <textarea
               value={prompt}
-              placeholder="例如：neon cyber dance showdown"
+              placeholder="e.g., neon cyber dance showdown"
               onChange={e => setPrompt(e.target.value)}
             />
           </div>
@@ -95,26 +95,26 @@ function CreationForm({
 
       {(!supportsPromptMode || creationMode === creationModes.TEMPLATE) && (
         <div className="form-row">
-          <label>上传/贴入你的脸图</label>
+          <label>Upload / paste your face image</label>
           <input
             type="text"
-            placeholder="粘贴图片链接或 base64"
+            placeholder="Paste an image URL or base64"
             value={faceImage}
             onChange={e => setFaceImage(e.target.value)}
           />
-          <p className="hint">真实环境会提供上传按钮，这里用链接模拟。</p>
+          <p className="hint">In production, this would be an upload field; here we simulate with URLs.</p>
         </div>
       )}
 
       {creationMode === creationModes.PROMPT && (
         <div className="form-row">
-          <label>生成描述</label>
+          <label>Generation prompt</label>
           <textarea
             value={prompt}
-            placeholder="Describe the video you想生成..."
+            placeholder="Describe the video you want to generate..."
             onChange={e => setPrompt(e.target.value)}
           />
-          <p className="hint">我们会调用 text-to-video / image-to-video 引擎。</p>
+          <p className="hint">We’ll call text-to-video / image-to-video engines.</p>
         </div>
       )}
     </div>
@@ -146,7 +146,7 @@ export default function RemixDrawer({ post, open, onClose, onFinish, seed = null
   const handleSubmit = async () => {
     if (!meta) return
     if ((creationMode === creationModes.TEMPLATE || !supportsPromptMode) && !templateId) {
-      alert('请选择一个动作模板')
+      alert('Please choose an action template')
       return
     }
     setIsSubmitting(true)
@@ -206,11 +206,11 @@ export default function RemixDrawer({ post, open, onClose, onFinish, seed = null
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
-              {isSubmitting ? '生成中...' : '生成并发布'}
+              {isSubmitting ? 'Generating...' : 'Generate & publish'}
             </button>
           </>
         ) : (
-          <p className="remix-empty">选择一条帖子开始二创</p>
+          <p className="remix-empty">Pick a post to start remixing</p>
         )}
       </div>
       <div className="remix-mask" onClick={onClose} />
