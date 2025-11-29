@@ -3,12 +3,30 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Masonry from 'react-masonry-css'
 import { communityPosts as staticPosts, communityRemixMeta } from '../data/communityPosts'
-import { communityComments as initialComments } from '../data/communityComments'
 import RemixDrawer from '../components/RemixDrawer'
 import CommentComposer from '../components/comments/CommentComposer'
 import CommentList from '../components/comments/CommentList'
 
 const DEFAULT_BATCH = 8 // 增加每批加载数量
+
+const buildInitialComments = () => {
+  const result = {}
+  Object.entries(communityRemixMeta).forEach(([postId, meta]) => {
+    result[postId] = meta.commentThreads?.map(thread => ({
+      id: thread.id,
+      type: thread.type,
+      mediaUrl: thread.mediaUrl,
+      templateId: thread.templateId,
+      templateName: thread.templateName,
+      prompt: thread.prompt,
+      createdAt: thread.createdAt,
+      status: thread.status,
+      author: thread.author,
+      text: thread.text,
+    })) || []
+  })
+  return result
+}
 
 const getFreshnessScore = (label) => {
   if (!label) return Number.MAX_SAFE_INTEGER
@@ -296,7 +314,7 @@ function CommunityPage({ user, onLogin }) {
   const [shareCounts, setShareCounts] = useState({})
   const [lastCheckTime, setLastCheckTime] = useState(Date.now())
   const [selectedPostId, setSelectedPostId] = useState(null)
-  const [commentsByPost, setCommentsByPost] = useState(initialComments)
+  const [commentsByPost, setCommentsByPost] = useState(buildInitialComments)
   const [activeRemixPostId, setActiveRemixPostId] = useState(null)
   const [remixSeed, setRemixSeed] = useState(null)
 
