@@ -71,6 +71,10 @@ function CommunityDetailPanel({
   onOpenRemix,
 }) {
   if (!post) return null
+  const postMeta = communityRemixMeta[post.id] || {}
+  const templateGroups = postMeta.availableActions || []
+  const [activeGroupId, setActiveGroupId] = useState(templateGroups[0]?.groupId || null)
+  const activeGroup = templateGroups.find(group => group.groupId === activeGroupId) || templateGroups[0] || null
 
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
   const displayViews = post.metrics.views + extraViews
@@ -186,8 +190,47 @@ function CommunityDetailPanel({
           )}
 
           <div className="modal-comments-section">
+            <div className="comment-header-row">
+              <h4>Remix actions</h4>
+              <div className="action-tabs">
+                {templateGroups.map(group => (
+                  <button
+                    key={group.groupId}
+                    type="button"
+                    className={`icon-tab ${activeGroupId === group.groupId ? 'active' : ''}`}
+                    onClick={() => setActiveGroupId(group.groupId)}
+                    title={group.label}
+                  >
+                    <span className="icon">{group.icon || '🎬'}</span>
+                    <span className="tab-label">{group.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {activeGroup && (
+              <div className="action-list">
+                {activeGroup.templates?.map(action => (
+                  <button
+                    key={action.id}
+                    className="action-pill"
+                    onClick={() => onOpenRemix?.(post, {
+                      templateId: action.id,
+                      prompt: action.prompt,
+                      author: action.author,
+                    })}
+                  >
+                    <span className="action-icon">{activeGroup.icon || '🎬'}</span>
+                    <div className="action-text">
+                      <strong>{action.label}</strong>
+                      {action.prompt && <span>{action.prompt}</span>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
             <h4>Remix comments</h4>
-            <CommentComposer postId={post.id} onAddComment={onAddComment} />
             <CommentList
               comments={comments}
               onRemix={(comment) => onOpenRemix?.(post, comment)}
