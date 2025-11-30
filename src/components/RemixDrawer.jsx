@@ -122,6 +122,8 @@ function CreationForm({
 }
 
 export default function RemixDrawer({ post, open, onClose, onFinish, seed = null }) {
+  if (!open || !post) return null
+
   const meta = useMemo(() => (post ? getPostMeta(post.id) : null), [post])
   const [creationMode, setCreationMode] = useState(creationModes.TEMPLATE)
   const [templateId, setTemplateId] = useState('')
