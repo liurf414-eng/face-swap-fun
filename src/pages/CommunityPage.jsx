@@ -296,6 +296,7 @@ function CommunityPage({ user, onLogin }) {
     if (!selectedPostId) return null
     return allPosts.find((post) => post.id === selectedPostId) || null
   }, [selectedPostId, allPosts])
+  const showDetail = Boolean(selectedPost)
 
   // Load local posts and interactions
   useEffect(() => {
@@ -567,7 +568,6 @@ function CommunityPage({ user, onLogin }) {
     500: 1
   };
   const primaryPost = visiblePosts[0] || sortedPosts[0] || allPosts[0] || null
-  const showDetail = Boolean(selectedPost)
 
   return (
     <main className="community-page">
