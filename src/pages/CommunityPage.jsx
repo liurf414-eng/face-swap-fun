@@ -243,12 +243,8 @@ function CommunityDetailPanel({
   )
 }
 
-function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews = 0, extraShares = 0, isNew = false, onCreateFromCommunity }) {
+function CommunityPostCard({ post, onClick, onLike, isLiked, extraViews = 0, extraShares = 0, isNew = false, onCreateFromCommunity }) {
   const handleCardClick = () => onClick(post)
-  const handleRemixClick = (event) => {
-    event.stopPropagation()
-    onRemix()
-  }
   const handleLikeClick = (event) => {
     event.stopPropagation()
     onLike && onLike()
@@ -269,12 +265,9 @@ function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews
           className="card-video"
         />
         {/* 悬停遮罩 */}
-        <div className="card-hover-overlay">
-          <div className="overlay-content">
-            <button className="overlay-remix-btn" onClick={handleRemixClick}>
-              ⚡ Remix
-            </button>
-            {onCreateFromCommunity && (
+        {onCreateFromCommunity && (
+          <div className="card-hover-overlay">
+            <div className="overlay-content">
               <button 
                 className="overlay-create-btn" 
                 onClick={(event) => {
@@ -284,18 +277,18 @@ function CommunityPostCard({ post, onClick, onRemix, onLike, isLiked, extraViews
               >
                 🎨 Create
               </button>
-            )}
-            <div className="overlay-stats">
-              <span onClick={handleLikeClick} style={{ cursor: 'pointer' }}>
-                {isLiked ? '❤️' : '🤍'} {displayLikes}
-              </span>
-              <span>👀 {displayViews}</span>
+              <div className="overlay-stats">
+                <span onClick={handleLikeClick} style={{ cursor: 'pointer' }}>
+                  {isLiked ? '❤️' : '🤍'} {displayLikes}
+                </span>
+                <span>👀 {displayViews}</span>
+              </div>
+              {post.supportsPlusOne && (
+                <span className="overlay-pill">Plus One ready</span>
+              )}
             </div>
-            {post.supportsPlusOne && (
-              <span className="overlay-pill">Plus One ready</span>
-            )}
           </div>
-        </div>
+        )}
         
         <div className="card-badges-top">
           {isNew && (
@@ -721,7 +714,6 @@ function CommunityPage({ user, onLogin }) {
                     key={post.id}
                     post={post}
                     onClick={handleViewPost}
-                    onRemix={() => openRemixDrawer(post)}
                     onLike={() => handleToggleLike(post.id)}
                     isLiked={likedPosts.has(post.id)}
                     extraViews={viewCounts[post.id] || 0}
