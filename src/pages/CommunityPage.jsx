@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Masonry from 'react-masonry-css'
 import { communityPosts as staticPosts, communityRemixMeta } from '../data/communityPosts'
-import RemixDrawer from '../components/RemixDrawer'
 import CommentComposer from '../components/comments/CommentComposer'
 import CommentList from '../components/comments/CommentList'
 import LiveFeed from '../components/community/LiveFeed'
@@ -55,11 +54,9 @@ const getFreshnessScore = (label) => {
   return Number.MAX_SAFE_INTEGER
 }
 
-// 详情弹窗组件
-function CommunityDetailPanel({
+// 详情主区域布局
+function CommunityDetailLayout({
   post,
-  isOpen,
-  onClose,
   onShare,
   onLike,
   isLiked,
@@ -67,7 +64,6 @@ function CommunityDetailPanel({
   extraShares = 0,
   onCreateFromCommunity,
   comments = [],
-  onAddComment,
   onOpenRemix,
 }) {
   if (!post) return null
@@ -80,36 +76,23 @@ function CommunityDetailPanel({
   const displayViews = post.metrics.views + extraViews
   const displayShares = post.metrics.remixes + extraShares
 
-  const handleCopyPrompt = async () => {
-    try {
-      await navigator.clipboard.writeText(post.prompt)
-      toast.success('Prompt copied to clipboard!')
-    } catch (error) {
-      console.error('Failed to copy prompt', error)
-      toast.error('Failed to copy prompt. Please try again.')
-    }
-  }
-
   return (
-    <>
-      <aside className={`community-detail-panel ${isOpen ? 'open' : ''}`}>
-        <button className="panel-close" onClick={onClose}>Close</button>
-        <div className="detail-scroll">
-          <div className="detail-media">
-            <video
-              src={post.clipUrl}
-              autoPlay
-              loop
-              controls
-              playsInline
-            />
-          </div>
-          <div className="detail-header">
-            <div>
-              <p className="label">Now remixing</p>
-              <h2>{post.title}</h2>
-            </div>
-            <button className="follow-btn">Follow</button>
+    <div className="detail-layout">
+      <section className="detail-media-column">
+        <div className="detail-media-box">
+          <video
+            src={post.clipUrl}
+            autoPlay
+            loop
+            controls
+            playsInline
+          />
+        </div>
+        <div className="detail-meta">
+          <div>
+            <p className="label">Now remixing</p>
+            <h2>{post.title}</h2>
+            <p className="detail-description">{post.description}</p>
           </div>
           <div className="detail-author">
             <img src={post.author.avatar} alt={post.author.name} />
@@ -133,47 +116,12 @@ function CommunityDetailPanel({
               <span className="stat-label">Views</span>
             </div>
           </div>
-
-          <div className="remix-steps-inline">
-            <div className="step-card">
-              <span>01</span>
-              <p>Upload face or use AI Studio</p>
-            </div>
-            <div className="step-card">
-              <span>02</span>
-              <p>Select template or prompt</p>
-            </div>
-            <div className="step-card">
-              <span>03</span>
-              <p>Share back to community</p>
-            </div>
-          </div>
-
-          <div className="detail-info-grid">
-            <div>
-              <p className="label">Template</p>
-              <p>{post.templateName}</p>
-            </div>
-            <div>
-              <p className="label">Soundtrack</p>
-              <p>{post.soundtrack}</p>
-            </div>
-            <div>
-              <p className="label">Prompt</p>
-              <button className="text-link" onClick={handleCopyPrompt}>Copy</button>
-            </div>
-          </div>
-          <p className="detail-description">{post.description}</p>
-          <div className="detail-tags">
-            {post.tags.map(tag => (
-              <span key={tag}>#{tag}</span>
-            ))}
-          </div>
-
           <div className="detail-actions">
-            <button className="remix-btn-large" onClick={() => onOpenRemix?.(post)}>
-              Remix this
-            </button>
+            {onCreateFromCommunity && (
+              <button className="create-btn-large" onClick={() => onCreateFromCommunity(post)}>
+                Create from this
+              </button>
+            )}
             <button className="ghost-btn" onClick={() => onShare(post)}>Share</button>
             <button
               className={`ghost-btn ${isLiked ? 'active-like' : ''}`}
@@ -182,64 +130,59 @@ function CommunityDetailPanel({
               {isLiked ? 'Liked' : 'Like'}
             </button>
           </div>
+        </div>
+      </section>
 
-          {onCreateFromCommunity && (
-            <button className="create-btn-large" onClick={() => onCreateFromCommunity(post)}>
-              Create from this
-            </button>
-          )}
-
-          <div className="modal-comments-section">
-            <div className="comment-header-row">
-              <h4>Remix actions</h4>
-              <div className="action-tabs">
-                {templateGroups.map(group => (
-                  <button
-                    key={group.groupId}
-                    type="button"
-                    className={`icon-tab ${activeGroupId === group.groupId ? 'active' : ''}`}
-                    onClick={() => setActiveGroupId(group.groupId)}
-                    title={group.label}
-                  >
-                    <span className="icon">{group.icon || '🎬'}</span>
-                    <span className="tab-label">{group.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {activeGroup && (
-              <div className="action-list">
-                {activeGroup.templates?.map(action => (
-                  <button
-                    key={action.id}
-                    className="action-pill"
-                    onClick={() => onOpenRemix?.(post, {
-                      templateId: action.id,
-                      prompt: action.prompt,
-                      author: action.author,
-                    })}
-                  >
-                    <span className="action-icon">{activeGroup.icon || '🎬'}</span>
-                    <div className="action-text">
-                      <strong>{action.label}</strong>
-                      {action.prompt && <span>{action.prompt}</span>}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <h4>Remix comments</h4>
-            <CommentList
-              comments={comments}
-              onRemix={(comment) => onOpenRemix?.(post, comment)}
-            />
+      <aside className="detail-side-column">
+        <div className="comment-header-row">
+          <h4>Template actions</h4>
+          <div className="action-tabs">
+            {templateGroups.map(group => (
+              <button
+                key={group.groupId}
+                type="button"
+                className={`icon-tab ${activeGroupId === group.groupId ? 'active' : ''}`}
+                onClick={() => setActiveGroupId(group.groupId)}
+                title={group.label}
+              >
+                <span className="icon">{group.icon || '🎬'}</span>
+                <span className="tab-label">{group.label}</span>
+              </button>
+            ))}
           </div>
         </div>
+
+        {activeGroup && (
+          <div className="action-list">
+            {activeGroup.templates?.map(action => (
+              <button
+                key={action.id}
+                className="action-pill"
+                onClick={() => onOpenRemix?.(post, {
+                  templateId: action.id,
+                  prompt: action.prompt,
+                  author: action.author,
+                })}
+              >
+                <span className="action-icon">{activeGroup.icon || '🎬'}</span>
+                <div className="action-text">
+                  <strong>{action.label}</strong>
+                  {action.prompt && <span>{action.prompt}</span>}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="comments-feed">
+          <h4>Remix comments</h4>
+          <CommentList
+            comments={comments}
+            onRemix={(comment) => onOpenRemix?.(post, comment)}
+          />
+        </div>
       </aside>
-      {isOpen && <div className="detail-panel-mask" onClick={onClose} />}
-    </>
+    </div>
   )
 }
 
@@ -328,18 +271,11 @@ function CommunityPage({ user, onLogin }) {
   const [lastCheckTime, setLastCheckTime] = useState(Date.now())
   const [selectedPostId, setSelectedPostId] = useState(null)
   const [commentsByPost, setCommentsByPost] = useState(buildInitialComments)
-  const [activeRemixPostId, setActiveRemixPostId] = useState(null)
-  const [remixSeed, setRemixSeed] = useState(null)
 
   const selectedPost = useMemo(() => {
     if (!selectedPostId) return null
     return allPosts.find((post) => post.id === selectedPostId) || null
   }, [selectedPostId, allPosts])
-
-  const activeRemixPost = useMemo(() => {
-    if (!activeRemixPostId) return null
-    return allPosts.find(post => post.id === activeRemixPostId) || null
-  }, [activeRemixPostId, allPosts])
 
   // Load local posts and interactions
   useEffect(() => {
@@ -578,22 +514,22 @@ function CommunityPage({ user, onLogin }) {
   }
 
   const openRemixDrawer = (post, seed = null) => {
-    setActiveRemixPostId(post.id)
-    setRemixSeed(seed)
-  }
-
-  const closeRemixDrawer = () => {
-    setActiveRemixPostId(null)
-    setRemixSeed(null)
-  }
-
-  const handleRemixFinished = (remix) => {
-    if (!remix?.postId) return
-    handleAddComment(remix.postId, {
-      ...remix,
+    // Inlined remix flow would go here if needed
+    if (!post) return
+    const remix = {
+      postId: post.id,
+      mediaUrl: seed?.mediaUrl || post.clipUrl,
+      templateId: seed?.templateId,
+      prompt: seed?.prompt || post.prompt,
+      author: seed?.author || {
+        name: 'You',
+        handle: '@you',
+        avatar: 'https://i.pravatar.cc/80?img=65',
+      },
       type: 'video',
-    })
-    closeRemixDrawer()
+      createdAt: 'Just now',
+    }
+    handleAddComment(post.id, remix)
   }
 
   // Masonry 断点设置
@@ -750,27 +686,19 @@ function CommunityPage({ user, onLogin }) {
         />
       </div>
 
-      <CommunityDetailPanel
-        post={selectedPost}
-        isOpen={Boolean(selectedPost)}
-        onClose={() => setSelectedPostId(null)}
-        onShare={handleShare}
-        onLike={() => selectedPost && handleToggleLike(selectedPost.id)}
-        isLiked={selectedPost ? likedPosts.has(selectedPost.id) : false}
-        extraViews={selectedPost ? viewCounts[selectedPost.id] || 0 : 0}
-        extraShares={selectedPost ? shareCounts[selectedPost.id] || 0 : 0}
-        onCreateFromCommunity={handleCreateFromCommunity}
-        comments={selectedPost ? commentsByPost[selectedPost.id] || [] : []}
-        onAddComment={handleAddComment}
-        onOpenRemix={openRemixDrawer}
-      />
-      <RemixDrawer
-        post={activeRemixPost}
-        open={Boolean(activeRemixPost)}
-        onClose={closeRemixDrawer}
-        onFinish={handleRemixFinished}
-        seed={remixSeed}
-      />
+      {selectedPost && (
+        <CommunityDetailLayout
+          post={selectedPost}
+          onShare={handleShare}
+          onLike={() => handleToggleLike(selectedPost.id)}
+          isLiked={likedPosts.has(selectedPost.id)}
+          extraViews={viewCounts[selectedPost.id] || 0}
+          extraShares={shareCounts[selectedPost.id] || 0}
+          onCreateFromCommunity={handleCreateFromCommunity}
+          comments={commentsByPost[selectedPost.id] || []}
+          onOpenRemix={openRemixDrawer}
+        />
+      )}
     </main>
   )
 }
