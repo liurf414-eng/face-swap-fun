@@ -292,8 +292,6 @@ function CommunityPage({ user, onLogin }) {
   const [selectedPostId, setSelectedPostId] = useState(null)
   const [commentsByPost, setCommentsByPost] = useState(buildInitialComments)
 
-  const showDetail = Boolean(selectedPost)
-
   const selectedPost = useMemo(() => {
     if (!selectedPostId) return null
     return allPosts.find((post) => post.id === selectedPostId) || null
