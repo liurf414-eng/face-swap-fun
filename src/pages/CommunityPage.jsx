@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Masonry from 'react-masonry-css'
 import { communityPosts as staticPosts, communityRemixMeta } from '../data/communityPosts'
-import CommentComposer from '../components/comments/CommentComposer'
 import CommentList from '../components/comments/CommentList'
 import LiveFeed from '../components/community/LiveFeed'
 
@@ -14,6 +13,50 @@ const HERO_STEPS = [
   { title: 'Pick action', description: 'Choose trending template or write prompt' },
   { title: 'Share remix', description: 'Post to community & download instantly' },
 ]
+
+const buildActionGroups = (post) => {
+  const meta = communityRemixMeta[post.id] || {}
+  const fromMeta = meta.availableActions || []
+  if (fromMeta.length) return fromMeta
+  return [
+    {
+      groupId: 'default',
+      label: 'Featured',
+      icon: '🎬',
+      templates: [
+        {
+          id: post.templateId || post.id,
+          label: post.templateName || post.title,
+          prompt: post.prompt,
+          author: post.author,
+          mediaUrl: post.clipUrl,
+        }
+      ]
+    }
+  ]
+}
+
+const buildActionGroups = (post) => {
+  const meta = communityRemixMeta[post.id] || {}
+  const fromMeta = meta.availableActions || []
+  if (fromMeta.length) return fromMeta
+  return [
+    {
+      groupId: 'default',
+      label: 'Featured',
+      icon: '🎬',
+      templates: [
+        {
+          id: post.templateId || post.id,
+          label: post.templateName || post.title,
+          prompt: post.prompt,
+          author: post.author,
+          mediaUrl: post.clipUrl,
+        }
+      ]
+    }
+  ]
+}
 
 const buildInitialComments = () => {
   const result = {}
@@ -67,8 +110,7 @@ function CommunityDetailLayout({
   onOpenRemix,
 }) {
   if (!post) return null
-  const postMeta = communityRemixMeta[post.id] || {}
-  const templateGroups = postMeta.availableActions || []
+  const templateGroups = buildActionGroups(post)
   const [activeGroupId, setActiveGroupId] = useState(templateGroups[0]?.groupId || null)
   const activeGroup = templateGroups.find(group => group.groupId === activeGroupId) || templateGroups[0] || null
 
