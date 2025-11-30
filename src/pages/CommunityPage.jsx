@@ -36,28 +36,6 @@ const buildActionGroups = (post) => {
   ]
 }
 
-const buildActionGroups = (post) => {
-  const meta = communityRemixMeta[post.id] || {}
-  const fromMeta = meta.availableActions || []
-  if (fromMeta.length) return fromMeta
-  return [
-    {
-      groupId: 'default',
-      label: 'Featured',
-      icon: '🎬',
-      templates: [
-        {
-          id: post.templateId || post.id,
-          label: post.templateName || post.title,
-          prompt: post.prompt,
-          author: post.author,
-          mediaUrl: post.clipUrl,
-        }
-      ]
-    }
-  ]
-}
-
 const buildInitialComments = () => {
   const result = {}
   Object.entries(communityRemixMeta).forEach(([postId, meta]) => {
