@@ -569,6 +569,7 @@ function CommunityPage({ user, onLogin }) {
     500: 1
   };
   const primaryPost = visiblePosts[0] || sortedPosts[0] || allPosts[0] || null
+  const showDetail = Boolean(selectedPost)
 
   return (
     <main className="community-page">
