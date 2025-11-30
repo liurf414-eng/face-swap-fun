@@ -1308,60 +1308,58 @@ function App() {
   return (
     <div className="app">
       {/* Left Sidebar - MindVideo Style */}
-      {!isCommunity && (
-        <div className="sidebar">
-          <div className="sidebar-header">
-            <div className="sidebar-logo">
-              <span className="logo-icon">🎭</span>
-              <span className="logo-text">FaceAI Hub</span>
-            </div>
-          </div>
-
-          <nav className="sidebar-nav">
-            <div className="nav-group">
-              <div className="nav-group-title">Creation Center</div>
-              <Link to="/" className={`nav-item ${isHome ? 'active' : ''}`}>
-                <span className="nav-icon">🎭</span> Face Swap
-              </Link>
-              <Link to="/community" className={`nav-item ${isCommunity ? 'active' : ''}`}>
-                <span className="nav-icon">🌐</span> Community
-              </Link>
-              {user && (
-                <Link to="/my-videos" className={`nav-item ${isMyVideos ? 'active' : ''}`}>
-                  <span className="nav-icon">📂</span> Me
-                </Link>
-              )}
-            </div>
-
-            <div className="nav-group">
-              <div className="nav-group-title">AI Studio</div>
-              <Link to="/ai-studio/text-to-image" className={`nav-item ${isTextToImage ? 'active' : ''}`}>
-                <span className="nav-icon">🖼️</span> Text to Image
-              </Link>
-              <Link to="/ai-studio/text-to-video" className={`nav-item ${isTextToVideo ? 'active' : ''}`}>
-                <span className="nav-icon">🎥</span> Text to Video
-              </Link>
-              <Link to="/ai-studio/image-to-video" className={`nav-item ${isImageToVideo ? 'active' : ''}`}>
-                <span className="nav-icon">🏇</span> Image to Video
-              </Link>
-            </div>
-          </nav>
-          
-          <div className="sidebar-footer">
-            {!user ? (
-              <button className="btn-upgrade" onClick={handleGoogleSignInClick}>
-                Sign In to Save
-              </button>
-            ) : (
-              <div className="upgrade-card">
-                <div className="upgrade-title">Pro Plan</div>
-                <div className="upgrade-desc">Unlock 4K Export</div>
-                <button className="btn-upgrade">Upgrade Now</button>
-              </div>
-            )}
+      <div className="sidebar">
+        <div className="sidebar-header">
+          <div className="sidebar-logo">
+            <span className="logo-icon">🎭</span>
+            <span className="logo-text">FaceAI Hub</span>
           </div>
         </div>
-      )}
+
+        <nav className="sidebar-nav">
+          <div className="nav-group">
+            <div className="nav-group-title">Creation Center</div>
+            <Link to="/" className={`nav-item ${isHome ? 'active' : ''}`}>
+              <span className="nav-icon">🎭</span> Face Swap
+            </Link>
+            <Link to="/community" className={`nav-item ${isCommunity ? 'active' : ''}`}>
+              <span className="nav-icon">🌐</span> Community
+            </Link>
+            {user && (
+              <Link to="/my-videos" className={`nav-item ${isMyVideos ? 'active' : ''}`}>
+                <span className="nav-icon">📂</span> Me
+              </Link>
+            )}
+          </div>
+
+          <div className="nav-group">
+            <div className="nav-group-title">AI Studio</div>
+            <Link to="/ai-studio/text-to-image" className={`nav-item ${isTextToImage ? 'active' : ''}`}>
+              <span className="nav-icon">🖼️</span> Text to Image
+            </Link>
+            <Link to="/ai-studio/text-to-video" className={`nav-item ${isTextToVideo ? 'active' : ''}`}>
+              <span className="nav-icon">🎥</span> Text to Video
+            </Link>
+            <Link to="/ai-studio/image-to-video" className={`nav-item ${isImageToVideo ? 'active' : ''}`}>
+              <span className="nav-icon">🏇</span> Image to Video
+            </Link>
+          </div>
+        </nav>
+        
+        <div className="sidebar-footer">
+          {!user ? (
+            <button className="btn-upgrade" onClick={handleGoogleSignInClick}>
+              Sign In to Save
+            </button>
+          ) : (
+            <div className="upgrade-card">
+              <div className="upgrade-title">Pro Plan</div>
+              <div className="upgrade-desc">Unlock 4K Export</div>
+              <button className="btn-upgrade">Upgrade Now</button>
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="app-body">
         {/* Top Navbar moved here */}
