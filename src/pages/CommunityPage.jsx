@@ -155,47 +155,52 @@ function CommunityDetailLayout({
   comments = [],
   onOpenRemix,
   templateCollections = [],
-  onSelectRelatedPost,
   onAddComment,
 }) {
   if (!post) return null
   const [activeCollectionId, setActiveCollectionId] = useState(
-    () => templateCollections.find((collection) =>
-      collection.posts.some((candidate) => candidate.id === post.id)
-    )?.id || templateCollections[0]?.id || null
+    () => templateCollections[0]?.id || null
+  )
+  const [selectedRemixTemplate, setSelectedRemixTemplate] = useState(
+    () => templateCollections[0]?.posts?.[0] || null
   )
 
   useEffect(() => {
     if (!templateCollections.length) {
       setActiveCollectionId(null)
+      setSelectedRemixTemplate(null)
       return
     }
-    const containing = templateCollections.find((collection) =>
-      collection.posts.some((candidate) => candidate.id === post.id)
-    )
-    if (containing && containing.id !== activeCollectionId) {
-      setActiveCollectionId(containing.id)
-    } else if (!containing && !templateCollections.some((collection) => collection.id === activeCollectionId)) {
+    const existingCollection = templateCollections.find((collection) => collection.id === activeCollectionId)
+    if (!existingCollection) {
       setActiveCollectionId(templateCollections[0].id)
+      setSelectedRemixTemplate(templateCollections[0]?.posts?.[0] || null)
+      return
     }
-  }, [post?.id, templateCollections, activeCollectionId])
+    if (!existingCollection.posts?.length) {
+      setSelectedRemixTemplate(null)
+      return
+    }
+    if (!selectedRemixTemplate || !existingCollection.posts.some((item) => item.id === selectedRemixTemplate.id)) {
+      setSelectedRemixTemplate(existingCollection.posts[0])
+    }
+  }, [templateCollections, activeCollectionId, selectedRemixTemplate])
 
   const activeCollection = templateCollections.find((collection) => collection.id === activeCollectionId) || templateCollections[0] || null
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
   const displayViews = post.metrics.views + extraViews
   const displayShares = post.metrics.remixes + extraShares
 
-  const handleTemplateSelect = (nextPost) => {
-    if (!nextPost || nextPost.id === post.id) return
-    onSelectRelatedPost?.(nextPost)
-  }
-
   const handleCollectionChange = (collectionId) => {
     setActiveCollectionId(collectionId)
     const targetCollection = templateCollections.find((collection) => collection.id === collectionId)
     if (targetCollection?.posts?.length) {
-      handleTemplateSelect(targetCollection.posts[0])
+      setSelectedRemixTemplate(targetCollection.posts[0])
     }
+  }
+
+  const handleTemplateSelect = (templatePost) => {
+    setSelectedRemixTemplate(templatePost)
   }
 
   return (
@@ -243,7 +248,7 @@ function CommunityDetailLayout({
           </div>
           <div className="detail-actions">
             {onCreateFromCommunity && (
-              <button className="create-btn-large" onClick={() => onCreateFromCommunity(post)}>
+              <button className="create-btn-large" onClick={() => onCreateFromCommunity(post, selectedRemixTemplate)}>
                 Create from this
               </button>
             )}
@@ -283,7 +288,7 @@ function CommunityDetailLayout({
                   <button
                     key={templatePost.id}
                     type="button"
-                    className={`template-icon-button ${templatePost.id === post.id ? 'active' : ''}`}
+                  className={`template-icon-button ${selectedRemixTemplate?.id === templatePost.id ? 'active' : ''}`}
                     onClick={() => handleTemplateSelect(templatePost)}
                   >
                     <div
@@ -310,7 +315,16 @@ function CommunityDetailLayout({
               <h4>Remix feed</h4>
               <p>{comments.length} shared remixes</p>
             </div>
-            <button className="ghost-btn compact" onClick={() => onOpenRemix?.(post)}>
+            <button
+              className="ghost-btn compact"
+              onClick={() => {
+                if (onCreateFromCommunity) {
+                  onCreateFromCommunity(post, selectedRemixTemplate)
+                } else {
+                  onOpenRemix?.(post)
+                }
+              }}
+            >
               Remix now
             </button>
           </div>
@@ -655,7 +669,7 @@ function CommunityPage({ user, onLogin }) {
     }
   }, [showDetail])
 
-  const handleCreateFromCommunity = (post) => {
+  const handleCreateFromCommunity = (post, remixTemplate = null) => {
     // Determine if post is image or video
     const isVideo = post.clipUrl.includes('.mp4') || 
                     post.clipUrl.includes('.webm') || 
@@ -668,7 +682,12 @@ function CommunityPage({ user, onLogin }) {
           type: isVideo ? 'video' : 'image',
           url: post.clipUrl
         },
-        sourcePost: post
+        sourcePost: post,
+        remixTemplate: remixTemplate ? {
+          id: remixTemplate.templateId || remixTemplate.id,
+          name: remixTemplate.templateName || remixTemplate.title,
+          clipUrl: remixTemplate.clipUrl
+        } : null
       }
     })
   }
@@ -882,7 +901,6 @@ function CommunityPage({ user, onLogin }) {
             comments={commentsByPost[selectedPost.id] || []}
             onOpenRemix={openRemixDrawer}
             templateCollections={templateCollections}
-            onSelectRelatedPost={handleViewPost}
             onAddComment={handleAddComment}
           />
         </div>
