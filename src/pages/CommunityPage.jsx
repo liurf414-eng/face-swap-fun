@@ -4,6 +4,7 @@ import { toast } from 'react-toastify'
 import Masonry from 'react-masonry-css'
 import { communityPosts as staticPosts, communityRemixMeta } from '../data/communityPosts'
 import CommentList from '../components/comments/CommentList'
+import CommentComposer from '../components/comments/CommentComposer'
 import LiveFeed from '../components/community/LiveFeed'
 
 const DEFAULT_BATCH = 8 // 增加每批加载数量
@@ -12,6 +13,39 @@ const HERO_STEPS = [
   { title: 'Upload face', description: 'Drop selfies or generate in AI Studio' },
   { title: 'Pick action', description: 'Choose trending template or write prompt' },
   { title: 'Share remix', description: 'Post to community & download instantly' },
+]
+
+const TEMPLATE_TYPE_GROUPS = [
+  {
+    id: 'reaction',
+    label: 'Reaction Loops',
+    icon: '😂',
+    keywords: ['reaction', 'meme', 'family', 'story', 'office']
+  },
+  {
+    id: 'duo',
+    label: 'Duo & Dance',
+    icon: '👯',
+    keywords: ['duo', 'dance', 'challenge', 'wedding']
+  },
+  {
+    id: 'promo',
+    label: 'Promo & Brand',
+    icon: '📣',
+    keywords: ['campaign', 'brand', 'promo', 'creator', 'stream']
+  },
+  {
+    id: 'hero',
+    label: 'Hero & Sci-Fi',
+    icon: '🪐',
+    keywords: ['sci-fi', 'hero', 'glowup', 'space']
+  },
+  {
+    id: 'gif',
+    label: 'GIF / Loops',
+    icon: '🌀',
+    keywords: ['gif']
+  }
 ]
 
 const buildActionGroups = (post) => {
@@ -39,7 +73,24 @@ const buildActionGroups = (post) => {
 const buildInitialComments = () => {
   const result = {}
   Object.entries(communityRemixMeta).forEach(([postId, meta]) => {
-    result[postId] = meta.commentThreads?.map(thread => ({
+    const remixVideos = (meta.remixChains || []).map(chain => ({
+      id: `${chain.id}-remix`,
+      type: 'video',
+      mediaUrl: chain.previewUrl,
+      templateId: chain.templateId,
+      templateName: chain.templateName,
+      prompt: chain.prompt,
+      createdAt: chain.createdAt,
+      status: 'ready',
+      author: {
+        name: chain.author?.name || 'Community Creator',
+        avatar: chain.author?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=remix',
+        handle: chain.author?.handle || `@${(chain.author?.name || 'creator').toLowerCase().replace(/\s+/g, '')}`
+      },
+      text: chain.prompt
+    }))
+
+    const commentThreads = meta.commentThreads?.map(thread => ({
       id: thread.id,
       type: thread.type,
       mediaUrl: thread.mediaUrl,
@@ -51,6 +102,8 @@ const buildInitialComments = () => {
       author: thread.author,
       text: thread.text,
     })) || []
+
+    result[postId] = [...remixVideos, ...commentThreads]
   })
   return result
 }
@@ -86,20 +139,46 @@ function CommunityDetailLayout({
   onCreateFromCommunity,
   comments = [],
   onOpenRemix,
+  templateCollections = [],
+  onSelectRelatedPost,
+  onAddComment,
 }) {
   if (!post) return null
-  const templateGroups = buildActionGroups(post)
-  const [activeGroupId, setActiveGroupId] = useState(templateGroups[0]?.groupId || null)
-  const activeGroup = templateGroups.find(group => group.groupId === activeGroupId) || templateGroups[0] || null
+  const [activeCollectionId, setActiveCollectionId] = useState(
+    () => templateCollections.find((collection) =>
+      collection.posts.some((candidate) => candidate.id === post.id)
+    )?.id || templateCollections[0]?.id || null
+  )
 
+  useEffect(() => {
+    if (!templateCollections.length) {
+      setActiveCollectionId(null)
+      return
+    }
+    const containing = templateCollections.find((collection) =>
+      collection.posts.some((candidate) => candidate.id === post.id)
+    )
+    if (containing && containing.id !== activeCollectionId) {
+      setActiveCollectionId(containing.id)
+    } else if (!containing && !templateCollections.some((collection) => collection.id === activeCollectionId)) {
+      setActiveCollectionId(templateCollections[0].id)
+    }
+  }, [post?.id, templateCollections, activeCollectionId])
+
+  const activeCollection = templateCollections.find((collection) => collection.id === activeCollectionId) || templateCollections[0] || null
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
   const displayViews = post.metrics.views + extraViews
   const displayShares = post.metrics.remixes + extraShares
 
+  const handleTemplateSelect = (nextPost) => {
+    if (!nextPost || nextPost.id === post.id) return
+    onSelectRelatedPost?.(nextPost)
+  }
+
   return (
-    <div className="detail-layout">
-      <section className="detail-media-column">
-        <div className="detail-media-box">
+    <div className="community-template-detail">
+      <div className="detail-main-column">
+        <div className="detail-video-shell">
           <video
             src={post.clipUrl}
             autoPlay
@@ -108,11 +187,14 @@ function CommunityDetailLayout({
             playsInline
           />
         </div>
-        <div className="detail-meta">
-          <div>
-            <p className="label">Now remixing</p>
-            <h2>{post.title}</h2>
-            <p className="detail-description">{post.description}</p>
+        <div className="detail-meta-panel">
+          <div className="detail-meta-header">
+            <div>
+              <p className="label">Now remixing</p>
+              <h2>{post.title}</h2>
+              <p className="detail-description">{post.description}</p>
+            </div>
+            <button className="ghost-btn square" onClick={() => onShare(post)}>Share</button>
           </div>
           <div className="detail-author">
             <img src={post.author.avatar} alt={post.author.name} />
@@ -142,7 +224,6 @@ function CommunityDetailLayout({
                 Create from this
               </button>
             )}
-            <button className="ghost-btn" onClick={() => onShare(post)}>Share</button>
             <button
               className={`ghost-btn ${isLiked ? 'active-like' : ''}`}
               onClick={onLike}
@@ -151,60 +232,79 @@ function CommunityDetailLayout({
             </button>
           </div>
         </div>
-      </section>
+      </div>
 
-      <aside className="detail-side-column">
-        <div className="comment-header-row">
-          <h4>Template actions</h4>
-          <div className="action-tabs">
-            {templateGroups.map(group => (
+      <aside className="detail-right-panel">
+        <section className="template-switcher-card">
+          <div className="template-type-row" role="tablist">
+            {templateCollections.map((collection) => (
               <button
-                key={group.groupId}
+                key={collection.id}
                 type="button"
-                className={`icon-tab ${activeGroupId === group.groupId ? 'active' : ''}`}
-                onClick={() => setActiveGroupId(group.groupId)}
-                title={group.label}
+                role="tab"
+                className={`type-icon-btn ${activeCollectionId === collection.id ? 'active' : ''}`}
+                onClick={() => setActiveCollectionId(collection.id)}
+                title={collection.label}
               >
-                <span className="icon">{group.icon || '🎬'}</span>
-                <span className="tab-label">{group.label}</span>
+                <span className="type-icon">{collection.icon}</span>
+                <span className="type-label">{collection.label}</span>
               </button>
             ))}
           </div>
-        </div>
 
-        {activeGroup && (
-          <div className="action-list">
-            {activeGroup.templates?.map(action => (
-              <button
-                key={action.id}
-                className="action-pill"
-                onClick={() => onOpenRemix?.(post, {
-                  templateId: action.id,
-                  prompt: action.prompt,
-                  author: action.author,
-                })}
-              >
-                <span className="action-icon">{activeGroup.icon || '🎬'}</span>
-                <div className="action-text">
-                  <strong>{action.label}</strong>
-                  {action.prompt && <span>{action.prompt}</span>}
-                </div>
-              </button>
-            ))}
+          {activeCollection ? (
+            <div className="template-pick-list">
+              {activeCollection.posts.map((templatePost) => (
+                <button
+                  key={templatePost.id}
+                  type="button"
+                  className={`template-tile ${templatePost.id === post.id ? 'active' : ''}`}
+                  onClick={() => handleTemplateSelect(templatePost)}
+                >
+                  <div className="template-tile-video">
+                    <video
+                      src={templatePost.clipUrl}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
+                  </div>
+                  <div className="template-tile-meta">
+                    <strong>{templatePost.templateName || templatePost.title}</strong>
+                    <span>{templatePost.tags?.slice(0, 2).map((tag) => `#${tag}`).join(' ')}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="empty-copy">No related templates yet.</p>
+          )}
+        </section>
+
+        <section className="detail-comments-panel">
+          <div className="comments-header">
+            <div>
+              <h4>Remix feed</h4>
+              <p>{comments.length} shared remixes</p>
+            </div>
+            <button className="ghost-btn compact" onClick={() => onOpenRemix?.(post)}>
+              Remix now
+            </button>
           </div>
-        )}
-
-        <div className="comments-feed">
-          <h4>Remix comments</h4>
           <CommentList
             comments={comments}
             onRemix={(comment) => onOpenRemix?.(post, comment)}
           />
-        </div>
+          {onAddComment && (
+            <CommentComposer postId={post.id} onAddComment={onAddComment} />
+          )}
+        </section>
       </aside>
     </div>
   )
 }
+
 
 function CommunityPostCard({ post, onClick, onLike, isLiked, extraViews = 0, extraShares = 0, isNew = false, onCreateFromCommunity }) {
   const handleCardClick = () => onClick(post)
@@ -298,6 +398,50 @@ function CommunityPage({ user, onLogin }) {
   }, [selectedPostId, allPosts])
   const showDetail = Boolean(selectedPost)
 
+  const templateCollections = useMemo(() => {
+    if (!allPosts?.length) return []
+
+    const collections = TEMPLATE_TYPE_GROUPS.map((group) => {
+      const posts = allPosts.filter((post) => {
+        const tags = (post.tags || []).map((tag) => tag.toLowerCase())
+        const templateName = (post.templateName || post.title || '').toLowerCase()
+        return (
+          tags.some((tag) => group.keywords.includes(tag)) ||
+          group.keywords.some((keyword) => templateName.includes(keyword))
+        )
+      })
+      if (!posts.length) return null
+      return { ...group, posts }
+    }).filter(Boolean)
+
+    if (selectedPost) {
+      const alreadyInCollection = collections.some((collection) =>
+        collection.posts.some((post) => post.id === selectedPost.id)
+      )
+      if (!alreadyInCollection) {
+        collections.unshift({
+          id: 'current',
+          label: 'Current Template',
+          icon: '✨',
+          keywords: [],
+          posts: [selectedPost]
+        })
+      }
+    }
+
+    if (!collections.length) {
+      return [{
+        id: 'featured',
+        label: 'All templates',
+        icon: '🎬',
+        keywords: [],
+        posts: allPosts
+      }]
+    }
+
+    return collections
+  }, [allPosts, selectedPost])
+
   // Load local posts and interactions
   useEffect(() => {
     const loadData = () => {
@@ -386,6 +530,7 @@ function CommunityPage({ user, onLogin }) {
   }
 
   const handleViewPost = (post) => {
+    if (!post) return
     setSelectedPostId(post.id)
     setViewCounts(prev => {
       const next = { ...prev, [post.id]: (prev[post.id] || 0) + 1 }
@@ -732,6 +877,9 @@ function CommunityPage({ user, onLogin }) {
             onCreateFromCommunity={handleCreateFromCommunity}
             comments={commentsByPost[selectedPost.id] || []}
             onOpenRemix={openRemixDrawer}
+            templateCollections={templateCollections}
+            onSelectRelatedPost={handleViewPost}
+            onAddComment={handleAddComment}
           />
         </div>
       )}
