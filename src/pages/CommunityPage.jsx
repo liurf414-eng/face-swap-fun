@@ -47,6 +47,22 @@ const TEMPLATE_TYPE_GROUPS = [
   }
 ]
 
+const TEMPLATE_BADGE_COLORS = [
+  'linear-gradient(135deg, #ff9a9e, #fad0c4)',
+  'linear-gradient(135deg, #a18cd1, #fbc2eb)',
+  'linear-gradient(135deg, #f6d365, #fda085)',
+  'linear-gradient(135deg, #96e6a1, #d4fc79)',
+  'linear-gradient(135deg, #5ee7df, #b490ca)',
+  'linear-gradient(135deg, #cfd9df, #e2ebf0)'
+]
+
+const getTemplateBadge = (template, index = 0) => {
+  const label = (template.templateName || template.title || 'Template').trim()
+  const letter = label.charAt(0).toUpperCase() || 'T'
+  const background = TEMPLATE_BADGE_COLORS[index % TEMPLATE_BADGE_COLORS.length]
+  return { letter, label, background }
+}
+
 const buildActionGroups = (post) => {
   const meta = communityRemixMeta[post.id] || {}
   const fromMeta = meta.availableActions || []
@@ -174,6 +190,14 @@ function CommunityDetailLayout({
     onSelectRelatedPost?.(nextPost)
   }
 
+  const handleCollectionChange = (collectionId) => {
+    setActiveCollectionId(collectionId)
+    const targetCollection = templateCollections.find((collection) => collection.id === collectionId)
+    if (targetCollection?.posts?.length) {
+      handleTemplateSelect(targetCollection.posts[0])
+    }
+  }
+
   return (
     <div className="community-template-detail">
       <div className="detail-main-column">
@@ -237,44 +261,43 @@ function CommunityDetailLayout({
         <section className="template-switcher-card">
           <div className="template-type-row" role="tablist">
             {templateCollections.map((collection) => (
-              <div key={collection.id} className="type-icon-wrapper">
-                <button
-                  type="button"
-                  role="tab"
-                  className={`type-icon-btn ${activeCollectionId === collection.id ? 'active' : ''}`}
-                  onClick={() => setActiveCollectionId(collection.id)}
-                  title={collection.label}
-                >
-                  {collection.icon}
-                </button>
+              <button
+                key={collection.id}
+                type="button"
+                role="tab"
+                className={`type-icon-btn ${activeCollectionId === collection.id ? 'active' : ''}`}
+                onClick={() => handleCollectionChange(collection.id)}
+                title={collection.label}
+              >
+                <span className="type-icon">{collection.icon}</span>
                 <span className="type-label">{collection.label}</span>
-              </div>
+              </button>
             ))}
           </div>
 
           {activeCollection ? (
             <div className="template-pick-list">
-              {activeCollection.posts.map((templatePost) => (
-                <button
-                  key={templatePost.id}
-                  type="button"
-                  className={`template-icon-button ${templatePost.id === post.id ? 'active' : ''}`}
-                  onClick={() => handleTemplateSelect(templatePost)}
-                >
-                  <div className="template-icon-thumb">
-                    <video
-                      src={templatePost.clipUrl}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    />
-                  </div>
-                  <span className="template-icon-label">
-                    {templatePost.templateName || templatePost.title || 'Template'}
-                  </span>
-                </button>
-              ))}
+              {activeCollection.posts.map((templatePost, index) => {
+                const badge = getTemplateBadge(templatePost, index)
+                return (
+                  <button
+                    key={templatePost.id}
+                    type="button"
+                    className={`template-icon-button ${templatePost.id === post.id ? 'active' : ''}`}
+                    onClick={() => handleTemplateSelect(templatePost)}
+                  >
+                    <div
+                      className="template-icon-sigil"
+                      style={{ background: badge.background }}
+                    >
+                      {badge.letter}
+                    </div>
+                    <span className="template-icon-label">
+                      {badge.label}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           ) : (
             <p className="empty-copy">No related templates yet.</p>
@@ -428,17 +451,28 @@ function CommunityPage({ user, onLogin }) {
       }
     }
 
-    if (!collections.length) {
-      return [{
-        id: 'featured',
-        label: 'All templates',
-        icon: '🎬',
-        keywords: [],
-        posts: allPosts
-      }]
+    const allCollection = {
+      id: 'all-templates',
+      label: 'All templates',
+      icon: '🌐',
+      keywords: [],
+      posts: allPosts
     }
 
-    return collections
+    const merged = [...collections, allCollection]
+    const deduped = []
+    const seen = new Set()
+    merged.forEach((collection) => {
+      if (!collection || seen.has(collection.id) || !collection.posts?.length) return
+      seen.add(collection.id)
+      deduped.push(collection)
+    })
+
+    if (!deduped.length) {
+      deduped.push(allCollection)
+    }
+
+    return deduped
   }, [allPosts, selectedPost])
 
   // Load local posts and interactions
