@@ -237,17 +237,18 @@ function CommunityDetailLayout({
         <section className="template-switcher-card">
           <div className="template-type-row" role="tablist">
             {templateCollections.map((collection) => (
-              <button
-                key={collection.id}
-                type="button"
-                role="tab"
-                className={`type-icon-btn ${activeCollectionId === collection.id ? 'active' : ''}`}
-                onClick={() => setActiveCollectionId(collection.id)}
-                title={collection.label}
-              >
-                <span className="type-icon">{collection.icon}</span>
+              <div key={collection.id} className="type-icon-wrapper">
+                <button
+                  type="button"
+                  role="tab"
+                  className={`type-icon-btn ${activeCollectionId === collection.id ? 'active' : ''}`}
+                  onClick={() => setActiveCollectionId(collection.id)}
+                  title={collection.label}
+                >
+                  {collection.icon}
+                </button>
                 <span className="type-label">{collection.label}</span>
-              </button>
+              </div>
             ))}
           </div>
 
@@ -257,10 +258,10 @@ function CommunityDetailLayout({
                 <button
                   key={templatePost.id}
                   type="button"
-                  className={`template-tile ${templatePost.id === post.id ? 'active' : ''}`}
+                  className={`template-icon-button ${templatePost.id === post.id ? 'active' : ''}`}
                   onClick={() => handleTemplateSelect(templatePost)}
                 >
-                  <div className="template-tile-video">
+                  <div className="template-icon-thumb">
                     <video
                       src={templatePost.clipUrl}
                       autoPlay
@@ -269,10 +270,9 @@ function CommunityDetailLayout({
                       playsInline
                     />
                   </div>
-                  <div className="template-tile-meta">
-                    <strong>{templatePost.templateName || templatePost.title}</strong>
-                    <span>{templatePost.tags?.slice(0, 2).map((tag) => `#${tag}`).join(' ')}</span>
-                  </div>
+                  <span className="template-icon-label">
+                    {templatePost.templateName || templatePost.title || 'Template'}
+                  </span>
                 </button>
               ))}
             </div>
