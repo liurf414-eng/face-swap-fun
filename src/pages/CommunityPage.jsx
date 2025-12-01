@@ -5,7 +5,6 @@ import Masonry from 'react-masonry-css'
 import { communityPosts as staticPosts, communityRemixMeta } from '../data/communityPosts'
 import CommentList from '../components/comments/CommentList'
 import CommentComposer from '../components/comments/CommentComposer'
-import LiveFeed from '../components/community/LiveFeed'
 
 const DEFAULT_BATCH = 8 // 增加每批加载数量
 
@@ -550,28 +549,6 @@ function CommunityPage({ user, onLogin }) {
     })
   }, [])
 
-  const liveFeedEvents = useMemo(() => {
-    const events = []
-    allPosts.forEach((post) => {
-      const meta = communityRemixMeta[post.id]
-      if (!meta) return
-      const chains = meta.remixChains || []
-      chains.forEach((chain) => {
-        events.push({
-          id: chain.id,
-          templateName: chain.templateName,
-          previewUrl: chain.previewUrl || post.clipUrl,
-          author: chain.author?.name || post.author.name,
-          prompt: chain.prompt,
-          timeAgo: chain.createdAt,
-          templateId: chain.templateId,
-          post,
-        })
-      })
-    })
-    return events.slice(0, 8)
-  }, [allPosts])
-
   const tags = useMemo(() => {
     const unique = new Set()
     allPosts.forEach((post) => post.tags.forEach((tag) => unique.add(tag)))
@@ -851,13 +828,6 @@ function CommunityPage({ user, onLogin }) {
               )}
             </section>
 
-            <LiveFeed
-              events={liveFeedEvents}
-              onRemix={(event) => openRemixDrawer(event.post, {
-                templateId: event.templateId,
-                prompt: event.prompt,
-              })}
-            />
           </div>
         </>
       )}
