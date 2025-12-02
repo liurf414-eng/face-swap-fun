@@ -184,25 +184,19 @@ function CommunityDetailLayout({
   onAddComment,
 }) {
   if (!post) return null
-  const [activeCollectionId, setActiveCollectionId] = useState(
-    () => templateCollections[0]?.id || null
-  )
-  const [selectedRemixTemplate, setSelectedRemixTemplate] = useState(
-    () => templateCollections[0]?.posts?.[0] || null
-  )
+  const [activeCollectionId, setActiveCollectionId] = useState(null)
+  const [selectedRemixTemplate, setSelectedRemixTemplate] = useState(null)
   const typeRowRef = useRef(null)
   const [bubbleCenter, setBubbleCenter] = useState(null)
 
   useEffect(() => {
-    if (!templateCollections.length) {
-      setActiveCollectionId(null)
-      setSelectedRemixTemplate(null)
+    if (!templateCollections.length || !activeCollectionId) {
       return
     }
     const existingCollection = templateCollections.find((collection) => collection.id === activeCollectionId)
     if (!existingCollection) {
-      setActiveCollectionId(templateCollections[0].id)
-      setSelectedRemixTemplate(templateCollections[0]?.posts?.[0] || null)
+      setActiveCollectionId(null)
+      setSelectedRemixTemplate(null)
       return
     }
     if (!existingCollection.posts?.length) {

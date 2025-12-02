@@ -3132,6 +3132,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  overflow: visible;
 }
 
 .template-type-row {
@@ -3142,15 +3143,17 @@ a {
 
 .type-icon-btn {
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px;
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.02);
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  background: rgba(20, 20, 30, 0.85);
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  position: relative;
 }
 
 .type-icon-btn .type-icon {
@@ -3158,15 +3161,29 @@ a {
 }
 
 .type-icon-btn .type-label {
-  font-size: 0.8rem;
-  color: rgba(255,255,255,0.85);
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translate(-50%, -4px);
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .type-icon-btn.active {
   border-color: rgba(110, 143, 255, 0.85);
-  background: rgba(110, 143, 255, 0.18);
+  background: rgba(110, 143, 255, 0.2);
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(110, 143, 255, 0.25);
+}
+
+.type-icon-btn.active .type-label {
+  opacity: 0.95;
 }
 
 .template-type-wrapper {
