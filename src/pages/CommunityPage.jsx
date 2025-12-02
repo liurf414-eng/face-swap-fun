@@ -229,6 +229,12 @@ function CommunityDetailLayout({
   }
 
   const handleCollectionChange = (collectionId, event) => {
+    if (activeCollectionId === collectionId) {
+      setActiveCollectionId(null)
+      setSelectedRemixTemplate(null)
+      setBubbleCenter(null)
+      return
+    }
     setActiveCollectionId(collectionId)
     const targetCollection = templateCollections.find((collection) => collection.id === collectionId)
     if (targetCollection?.posts?.length) {
