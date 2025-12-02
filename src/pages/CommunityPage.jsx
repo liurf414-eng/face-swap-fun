@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Masonry from 'react-masonry-css'
@@ -66,7 +66,7 @@ const TEMPLATE_ICON_MAP = {
   'woman wear futuristic armor': '🪐',
   'man woman funny dance': '💃',
   'man woman maigic battle': '⚡',
-  'man woman each hold large  balloon': '🎈',
+  'man woman each hold large balloon': '🎈',
   'woman hold large balloon': '🎉',
   'man lay on cried': '😭',
   'man sat  surprise': '😲',
@@ -81,7 +81,11 @@ const TEMPLATE_ICON_MAP = {
 }
 
 const getTemplateEmoji = (template) => {
-  const templateName = (template.templateName || template.title || '').toLowerCase()
+  const templateName = (template.templateName || template.title || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
   return TEMPLATE_ICON_MAP[templateName] || '🎞️'
 }
 
@@ -187,7 +191,7 @@ function CommunityDetailLayout({
     () => templateCollections[0]?.posts?.[0] || null
   )
   const typeRowRef = useRef(null)
-  const [bubbleCenter, setBubbleCenter] = useState(0)
+  const [bubbleCenter, setBubbleCenter] = useState(null)
 
   useEffect(() => {
     if (!templateCollections.length) {
@@ -324,7 +328,7 @@ function CommunityDetailLayout({
             {activeCollection && (
               <div
                 className="template-bubble"
-                style={{ left: `${bubbleCenter}px` }}
+                style={{ left: bubbleCenter ? `${bubbleCenter}px` : '50%' }}
               >
                 <div className="template-bubble-title">{activeCollection.label}</div>
                 <div className="template-bubble-grid">

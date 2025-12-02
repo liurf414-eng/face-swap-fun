@@ -3171,22 +3171,22 @@ a {
 
 .template-type-wrapper {
   position: relative;
-  padding-bottom: 70px;
+  padding-bottom: 0;
 }
 
 .template-bubble {
   position: absolute;
   top: calc(100% + 10px);
-  left: 0;
   transform: translateX(-50%);
   min-width: 220px;
+  max-width: calc(100vw - 80px);
   padding: 16px 18px;
   border-radius: 24px;
-  background: rgba(255,255,255,0.92);
+  background: rgba(255,255,255,0.95);
   color: #1a1a24;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
   border: none;
-  z-index: 10;
+  z-index: 20;
 }
 
 .template-bubble::before {
@@ -3196,8 +3196,9 @@ a {
   left: 50%;
   width: 20px;
   height: 20px;
-  background: rgba(255,255,255,0.92);
+  background: rgba(255,255,255,0.95);
   transform: translateX(-50%) rotate(45deg);
+  box-shadow: inherit;
 }
 
 .template-bubble-title {
@@ -3216,13 +3217,13 @@ a {
 
 .bubble-icon-btn {
   border: none;
-  background: rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.06);
   border-radius: 999px;
   padding: 6px 12px;
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #fff;
+  color: #1a1a24;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.2s ease;
 }
@@ -3233,11 +3234,11 @@ a {
 
 .bubble-icon-btn .bubble-label {
   font-size: 0.8rem;
-  color: rgba(255,255,255,0.85);
+  color: #1a1a24;
 }
 
 .bubble-icon-btn.active {
-  background: rgba(110, 143, 255, 0.35);
+  background: rgba(110, 143, 255, 0.25);
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(110, 143, 255, 0.25);
 }
