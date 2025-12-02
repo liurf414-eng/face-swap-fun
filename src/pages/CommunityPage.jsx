@@ -56,11 +56,33 @@ const TEMPLATE_BADGE_COLORS = [
   'linear-gradient(135deg, #cfd9df, #e2ebf0)'
 ]
 
-const getTemplateBadge = (template, index = 0) => {
-  const label = (template.templateName || template.title || 'Template').trim()
-  const letter = label.charAt(0).toUpperCase() || 'T'
-  const background = TEMPLATE_BADGE_COLORS[index % TEMPLATE_BADGE_COLORS.length]
-  return { letter, label, background }
+const TEMPLATE_ICON_MAP = {
+  'couple touching': '💑',
+  'woman burst out laughing': '😂',
+  'man covered mouth laughed': '🤣',
+  'man banana': '🍌',
+  'two people dancing': '👯',
+  'man transforms superman': '🦸',
+  'woman wear futuristic armor': '🪐',
+  'man woman funny dance': '💃',
+  'man woman maigic battle': '⚡',
+  'man woman each hold large  balloon': '🎈',
+  'woman hold large balloon': '🎉',
+  'man lay on cried': '😭',
+  'man sat  surprise': '😲',
+  'man smiles evilly': '😏',
+  'surprise': '😮',
+  'man frightened': '😱',
+  'man banana slip': '🍌',
+  'brand bounce loop': '📣',
+  'space armor reveal': '🚀',
+  'hero upgrade': '🛡️',
+  'banana slip': '🙃'
+}
+
+const getTemplateEmoji = (template) => {
+  const templateName = (template.templateName || template.title || '').toLowerCase()
+  return TEMPLATE_ICON_MAP[templateName] || '🎞️'
 }
 
 const buildActionGroups = (post) => {
@@ -281,28 +303,26 @@ function CommunityDetailLayout({
           </div>
 
           {activeCollection ? (
-            <div className="template-pick-list">
-              {activeCollection.posts.map((templatePost, index) => {
-                const badge = getTemplateBadge(templatePost, index)
-                return (
+            <div className="template-bubble">
+              <div className="template-bubble-title">{activeCollection.label}</div>
+              <div className="template-bubble-grid">
+                {activeCollection.posts.map((templatePost) => (
                   <button
                     key={templatePost.id}
                     type="button"
-                  className={`template-icon-button ${selectedRemixTemplate?.id === templatePost.id ? 'active' : ''}`}
+                    className={`bubble-icon-btn ${selectedRemixTemplate?.id === templatePost.id ? 'active' : ''}`}
                     onClick={() => handleTemplateSelect(templatePost)}
+                    title={templatePost.templateName || templatePost.title}
                   >
-                    <div
-                      className="template-icon-sigil"
-                      style={{ background: badge.background }}
-                    >
-                      {badge.letter}
-                    </div>
-                    <span className="template-icon-label">
-                      {badge.label}
+                    <span className="bubble-icon">
+                      {getTemplateEmoji(templatePost)}
+                    </span>
+                    <span className="bubble-label">
+                      {templatePost.templateName || templatePost.title || 'Template'}
                     </span>
                   </button>
-                )
-              })}
+                ))}
+              </div>
             </div>
           ) : (
             <p className="empty-copy">No related templates yet.</p>

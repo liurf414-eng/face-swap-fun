@@ -3135,89 +3135,102 @@ a {
 }
 
 .template-type-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .type-icon-btn {
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 12px 8px;
+  border-radius: 18px;
+  padding: 10px 14px;
   background: rgba(255,255,255,0.02);
   color: #fff;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
 .type-icon-btn .type-icon {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
 }
 
 .type-icon-btn .type-label {
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.75);
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.85);
 }
 
 .type-icon-btn.active {
-  border-color: rgba(110, 143, 255, 0.8);
+  border-color: rgba(110, 143, 255, 0.85);
   background: rgba(110, 143, 255, 0.18);
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(110, 143, 255, 0.25);
+  box-shadow: 0 12px 30px rgba(110, 143, 255, 0.25);
 }
 
-.template-pick-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
-  max-height: 420px;
-  overflow-y: auto;
-  padding-right: 4px;
+.template-bubble {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  position: relative;
 }
 
-.template-icon-button {
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.02);
-  border-radius: 16px;
-  padding: 12px 10px;
+.template-bubble::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 32px;
+  width: 18px;
+  height: 18px;
+  background: rgba(255,255,255,0.04);
+  border-left: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  transform: rotate(45deg);
+}
+
+.template-bubble-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 10px;
+}
+
+.template-bubble-grid {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.bubble-icon-btn {
+  border: none;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #fff;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.template-icon-button.active {
-  border-color: rgba(110, 143, 255, 0.9);
-  background: rgba(110, 143, 255, 0.18);
-  transform: translateY(-2px);
-  box-shadow: 0 16px 30px rgba(110, 143, 255, 0.2);
+.bubble-icon-btn .bubble-icon {
+  font-size: 1.3rem;
 }
 
-.template-icon-sigil {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a24;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-}
-
-.template-icon-label {
-  text-align: center;
-  font-size: 0.85rem;
-  line-height: 1.2;
+.bubble-icon-btn .bubble-label {
+  font-size: 0.8rem;
   color: rgba(255,255,255,0.85);
+}
+
+.bubble-icon-btn.active {
+  background: rgba(110, 143, 255, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(110, 143, 255, 0.25);
 }
 
 .detail-comments-panel .comments-header {
