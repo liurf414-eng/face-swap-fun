@@ -186,6 +186,8 @@ function CommunityDetailLayout({
   const [selectedRemixTemplate, setSelectedRemixTemplate] = useState(
     () => templateCollections[0]?.posts?.[0] || null
   )
+  const typeRowRef = useRef(null)
+  const [bubbleCenter, setBubbleCenter] = useState(0)
 
   useEffect(() => {
     if (!templateCollections.length) {
@@ -208,17 +210,33 @@ function CommunityDetailLayout({
     }
   }, [templateCollections, activeCollectionId, selectedRemixTemplate])
 
+  useEffect(() => {
+    if (!typeRowRef.current) return
+    const activeButton = typeRowRef.current.querySelector('.type-icon-btn.active') || typeRowRef.current.querySelector('.type-icon-btn')
+    if (activeButton) {
+      updateBubblePositionFromTarget(activeButton)
+    }
+  }, [activeCollectionId, templateCollections])
+
   const activeCollection = templateCollections.find((collection) => collection.id === activeCollectionId) || templateCollections[0] || null
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
   const displayViews = post.metrics.views + extraViews
   const displayShares = post.metrics.remixes + extraShares
 
-  const handleCollectionChange = (collectionId) => {
+  const updateBubblePositionFromTarget = (target) => {
+    if (!target || !typeRowRef.current) return
+    const rowRect = typeRowRef.current.getBoundingClientRect()
+    const btnRect = target.getBoundingClientRect()
+    setBubbleCenter(btnRect.left - rowRect.left + btnRect.width / 2)
+  }
+
+  const handleCollectionChange = (collectionId, event) => {
     setActiveCollectionId(collectionId)
     const targetCollection = templateCollections.find((collection) => collection.id === collectionId)
     if (targetCollection?.posts?.length) {
       setSelectedRemixTemplate(targetCollection.posts[0])
     }
+    updateBubblePositionFromTarget(event?.currentTarget)
   }
 
   const handleTemplateSelect = (templatePost) => {
@@ -286,47 +304,50 @@ function CommunityDetailLayout({
 
       <aside className="detail-right-panel">
         <section className="template-switcher-card">
-          <div className="template-type-row" role="tablist">
-            {templateCollections.map((collection) => (
-              <button
-                key={collection.id}
-                type="button"
-                role="tab"
-                className={`type-icon-btn ${activeCollectionId === collection.id ? 'active' : ''}`}
-                onClick={() => handleCollectionChange(collection.id)}
-                title={collection.label}
-              >
-                <span className="type-icon">{collection.icon}</span>
-                <span className="type-label">{collection.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {activeCollection ? (
-            <div className="template-bubble">
-              <div className="template-bubble-title">{activeCollection.label}</div>
-              <div className="template-bubble-grid">
-                {activeCollection.posts.map((templatePost) => (
-                  <button
-                    key={templatePost.id}
-                    type="button"
-                    className={`bubble-icon-btn ${selectedRemixTemplate?.id === templatePost.id ? 'active' : ''}`}
-                    onClick={() => handleTemplateSelect(templatePost)}
-                    title={templatePost.templateName || templatePost.title}
-                  >
-                    <span className="bubble-icon">
-                      {getTemplateEmoji(templatePost)}
-                    </span>
-                    <span className="bubble-label">
-                      {templatePost.templateName || templatePost.title || 'Template'}
-                    </span>
-                  </button>
-                ))}
-              </div>
+          <div className="template-type-wrapper" ref={typeRowRef}>
+            <div className="template-type-row" role="tablist">
+              {templateCollections.map((collection) => (
+                <button
+                  key={collection.id}
+                  type="button"
+                  role="tab"
+                  className={`type-icon-btn ${activeCollectionId === collection.id ? 'active' : ''}`}
+                  onClick={(event) => handleCollectionChange(collection.id, event)}
+                  title={collection.label}
+                >
+                  <span className="type-icon">{collection.icon}</span>
+                  <span className="type-label">{collection.label}</span>
+                </button>
+              ))}
             </div>
-          ) : (
-            <p className="empty-copy">No related templates yet.</p>
-          )}
+
+            {activeCollection && (
+              <div
+                className="template-bubble"
+                style={{ left: `${bubbleCenter}px` }}
+              >
+                <div className="template-bubble-title">{activeCollection.label}</div>
+                <div className="template-bubble-grid">
+                  {activeCollection.posts.map((templatePost) => (
+                    <button
+                      key={templatePost.id}
+                      type="button"
+                      className={`bubble-icon-btn ${selectedRemixTemplate?.id === templatePost.id ? 'active' : ''}`}
+                      onClick={() => handleTemplateSelect(templatePost)}
+                      title={templatePost.templateName || templatePost.title}
+                    >
+                      <span className="bubble-icon">
+                        {getTemplateEmoji(templatePost)}
+                      </span>
+                      <span className="bubble-label">
+                        {templatePost.templateName || templatePost.title || 'Template'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </section>
 
         <section className="detail-comments-panel">
