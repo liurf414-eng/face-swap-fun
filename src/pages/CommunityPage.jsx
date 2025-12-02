@@ -4,7 +4,6 @@ import { toast } from 'react-toastify'
 import Masonry from 'react-masonry-css'
 import { communityPosts as staticPosts, communityRemixMeta } from '../data/communityPosts'
 import CommentList from '../components/comments/CommentList'
-import CommentComposer from '../components/comments/CommentComposer'
 
 const DEFAULT_BATCH = 8 // 增加每批加载数量
 
@@ -373,13 +372,7 @@ function CommunityDetailLayout({
               Remix now
             </button>
           </div>
-          <CommentList
-            comments={comments}
-            onRemix={(comment) => onOpenRemix?.(post, comment)}
-          />
-          {onAddComment && (
-            <CommentComposer postId={post.id} onAddComment={onAddComment} />
-          )}
+          <CommentList comments={comments} />
         </section>
       </aside>
     </div>
