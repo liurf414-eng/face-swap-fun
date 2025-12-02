@@ -3173,6 +3173,7 @@ a {
   letter-spacing: 0.05em;
   opacity: 0;
   pointer-events: none;
+  white-space: nowrap;
 }
 
 .type-icon-btn.active {
@@ -3234,30 +3235,47 @@ a {
 
 .bubble-icon-btn {
   border: none;
-  background: rgba(0,0,0,0.06);
-  border-radius: 999px;
-  padding: 6px 12px;
-  display: flex;
+  background: transparent;
+  border-radius: 12px;
+  padding: 6px;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   color: #1a1a24;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: transform 0.2s ease;
+  position: relative;
 }
 
 .bubble-icon-btn .bubble-icon {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
 }
 
 .bubble-icon-btn .bubble-label {
-  font-size: 0.8rem;
-  color: #1a1a24;
+  position: absolute;
+  bottom: -26px;
+  left: 50%;
+  transform: translate(-50%, 6px);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .bubble-icon-btn.active {
-  background: rgba(110, 143, 255, 0.25);
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(110, 143, 255, 0.25);
+}
+
+.bubble-icon-btn:hover .bubble-label,
+.bubble-icon-btn:focus-visible .bubble-label {
+  opacity: 1;
+  transform: translate(-50%, -2px);
 }
 
 .detail-comments-panel .comments-header {

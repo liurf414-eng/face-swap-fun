@@ -209,14 +209,14 @@ function CommunityDetailLayout({
   }, [templateCollections, activeCollectionId, selectedRemixTemplate])
 
   useEffect(() => {
-    if (!typeRowRef.current) return
-    const activeButton = typeRowRef.current.querySelector('.type-icon-btn.active') || typeRowRef.current.querySelector('.type-icon-btn')
+    if (!typeRowRef.current || !activeCollectionId) return
+    const activeButton = typeRowRef.current.querySelector('.type-icon-btn.active')
     if (activeButton) {
       updateBubblePositionFromTarget(activeButton)
     }
   }, [activeCollectionId, templateCollections])
 
-  const activeCollection = templateCollections.find((collection) => collection.id === activeCollectionId) || templateCollections[0] || null
+  const activeCollection = templateCollections.find((collection) => collection.id === activeCollectionId) || null
   const displayLikes = post.metrics.likes + (isLiked ? 1 : 0)
   const displayViews = post.metrics.views + extraViews
   const displayShares = post.metrics.remixes + extraShares
