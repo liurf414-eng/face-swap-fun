@@ -951,7 +951,7 @@ async function detectFacesInVideo(videoUrl, VMODEL_API_TOKEN) {
 // VModel 双人脸替换处理（Duo Interaction）
 async function processFaceSwapDuo(taskId, targetImage, sourceImage, sourceImage2, VMODEL_API_TOKEN, IMGBB_API_KEY) {
   const VMODEL_API_URL = 'https://api.vmodel.ai/api/tasks/v1'
-  const DUO_MODEL_VERSION = '8e960283784c5b58e5f67236757c40bb6796c85e3c733d060342bdf62f9f0c64'
+  const DUO_MODEL_VERSION = 'remaker/video-multiple-face-swap:8e960283784c5b58e5f67236757c40bb6796c85e3c733d060342bdf62f9f0c64'
   
   const INITIAL_ESTIMATE = 30.0
   let estimatedTotalTime = INITIAL_ESTIMATE
@@ -1057,12 +1057,10 @@ async function processFaceSwapDuo(taskId, targetImage, sourceImage, sourceImage2
       console.warn(`Detected ${detectedFaces.length} faces, using first 2 faces.`)
     }
 
-    const faceMapString = JSON.stringify(newFaceMap)
-    console.log('Face map:', faceMapString)
+    console.log('Face map:', JSON.stringify(newFaceMap, null, 2))
     console.log('Detected faces:', JSON.stringify(detectedFaces, null, 2))
 
     // 步骤3: 创建双人脸替换任务
-    const encodedVideoUrl = encodeURI(targetImage)
     const createResponse = await fetch(`${VMODEL_API_URL}/create`, {
       method: 'POST',
       headers: {
@@ -1073,7 +1071,7 @@ async function processFaceSwapDuo(taskId, targetImage, sourceImage, sourceImage2
         version: DUO_MODEL_VERSION,
         input: {
           detect_id: detectId,
-          face_map: faceMapString,
+          face_map: newFaceMap,
           disable_safety_checker: false
         }
       })
