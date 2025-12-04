@@ -15,34 +15,53 @@ const HERO_STEPS = [
 
 const TEMPLATE_TYPE_GROUPS = [
   {
-    id: 'reaction',
-    label: 'Reaction Loops',
+    id: 'emotional',
+    label: 'Emotional Reactions',
     icon: '😂',
-    keywords: ['reaction', 'meme', 'family', 'story', 'office']
+    categories: ['Emotional Reactions'],
+    keywords: ['reaction', 'emotion', 'laugh', 'cry', 'family', 'story']
   },
   {
     id: 'duo',
-    label: 'Duo & Dance',
+    label: 'Duo Interaction',
     icon: '👯',
-    keywords: ['duo', 'dance', 'challenge', 'wedding']
+    categories: ['Duo Interaction'],
+    keywords: ['duo', 'dance', 'challenge', 'couple', 'friend']
   },
   {
-    id: 'promo',
-    label: 'Promo & Brand',
-    icon: '📣',
-    keywords: ['campaign', 'brand', 'promo', 'creator', 'stream']
+    id: 'burlesque',
+    label: 'Burlesque Dance',
+    icon: '💃',
+    categories: ['Burlesque Dance'],
+    keywords: ['burlesque', 'dance']
   },
   {
-    id: 'hero',
-    label: 'Hero & Sci-Fi',
-    icon: '🪐',
+    id: 'magic',
+    label: 'Magic Effects',
+    icon: '✨',
+    categories: ['Magic Effects'],
+    keywords: ['magic', 'effect', 'fantasy']
+  },
+  {
+    id: 'scifi',
+    label: 'Sci-Fi Effects',
+    icon: '🚀',
+    categories: ['Sci-Fi Effects'],
     keywords: ['sci-fi', 'hero', 'glowup', 'space']
   },
   {
-    id: 'gif',
-    label: 'GIF / Loops',
-    icon: '🌀',
-    keywords: ['gif']
+    id: 'style',
+    label: 'Style Makeovers',
+    icon: '💄',
+    categories: ['Style Makeovers'],
+    keywords: ['style', 'makeover', 'fashion']
+  },
+  {
+    id: 'slapstick',
+    label: 'Slapstick Comedy',
+    icon: '🤣',
+    categories: ['Slapstick Comedy'],
+    keywords: ['slapstick', 'comedy', 'gif']
   }
 ]
 
