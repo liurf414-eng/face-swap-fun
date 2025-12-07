@@ -139,6 +139,7 @@ function App() {
   const isTextToImage = currentPath === '/ai-studio/text-to-image';
   const isTextToVideo = currentPath === '/ai-studio/text-to-video';
   const isImageToVideo = currentPath === '/ai-studio/image-to-video';
+  const isVideoToVideo = currentPath === '/ai-studio/video-to-video';
   const isCreateFromCommunity = currentPath === '/create-from-community';
   const isMyVideos = currentPath === '/my-videos';
   const isCommunity = currentPath === '/community';
@@ -1357,6 +1358,9 @@ function App() {
             <Link to="/ai-studio/image-to-video" className={`nav-item ${isImageToVideo ? 'active' : ''}`}>
               <span className="nav-icon">🏇</span> Image to Video
             </Link>
+            <Link to="/ai-studio/video-to-video" className={`nav-item ${isVideoToVideo ? 'active' : ''}`}>
+              <span className="nav-icon">🎞️</span> Video to Video
+            </Link>
           </div>
         </nav>
         
@@ -1419,9 +1423,9 @@ function App() {
       <div className="main-content">
         
         {/* === AI Studio Pages === */}
-        {(isTextToImage || isTextToVideo || isImageToVideo) && (
+        {(isTextToImage || isTextToVideo || isImageToVideo || isVideoToVideo) && (
           <AIStudioPage 
-            mode={isTextToImage ? 'image' : isTextToVideo ? 'video' : 'edit'}
+            mode={isTextToImage ? 'image' : isTextToVideo ? 'video' : isImageToVideo ? 'edit' : 'remix'}
           />
         )}
 
