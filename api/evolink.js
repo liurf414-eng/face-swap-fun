@@ -1,0 +1,83 @@
+// Evolink proxy for AI Studio (text-to-image, text-to-video, image-to-video, video-to-video)
+// Uses environment variable EVOLINK_API_KEY. Do NOT hardcode the key.
+
+export default async function handler(req, res) {
+  const API_KEY = process.env.EVOLINK_API_KEY
+
+  // Basic CORS
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Max-Age', '86400')
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
+  }
+
+  if (!API_KEY) {
+    return res.status(500).json({ success: false, error: 'EVOLINK_API_KEY is not configured' })
+  }
+
+  const ENDPOINTS = {
+    'text-to-image': 'https://api.evolink.ai/v1/image-series/z-image-turbo/image-generate',
+    'text-to-video': 'https://api.evolink.ai/v1/video-series/veo3.1/veo3.1-fast-video-generate',
+    'image-to-video': 'https://api.evolink.ai/v1/video-series/sora2/sora2-video-generate',
+    'video-to-video': 'https://api.evolink.ai/v1/video-series/sora2remix/sora2remix-video-generate',
+    status: 'https://api.evolink.ai/v1/tasks/query'
+  }
+
+  try {
+    if (req.method === 'POST') {
+      const { action, payload = {}, endpointOverride } = req.body || {}
+      const target = endpointOverride || ENDPOINTS[action]
+      if (!action || !target) {
+        return res.status(400).json({ success: false, error: 'Invalid action or endpoint' })
+      }
+
+      const evoRes = await fetch(target, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await evoRes.json().catch(() => ({}))
+      if (!evoRes.ok) {
+        return res.status(evoRes.status).json({ success: false, error: data?.error || data?.message || 'Evolink API error', detail: data })
+      }
+
+      return res.status(200).json({ success: true, data })
+    }
+
+    if (req.method === 'GET') {
+      const { taskId, endpoint } = req.query || {}
+      const target = endpoint || ENDPOINTS.status
+      if (!taskId || !target) {
+        return res.status(400).json({ success: false, error: 'Missing taskId or endpoint' })
+      }
+
+      const url = `${target}${target.includes('?') ? '&' : '?'}task_id=${encodeURIComponent(taskId)}`
+      const evoRes = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await evoRes.json().catch(() => ({}))
+      if (!evoRes.ok) {
+        return res.status(evoRes.status).json({ success: false, error: data?.error || data?.message || 'Evolink status error', detail: data })
+      }
+
+      return res.status(200).json({ success: true, data })
+    }
+
+    return res.status(405).json({ success: false, error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Evolink proxy error:', error)
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' })
+  }
+}
