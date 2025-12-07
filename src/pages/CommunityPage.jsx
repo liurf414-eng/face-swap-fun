@@ -47,7 +47,7 @@ const TEMPLATE_TYPE_GROUPS = [
     label: 'Sci-Fi Effects',
     icon: '🚀',
     categories: ['Sci-Fi Effects'],
-    keywords: ['sci-fi', 'hero', 'glowup', 'space']
+    keywords: ['sci-fi', 'futuristic', 'space', 'hero']
   },
   {
     id: 'style',
@@ -61,7 +61,7 @@ const TEMPLATE_TYPE_GROUPS = [
     label: 'Slapstick Comedy',
     icon: '🤣',
     categories: ['Slapstick Comedy'],
-    keywords: ['slapstick', 'comedy', 'gif']
+    keywords: ['slapstick', 'comedy', 'gif', 'loop']
   }
 ]
 
@@ -196,6 +196,7 @@ function CommunityDetailLayout({
   extraViews = 0,
   extraShares = 0,
   onCreateFromCommunity,
+  onExtendTemplate,
   comments = [],
   onOpenRemix,
   templateCollections = [],
@@ -277,6 +278,26 @@ function CommunityDetailLayout({
             playsInline
           />
         </div>
+        {(onCreateFromCommunity || onExtendTemplate) && (
+          <div className="detail-video-actions">
+            {onCreateFromCommunity && (
+              <button
+                className="detail-remix-btn"
+                onClick={() => onCreateFromCommunity(post, selectedRemixTemplate)}
+              >
+                Remix
+              </button>
+            )}
+            {onExtendTemplate && (
+              <button
+                className="detail-extend-btn"
+                onClick={() => onExtendTemplate(post, selectedRemixTemplate)}
+              >
+                Extend
+              </button>
+            )}
+          </div>
+        )}
         <div className="detail-meta-panel">
           <div className="detail-meta-header">
             <div>
@@ -309,11 +330,6 @@ function CommunityDetailLayout({
             </div>
           </div>
           <div className="detail-actions">
-            {onCreateFromCommunity && (
-              <button className="create-btn-large" onClick={() => onCreateFromCommunity(post, selectedRemixTemplate)}>
-                Create from this
-              </button>
-            )}
             <button
               className={`ghost-btn ${isLiked ? 'active-like' : ''}`}
               onClick={onLike}
@@ -496,55 +512,33 @@ function CommunityPage({ user, onLogin }) {
 
     const collections = TEMPLATE_TYPE_GROUPS.map((group) => {
       const posts = allPosts.filter((post) => {
+        const categoryMatch = group.categories?.includes(post.category)
+        if (categoryMatch) return true
+
         const tags = (post.tags || []).map((tag) => tag.toLowerCase())
         const templateName = (post.templateName || post.title || '').toLowerCase()
+        const keywordList = group.keywords || []
+
         return (
-          tags.some((tag) => group.keywords.includes(tag)) ||
-          group.keywords.some((keyword) => templateName.includes(keyword))
+          tags.some((tag) => keywordList.includes(tag)) ||
+          keywordList.some((keyword) => templateName.includes(keyword))
         )
       })
       if (!posts.length) return null
       return { ...group, posts }
     }).filter(Boolean)
 
-    if (selectedPost) {
-      const alreadyInCollection = collections.some((collection) =>
-        collection.posts.some((post) => post.id === selectedPost.id)
-      )
-      if (!alreadyInCollection) {
-        collections.unshift({
-          id: 'current',
-          label: 'Current Template',
-          icon: '✨',
-          keywords: [],
-          posts: [selectedPost]
-        })
-      }
-    }
-
     const allCollection = {
       id: 'all-templates',
       label: 'All templates',
       icon: '🌐',
+      categories: [],
       keywords: [],
       posts: allPosts
     }
 
-    const merged = [...collections, allCollection]
-    const deduped = []
-    const seen = new Set()
-    merged.forEach((collection) => {
-      if (!collection || seen.has(collection.id) || !collection.posts?.length) return
-      seen.add(collection.id)
-      deduped.push(collection)
-    })
-
-    if (!deduped.length) {
-      deduped.push(allCollection)
-    }
-
-    return deduped
-  }, [allPosts, selectedPost])
+    return [...collections, allCollection]
+  }, [allPosts])
 
   // Load local posts and interactions
   useEffect(() => {
@@ -745,6 +739,22 @@ function CommunityPage({ user, onLogin }) {
           name: remixTemplate.templateName || remixTemplate.title,
           clipUrl: remixTemplate.clipUrl
         } : null
+      }
+    })
+  }
+
+  const handleExtendTemplate = (post, remixTemplate = null) => {
+    if (!post) return
+    const templateId = remixTemplate?.templateId || remixTemplate?.id || post.templateId
+    if (!templateId) {
+      toast.error('This template is not available right now.')
+      return
+    }
+    navigate('/', {
+      state: {
+        fromCommunity: true,
+        templateId,
+        plusOne: Boolean(remixTemplate?.supportsPlusOne || post.supportsPlusOne)
       }
     })
   }
@@ -955,6 +965,7 @@ function CommunityPage({ user, onLogin }) {
             extraViews={viewCounts[selectedPost.id] || 0}
             extraShares={shareCounts[selectedPost.id] || 0}
             onCreateFromCommunity={handleCreateFromCommunity}
+            onExtendTemplate={handleExtendTemplate}
             comments={commentsByPost[selectedPost.id] || []}
             onOpenRemix={openRemixDrawer}
             templateCollections={templateCollections}
