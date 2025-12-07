@@ -580,9 +580,9 @@ function CreateFromCommunityPage({ user, templates = [] }) {
             </section>
 
             <section className="cfc-preview-panel">
-              {result ? (
-                <ResultDisplay
-                  result={result}
+            {result ? (
+              <ResultDisplay
+                result={result}
                   selectedTemplate={selectedTemplate}
                   onDownload={async () => {
                     try {
@@ -611,26 +611,19 @@ function CreateFromCommunityPage({ user, templates = [] }) {
                   isDuoInteraction={false}
                   hasRequiredImages={hasRequiredImages}
                   isProcessing={isGenerating}
-                  limitReached={false}
-                />
-              ) : (
-                <div className="cfc-preview-placeholder">
-                  <div className="cfc-preview-ghost">
-                    {isImage ? (
-                      <img src={sourceContent.url} alt="Source preview" />
-                    ) : (
-                      <video src={sourceContent.url} autoPlay loop muted playsInline />
-                    )}
-                  </div>
-                  <p>Choose a photo to start</p>
-                  <span>Use prompts or template motions from the left panel.</span>
-                </div>
-              )}
-            </section>
-          </div>
-        </main>
-      </div>
-    </>
+                limitReached={false}
+              />
+            ) : (
+              <div className="cfc-preview-placeholder text-only">
+                <p>Choose a photo to start</p>
+                <span>Use prompts or template motions from the left panel.</span>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
+    </div>
+  </>
   )
 }
 

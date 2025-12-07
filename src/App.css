@@ -3583,7 +3583,7 @@ a {
 
 .cfc-editor-grid {
   display: grid;
-  grid-template-columns: minmax(360px, 520px) minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 32px;
   align-items: flex-start;
 }
@@ -3931,7 +3931,7 @@ a {
   padding-left: 32px;
   min-height: 520px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 }
 
@@ -3942,6 +3942,12 @@ a {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+
+.cfc-preview-placeholder.text-only {
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
 }
 
 .cfc-preview-ghost {
