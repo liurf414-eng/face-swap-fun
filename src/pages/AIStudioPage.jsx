@@ -44,14 +44,36 @@ async function callEvolink(action, payload) {
 async function pollEvolink(taskId, endpoint) {
   for (let i = 0; i < 120; i++) {
     await new Promise((r) => setTimeout(r, 2000));
-    const res = await fetch(`/api/evolink?taskId=${encodeURIComponent(taskId)}${endpoint ? `&endpoint=${encodeURIComponent(endpoint)}` : ''}`);
+    const res = await fetch('/api/evolink', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'status',
+        payload: { task_id: taskId },
+        endpointOverride: endpoint || undefined,
+      }),
+    });
     const data = await res.json();
     if (!res.ok || !data.success) {
       throw new Error(data?.error || `Status error (${res.status})`);
     }
-    const status = data.data?.status || data.data?.task_status || data.data?.data?.status;
-    const output = data.data?.output || data.data?.result || data.data?.data?.result || data.data?.data?.output;
-    if (status === 'finished' || status === 'succeeded' || status === 'success') {
+    const status =
+      data.data?.status ||
+      data.data?.task_status ||
+      data.data?.data?.status ||
+      data.data?.taskStatus;
+    const output =
+      data.data?.output ||
+      data.data?.result ||
+      data.data?.data?.result ||
+      data.data?.data?.output;
+
+    if (
+      status === 'finished' ||
+      status === 'succeeded' ||
+      status === 'success' ||
+      status === 'done'
+    ) {
       return output;
     }
     if (status === 'failed' || status === 'error') {
