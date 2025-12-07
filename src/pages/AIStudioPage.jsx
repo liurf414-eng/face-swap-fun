@@ -13,9 +13,9 @@ const STYLE_PRESETS = [
 ];
 
 const ASPECT_RATIOS = [
-  { id: '9:16', name: '9:16 (TikTok)', icon: '📱' },
-  { id: '16:9', name: '16:9 (YouTube)', icon: '💻' },
-  { id: '1:1', name: '1:1 (Square)', icon: '🟦' },
+  { id: '9:16', name: '9:16 (TikTok)', icon: '📱', size: '720x1280' },
+  { id: '16:9', name: '16:9 (YouTube)', icon: '💻', size: '1280x720' },
+  { id: '1:1', name: '1:1 (Square)', icon: '🟦', size: '1024x1024' },
 ];
 
 // Helper to read file as data URL
@@ -118,20 +118,45 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
   };
 
   const buildPayload = async () => {
-    const base = { prompt };
+    const ratioDef = ASPECT_RATIOS.find(r => r.id === aspectRatio) || ASPECT_RATIOS[0];
+    const base = { model: 'z-image-turbo', input: { prompt, size: ratioDef.size } };
+
     if (mode === 'image') {
-      return { ...base, ratio: aspectRatio };
+      return base;
     }
     if (mode === 'video') {
-      return { ...base, ratio: aspectRatio, duration: 6 };
+      return {
+        model: 'veo-3.1-fast',
+        input: {
+          prompt,
+          size: ratioDef.size,
+          duration: 6
+        }
+      };
     }
     if (mode === 'edit') {
       if (!uploadedImage) throw new Error('Please upload an image first.');
-      return { ...base, image_base64: uploadedImage, ratio: aspectRatio, duration: 6 };
+      return {
+        model: 'sora-2',
+        input: {
+          prompt,
+          image: uploadedImage,
+          size: ratioDef.size,
+          duration: 6
+        }
+      };
     }
     if (mode === 'remix') {
       if (!uploadedVideo) throw new Error('Please upload a video first.');
-      return { ...base, video_base64: uploadedVideo, duration: 6 };
+      return {
+        model: 'sora-2-remix',
+        input: {
+          prompt,
+          video: uploadedVideo,
+          duration: 6,
+          strength: 0.7
+        }
+      };
     }
     throw new Error('Unknown mode');
   };
@@ -154,7 +179,7 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
       if (mode === 'remix') action = 'video-to-video';
 
       const createData = await callEvolink(action, payload);
-      const taskId = createData?.task_id || createData?.data?.task_id || createData?.result?.task_id;
+      const taskId = createData?.task_id || createData?.data?.task_id || createData?.result?.task_id || createData?.id;
       if (!taskId) throw new Error('No task_id returned from Evolink');
 
       setProgress(15);
@@ -195,7 +220,8 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
       setProgress(0);
     } catch (error) {
       console.error('Evolink generate error:', error);
-      setErrorMessage(error.message || 'Generation failed');
+      const readable = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+      setErrorMessage(readable);
       setIsGenerating(false);
       setProgress(0);
     }

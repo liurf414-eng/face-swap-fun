@@ -19,10 +19,10 @@ export default async function handler(req, res) {
   }
 
   const ENDPOINTS = {
-    'text-to-image': 'https://api.evolink.ai/v1/image-series/z-image-turbo/image-generate',
-    'text-to-video': 'https://api.evolink.ai/v1/video-series/veo3.1/veo3.1-fast-video-generate',
-    'image-to-video': 'https://api.evolink.ai/v1/video-series/sora2/sora2-video-generate',
-    'video-to-video': 'https://api.evolink.ai/v1/video-series/sora2remix/sora2remix-video-generate',
+    'text-to-image': 'https://api.evolink.ai/v1/images/generations',
+    'text-to-video': 'https://api.evolink.ai/v1/videos/generations',
+    'image-to-video': 'https://api.evolink.ai/v1/videos/generations',
+    'video-to-video': 'https://api.evolink.ai/v1/videos/generations',
     status: 'https://api.evolink.ai/v1/tasks/query'
   }
 
