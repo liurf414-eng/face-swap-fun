@@ -79,6 +79,7 @@ function App() {
     }
     setForcePlusOneMode(false)
     setCameFromCommunity(false)  // 从模板列表选择时，清除社区标记
+    setReturnToCommunityPostId(null)
     setSelectedTemplate(template)
   }
 
@@ -109,6 +110,7 @@ function App() {
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
   const [forcePlusOneMode, setForcePlusOneMode] = useState(false)
   const [cameFromCommunity, setCameFromCommunity] = useState(false)  // 记住是否从社区来的
+  const [returnToCommunityPostId, setReturnToCommunityPostId] = useState(null)
   const [favoriteTemplates, setFavoriteTemplates] = useState([])  // 新增：收藏的模板ID列表
   const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
   const TEMPLATES_PER_PAGE = 6
@@ -209,6 +211,7 @@ function App() {
         const plusOneRequested = Boolean(location.state.plusOne)
         setForcePlusOneMode(plusOneRequested)
         setCameFromCommunity(true)  // 标记从社区来的
+        setReturnToCommunityPostId(location.state?.detailPostId || null)
         if (plusOneRequested) {
           toast.info('Plus One enabled: upload two faces to join this remix.')
         }
@@ -221,12 +224,23 @@ function App() {
         console.warn('❌ Template not found. ID:', templateId, 'Available IDs:', templates.map(t => t.id))
         setForcePlusOneMode(false)
         setCameFromCommunity(false)
+        setReturnToCommunityPostId(null)
         toast.error(`Template ID ${templateId} not found. Please try again later.`)
       }
 
       navigate(location.pathname, { replace: true, state: {} })
     }
   }, [currentPath, location, templates, navigate])
+
+  const goBackToCommunityDetail = useCallback(() => {
+    if (returnToCommunityPostId) {
+      navigate('/community', { state: { detailPostId: returnToCommunityPostId } })
+    } else {
+      navigate('/community')
+    }
+    setCameFromCommunity(false)
+    setReturnToCommunityPostId(null)
+  }, [returnToCommunityPostId, navigate])
 
   // Auto-scroll removed based on user feedback
   useEffect(() => {
@@ -1578,9 +1592,8 @@ function App() {
                         className="back-btn"
                         onClick={() => {
                           if (cameFromCommunity) {
-                            // 如果是从社区来的，返回社区页面
-                            navigate('/community')
-                            setCameFromCommunity(false)
+                            // 如果是从社区来的，返回社区详情
+                            goBackToCommunityDetail()
                           } else {
                             // 否则返回模板列表
                             setSelectedTemplate(null)
@@ -1606,8 +1619,7 @@ function App() {
                             setResult(null);
                             if (resetAll) {
                               if (cameFromCommunity) {
-                                navigate('/community')
-                                setCameFromCommunity(false)
+                                goBackToCommunityDetail()
                               } else {
                                 setSelectedTemplate(null)
                               }

@@ -13,7 +13,8 @@ function CreateFromCommunityPage({ user, templates = [] }) {
   // Get source content from location state
   const sourceContent = location.state?.sourceContent // { type: 'image' | 'video', url: string, postId?: string }
   const sourcePost = location.state?.sourcePost // Original post data
-  
+  const returnToPostId = location.state?.returnToPostId || null
+
   const [prompt, setPrompt] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [creationMode, setCreationMode] = useState('prompt') // 'prompt' | 'template'
@@ -329,7 +330,16 @@ function CreateFromCommunityPage({ user, templates = [] }) {
 
       <main className="create-from-community-page">
         <div className="create-header">
-          <button className="back-btn" onClick={() => navigate('/community')}>
+          <button
+            className="back-btn"
+            onClick={() => {
+              if (returnToPostId) {
+                navigate('/community', { state: { detailPostId: returnToPostId } })
+              } else {
+                navigate('/community')
+              }
+            }}
+          >
             ← Back to Community
           </button>
           <h1>Create from Community</h1>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Masonry from 'react-masonry-css'
 import { communityPosts as staticPosts, communityRemixMeta } from '../data/communityPosts'
@@ -201,6 +201,7 @@ function CommunityDetailLayout({
   onOpenRemix,
   templateCollections = [],
   onAddComment,
+  onExtendTemplate,
 }) {
   if (!post) return null
   const [activeCollectionId, setActiveCollectionId] = useState(null)
@@ -283,7 +284,7 @@ function CommunityDetailLayout({
             {onCreateFromCommunity && (
               <button
                 className="detail-remix-btn"
-                onClick={() => onCreateFromCommunity(post, selectedRemixTemplate)}
+                onClick={() => onCreateFromCommunity(post, selectedRemixTemplate, { returnToPostId: post.id })}
               >
                 Remix
               </button>
@@ -394,18 +395,6 @@ function CommunityDetailLayout({
               <h4>Remix feed</h4>
               <p>{comments.length} shared remixes</p>
             </div>
-            <button
-              className="ghost-btn compact"
-              onClick={() => {
-                if (onCreateFromCommunity) {
-                  onCreateFromCommunity(post, selectedRemixTemplate)
-                } else {
-                  onOpenRemix?.(post)
-                }
-              }}
-            >
-              Remix now
-            </button>
           </div>
           <CommentList comments={comments} />
         </section>
@@ -488,6 +477,7 @@ function CommunityPostCard({ post, onClick, onLike, isLiked, extraViews = 0, ext
 
 function CommunityPage({ user, onLogin }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState('forYou')
   const [selectedTag, setSelectedTag] = useState('all')
   const [visibleCount, setVisibleCount] = useState(DEFAULT_BATCH)
@@ -506,6 +496,16 @@ function CommunityPage({ user, onLogin }) {
     return allPosts.find((post) => post.id === selectedPostId) || null
   }, [selectedPostId, allPosts])
   const showDetail = Boolean(selectedPost)
+
+  useEffect(() => {
+    const detailPostId = location.state?.detailPostId
+    if (!detailPostId || !allPosts.length) return
+    const hasPost = allPosts.some((post) => post.id === detailPostId)
+    if (hasPost) {
+      setSelectedPostId(detailPostId)
+    }
+    navigate('/community', { replace: true, state: {} })
+  }, [location.state?.detailPostId, allPosts, navigate])
 
   const templateCollections = useMemo(() => {
     if (!allPosts?.length) return []
@@ -720,7 +720,8 @@ function CommunityPage({ user, onLogin }) {
     }
   }, [showDetail])
 
-  const handleCreateFromCommunity = (post, remixTemplate = null) => {
+  const handleCreateFromCommunity = (post, remixTemplate = null, options = {}) => {
+    const { returnToPostId = null } = options
     // Determine if post is image or video
     const isVideo = post.clipUrl.includes('.mp4') || 
                     post.clipUrl.includes('.webm') || 
@@ -738,7 +739,8 @@ function CommunityPage({ user, onLogin }) {
           id: remixTemplate.templateId || remixTemplate.id,
           name: remixTemplate.templateName || remixTemplate.title,
           clipUrl: remixTemplate.clipUrl
-        } : null
+        } : null,
+        returnToPostId: returnToPostId || undefined
       }
     })
   }
@@ -754,7 +756,8 @@ function CommunityPage({ user, onLogin }) {
       state: {
         fromCommunity: true,
         templateId,
-        plusOne: Boolean(remixTemplate?.supportsPlusOne || post.supportsPlusOne)
+        plusOne: Boolean(remixTemplate?.supportsPlusOne || post.supportsPlusOne),
+        detailPostId: post.id
       }
     })
   }
