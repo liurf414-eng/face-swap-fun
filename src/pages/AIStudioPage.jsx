@@ -13,9 +13,9 @@ const STYLE_PRESETS = [
 ];
 
 const ASPECT_RATIOS = [
-  { id: '9:16', name: '9:16 (TikTok)', icon: '📱', size: '720x1280' },
-  { id: '16:9', name: '16:9 (YouTube)', icon: '💻', size: '1280x720' },
-  { id: '1:1', name: '1:1 (Square)', icon: '🟦', size: '1024x1024' },
+  { id: '9:16', name: '9:16 (TikTok)', icon: '📱', size: '9:16' },
+  { id: '16:9', name: '16:9 (YouTube)', icon: '💻', size: '16:9' },
+  { id: '1:1', name: '1:1 (Square)', icon: '🟦', size: '1:1' },
 ];
 
 // Helper to read file as data URL
@@ -119,43 +119,41 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
 
   const buildPayload = async () => {
     const ratioDef = ASPECT_RATIOS.find(r => r.id === aspectRatio) || ASPECT_RATIOS[0];
-    const base = { model: 'z-image-turbo', input: { prompt, size: ratioDef.size } };
 
     if (mode === 'image') {
-      return base;
+      return {
+        model: 'z-image-turbo',
+        prompt,
+        size: ratioDef.size,
+        nsfw_check: false
+      };
     }
     if (mode === 'video') {
       return {
         model: 'veo-3.1-fast',
-        input: {
-          prompt,
-          size: ratioDef.size,
-          duration: 6
-        }
+        prompt,
+        size: ratioDef.size,
+        duration: 6
       };
     }
     if (mode === 'edit') {
       if (!uploadedImage) throw new Error('Please upload an image first.');
       return {
         model: 'sora-2',
-        input: {
-          prompt,
-          image: uploadedImage,
-          size: ratioDef.size,
-          duration: 6
-        }
+        prompt,
+        image: uploadedImage,
+        size: ratioDef.size,
+        duration: 6
       };
     }
     if (mode === 'remix') {
       if (!uploadedVideo) throw new Error('Please upload a video first.');
       return {
         model: 'sora-2-remix',
-        input: {
-          prompt,
-          video: uploadedVideo,
-          duration: 6,
-          strength: 0.7
-        }
+        prompt,
+        video: uploadedVideo,
+        duration: 6,
+        strength: 0.7
       };
     }
     throw new Error('Unknown mode');
