@@ -158,11 +158,33 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
       if (!taskId) throw new Error('No task_id returned from Evolink');
 
       setProgress(15);
-      const output = await pollEvolink(taskId);
+      const output = await pollEvolink(taskId, createData?.status_endpoint);
       setProgress(100);
 
       // Attempt to extract output URL
-      const outputUrl = Array.isArray(output) ? output[0] : (output?.url || output?.video_url || output?.image_url || output);
+      const pickFromArray = (arr) => {
+        for (const item of arr) {
+          if (typeof item === 'string') return item;
+          if (item?.url) return item.url;
+          if (item?.image_url) return item.image_url;
+          if (item?.video_url) return item.video_url;
+          if (item?.output_url) return item.output_url;
+        }
+        return null;
+      };
+
+      const outputUrl =
+        (Array.isArray(output) && pickFromArray(output)) ||
+        output?.url ||
+        output?.image_url ||
+        output?.video_url ||
+        output?.output_url ||
+        output?.result_url ||
+        output?.images?.[0] ||
+        output?.videos?.[0] ||
+        (Array.isArray(output?.results) && pickFromArray(output.results)) ||
+        (typeof output === 'string' ? output : null);
+
       if (!outputUrl) throw new Error('No output URL in Evolink response');
 
       setResult({
@@ -378,6 +400,7 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
             <div className="cost-info">
               <span>⚡ 1 Credit per generation</span>
             </div>
+            {errorMessage && <p className="error-text">{errorMessage}</p>}
           </div>
         </div>
 
