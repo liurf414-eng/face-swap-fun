@@ -3452,190 +3452,544 @@ a {
   padding: 8px 0;
 }
 
-.create-from-community-page {
-  width: 100%;
-  padding: 32px;
+.cfc-shell {
+  display: flex;
+  min-height: calc(100vh - 40px);
+  background: #050505;
+  color: #f5f5f5;
 }
 
-.create-grid {
+.cfc-side-nav {
+  width: 210px;
+  background: rgba(14, 14, 20, 0.95);
+  border-right: 1px solid rgba(255,255,255,0.08);
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cfc-logo {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.cfc-logo strong {
+  color: var(--primary);
+  margin-left: 4px;
+}
+
+.cfc-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cfc-nav button {
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.95rem;
+  padding: 10px 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.cfc-nav button.active {
+  background: rgba(138, 99, 255, 0.25);
+  color: #fff;
+  font-weight: 600;
+}
+
+.cfc-nav button:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.cfc-side-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cfc-side-foot button {
+  border: none;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.75);
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.cfc-main-panel {
+  flex: 1;
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.cfc-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.cfc-mode-tabs {
+  display: flex;
+  gap: 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.cfc-mode-tabs button {
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  position: relative;
+  padding: 6px 0;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.cfc-mode-tabs button.active {
+  color: #fff;
+  font-weight: 600;
+}
+
+.cfc-mode-tabs button.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 2px;
+  background: linear-gradient(90deg, #7f5fff, #54c7ff);
+}
+
+.cfc-session-info {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.9rem;
+}
+
+.cfc-editor-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 420px) 1fr;
+  grid-template-columns: minmax(360px, 520px) minmax(0, 1fr);
   gap: 32px;
   align-items: flex-start;
 }
 
-.create-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
+.cfc-control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.source-card .source-header {
+.cfc-source-card,
+.cfc-step-card,
+.cfc-publish-card,
+.cfc-generate-card {
+  background: rgba(18, 18, 26, 0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.cfc-source-thumb {
+  margin: 12px 0 16px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #050505;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+}
+
+.cfc-source-thumb img,
+.cfc-source-thumb video {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.cfc-step-label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.6);
+}
+
+.cfc-step-header {
+  display: flex;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
-.source-author {
+.cfc-step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  font-weight: 600;
 }
 
-.source-author img {
-  width: 40px;
-  height: 40px;
+.cfc-step-title {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.cfc-prompt-input {
+  width: 100%;
+  min-height: 130px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 16px;
+  color: #fff;
+  resize: vertical;
+}
+
+.cfc-prompt-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  align-items: center;
+}
+
+.cfc-prompt-hints button {
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: rgba(255,255,255,0.8);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.cfc-char-count {
+  margin-left: auto;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.85rem;
+}
+
+.cfc-template-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cfc-template-panel-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.cfc-template-search {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  padding: 10px 16px;
+  color: #fff;
+}
+
+.cfc-carousel-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.cfc-carousel-controls button {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
 }
 
-.source-preview {
+.cfc-carousel-controls button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.cfc-template-carousel {
+  display: flex;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.cfc-carousel-card {
+  width: 120px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.cfc-carousel-card.active {
+  border-color: rgba(127,95,255,0.8);
+  background: rgba(127,95,255,0.18);
+}
+
+.cfc-carousel-card .card-media {
+  width: 100%;
+  height: 120px;
   border-radius: 12px;
   overflow: hidden;
-  background: #050505;
-  margin-bottom: 12px;
+  background: #000;
 }
 
-.source-preview img,
-.source-preview video {
+.cfc-carousel-card video {
   width: 100%;
-  display: block;
+  height: 100%;
+  object-fit: cover;
 }
 
-.source-meta {
+.cfc-carousel-card .card-labels strong {
+  display: block;
+  font-size: 0.85rem;
+}
+
+.cfc-carousel-card .card-labels span {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+}
+
+.cfc-empty-text {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.9rem;
+}
+
+.cfc-carousel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.9rem;
+}
+
+.cfc-more-btn {
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  border-radius: 999px;
+  padding: 4px 14px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.cfc-all-templates-panel {
+  margin-top: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(10,10,15,0.95);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cfc-all-templates-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cfc-all-templates-header button {
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border-radius: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.cfc-all-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.cfc-grid-card {
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.cfc-grid-card.active {
+  border-color: rgba(127,95,255,0.8);
+  background: rgba(127,95,255,0.18);
+}
+
+.cfc-grid-card video {
+  width: 100%;
+  border-radius: 12px;
+  height: 140px;
+  object-fit: cover;
+}
+
+.cfc-grid-card strong {
+  font-size: 0.9rem;
+}
+
+.cfc-grid-card span {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+}
+}
+
+.cfc-premium-row {
+  margin-top: 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: rgba(255,255,255,0.7);
 }
 
-.source-tags {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.source-tags span {
-  background: rgba(255,255,255,0.05);
-  padding: 4px 8px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-}
-
-.mode-card .mode-toggle {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.mode-option {
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 14px 16px;
+.cfc-upgrade-pill {
+  border: 1px solid rgba(127,95,255,0.5);
   background: transparent;
-  color: var(--text-secondary);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.mode-option.active {
-  background: rgba(99,102,241,0.15);
-  border-color: var(--primary);
-  color: white;
-  box-shadow: 0 4px 12px rgba(99,102,241,0.25);
-}
-
-.mode-hint {
-  margin-top: 12px;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-}
-
-.prompt-suggestions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.prompt-suggestions button {
-  border: 1px solid var(--border-color);
-  background: rgba(255,255,255,0.04);
-  color: var(--text-secondary);
-  padding: 6px 12px;
+  color: #c6a3ff;
   border-radius: 999px;
-  font-size: 0.85rem;
+  padding: 4px 12px;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.prompt-suggestions button:hover {
-  border-color: var(--primary);
-  color: white;
-}
-
-.template-toolbar {
+.cfc-publish-card {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.8);
+}
+
+.cfc-generate-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.cfc-create-btn {
+  width: 100%;
+  border-radius: 999px;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: rgba(255,255,255,0.8);
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.template-search {
-  flex: 1;
-  background: var(--bg-dark);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: white;
+.cfc-create-btn:enabled {
+  background: linear-gradient(120deg, #7f5fff, #b372ff);
+  color: #fff;
 }
 
-.publish-card .publish-hint {
-  margin-top: 8px;
+.cfc-create-btn:disabled {
+  cursor: not-allowed;
+}
+
+.cfc-credit-pill {
+  background: rgba(0,0,0,0.25);
+  border-radius: 999px;
+  padding: 2px 10px;
   font-size: 0.85rem;
-  color: var(--text-secondary);
 }
 
-.generate-card .generate-btn-large {
-  width: 100%;
+.cfc-preview-panel {
+  border-left: 1px solid rgba(255,255,255,0.08);
+  padding-left: 32px;
+  min-height: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.create-right-column .preview-card,
-.create-right-column .result-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+.cfc-preview-placeholder {
+  text-align: center;
+  color: rgba(255,255,255,0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.cfc-preview-ghost {
+  width: min(420px, 100%);
+  max-height: 540px;
+  aspect-ratio: 9/16;
   border-radius: 24px;
-  padding: 24px;
-}
-
-.preview-media {
-  border-radius: 16px;
+  border: 1px dashed rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  margin-bottom: 20px;
-  background: #050505;
+  background: rgba(255,255,255,0.03);
 }
 
-.preview-media img,
-.preview-media video {
+.cfc-preview-ghost img,
+.cfc-preview-ghost video {
   width: 100%;
-  display: block;
+  height: 100%;
+  object-fit: cover;
 }
 
-.preview-info ul {
-  margin: 12px 0 0;
-  padding-left: 20px;
-  color: var(--text-secondary);
-}
-
-@media (max-width: 1100px) {
-  .create-grid {
+@media (max-width: 1200px) {
+  .cfc-shell {
+    flex-direction: column;
+  }
+  .cfc-side-nav {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .cfc-nav {
+    flex-direction: row;
+  }
+  .cfc-side-foot {
+    flex-direction: row;
+    margin-top: 0;
+  }
+  .cfc-editor-grid {
     grid-template-columns: 1fr;
+  }
+  .cfc-preview-panel {
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-left: 0;
+    padding-top: 24px;
   }
 }
 

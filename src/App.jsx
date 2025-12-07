@@ -1604,7 +1604,7 @@ function App() {
                           setForcePlusOneMode(false);
                         }}
                       >
-                        ← {cameFromCommunity ? 'Back to Community' : 'Back to Templates'}
+                        ← {cameFromCommunity ? 'Back' : 'Back to Templates'}
                       </button>
                       <h2>Create Your Video</h2>
                     </div>

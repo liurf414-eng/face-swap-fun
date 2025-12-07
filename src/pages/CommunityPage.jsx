@@ -201,7 +201,6 @@ function CommunityDetailLayout({
   onOpenRemix,
   templateCollections = [],
   onAddComment,
-  onExtendTemplate,
 }) {
   if (!post) return null
   const [activeCollectionId, setActiveCollectionId] = useState(null)
@@ -433,7 +432,7 @@ function CommunityPostCard({ post, onClick, onLike, isLiked, extraViews = 0, ext
                 className="overlay-create-btn" 
                 onClick={(event) => {
                   event.stopPropagation()
-                  onCreateFromCommunity(post)
+                  handleCardClick()
                 }}
               >
                 🎨 Create

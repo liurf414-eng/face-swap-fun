@@ -4,7 +4,6 @@ import { toast } from 'react-toastify'
 import { Helmet } from 'react-helmet-async'
 import ProgressDisplay from '../components/ProgressDisplay'
 import ResultDisplay from '../components/ResultDisplay'
-import LazyVideoCard from '../components/LazyVideoCard'
 
 function CreateFromCommunityPage({ user, templates = [] }) {
   const navigate = useNavigate()
@@ -28,6 +27,8 @@ function CreateFromCommunityPage({ user, templates = [] }) {
   const [processingStartTime, setProcessingStartTime] = useState(null)
   const [scriptedProgress, setScriptedProgress] = useState(5.0)
   const [publishToCommunity, setPublishToCommunity] = useState(false)
+  const [templateCarouselIndex, setTemplateCarouselIndex] = useState(0)
+  const [showAllTemplates, setShowAllTemplates] = useState(false)
 
   // Redirect if no source content
   useEffect(() => {
@@ -57,7 +58,17 @@ function CreateFromCommunityPage({ user, templates = [] }) {
     })
   }, [templates, templateSearch])
 
-  const topTemplates = filteredTemplates.slice(0, 12)
+  const carouselVisibleCount = 5
+  const maxCarouselStart = Math.max(0, filteredTemplates.length - carouselVisibleCount)
+  const topTemplates = filteredTemplates.slice(
+    templateCarouselIndex,
+    templateCarouselIndex + carouselVisibleCount
+  )
+  const canSlideNext = templateCarouselIndex < maxCarouselStart
+  const canSlidePrev = templateCarouselIndex > 0
+  const createButtonLabel = creationMode === 'prompt'
+    ? (prompt.trim() ? 'Create with prompt' : 'Enter a prompt to start')
+    : (selectedTemplate ? 'Apply template motion' : 'Select a template to start')
 
   const handleGenerate = async () => {
     if (!hasSource) return
@@ -317,9 +328,16 @@ function CreateFromCommunityPage({ user, templates = [] }) {
     }
   }, [isGenerating, result, predictedTotalTime])
 
+  useEffect(() => {
+    if (templateCarouselIndex > maxCarouselStart) {
+      setTemplateCarouselIndex(maxCarouselStart)
+    }
+  }, [filteredTemplates, templateCarouselIndex, maxCarouselStart])
+
   if (!hasSource) {
     return null // Will redirect
   }
+  const hasRequiredImages = true
 
   return (
     <>
@@ -328,251 +346,290 @@ function CreateFromCommunityPage({ user, templates = [] }) {
         <meta name="description" content="Transform community content with AI prompts or video templates." />
       </Helmet>
 
-      <main className="create-from-community-page">
-        <div className="create-header">
-          <button
-            className="back-btn"
-            onClick={() => {
-              if (returnToPostId) {
-                navigate('/community', { state: { detailPostId: returnToPostId } })
-              } else {
-                navigate('/community')
-              }
-            }}
-          >
-            ← Back to Community
-          </button>
-          <h1>Create from Community</h1>
-          <p>Transform this {isImage ? 'image' : 'video'} with AI</p>
-        </div>
-
-        <div className="create-grid">
-          <div className="create-left-column">
-            <section className="create-card source-card">
-              <div className="source-header">
-                <div>
-                  <p className="section-label">Step 1 · Source</p>
-                  <h2>{isImage ? 'Remixing an Image' : 'Remixing a Video'}</h2>
-                </div>
-                {sourcePost && (
-                  <div className="source-author">
-                    <img src={sourcePost.author.avatar} alt={sourcePost.author.name} />
-                    <div>
-                      <strong>{sourcePost.author.name}</strong>
-                      <span>{sourcePost.author.handle}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="source-preview">
-                {isImage ? (
-                  <img src={sourceContent.url} alt="Source" />
-                ) : (
-                  <video src={sourceContent.url} autoPlay loop muted controls />
-                )}
-              </div>
-              {sourcePost && (
-                <div className="source-meta">
-                  <p className="source-title">{sourcePost.title}</p>
-                  <div className="source-tags">
-                    {sourcePost.tags?.slice(0, 3).map(tag => (
-                      <span key={tag}>#{tag}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </section>
-
-            <section className="create-card mode-card">
-              <p className="section-label">Step 2 · Choose Method</p>
-              <div className="mode-toggle">
-                <button
-                  className={`mode-option ${creationMode === 'prompt' ? 'active' : ''}`}
-                  onClick={() => setCreationMode('prompt')}
-                >
-                  ✍️ Prompt Remix
-                </button>
-                <button
-                  className={`mode-option ${creationMode === 'template' ? 'active' : ''}`}
-                  onClick={() => setCreationMode('template')}
-                >
-                  🎬 Template Motion
-                </button>
-              </div>
-              <p className="mode-hint">
-                {creationMode === 'prompt'
-                  ? 'Describe how this content should change.'
-                  : 'Pick a motion template to apply to this content.'}
-              </p>
-            </section>
-
-            {creationMode === 'prompt' ? (
-              <section className="create-card prompt-card">
-                <div className="prompt-header">
-                  <h3>Describe your twist</h3>
-                  <span>{prompt.length}/500</span>
-                </div>
-                <textarea
-                  className="prompt-input-large"
-                  value={prompt}
-                  maxLength={500}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder={isImage 
-                    ? 'e.g., Make him blink and smile with neon cyberpunk lighting'
-                    : 'e.g., Slow motion hero entrance with smoke and dramatic lighting'}
-                  rows={6}
-                />
-                <div className="prompt-suggestions">
-                  {(isImage
-                    ? ['Animate this photo', 'Add cinematic lighting', 'Turn into a 3D render']
-                    : ['Add camera shake + zoom', 'Convert to anime fight scene', 'Add slow motion reveal']
-                  ).map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      type="button"
-                      onClick={() => {
-                        setCreationMode('prompt')
-                        setPrompt(suggestion)
-                      }}
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            ) : (
-              <section className="create-card template-card">
-                <div className="template-toolbar">
-                  <input
-                    type="text"
-                    className="template-search"
-                    placeholder="Search templates by name or category"
-                    value={templateSearch}
-                    onChange={(e) => setTemplateSearch(e.target.value)}
-                  />
-                  <span>{filteredTemplates.length} templates</span>
-                </div>
-                <div className="template-grid-mini">
-                  {topTemplates.map((template) => (
-                    <LazyVideoCard
-                      key={template.id}
-                      template={template}
-                      isSelected={selectedTemplate?.id === template.id}
-                      onSelect={() => {
-                        setCreationMode('template')
-                        setSelectedTemplate(template)
-                      }}
-                      showLink={false}
-                    />
-                  ))}
-                </div>
-                {filteredTemplates.length === 0 && (
-                  <p className="empty-text">No templates found. Try a different keyword.</p>
-                )}
-                {templates.length > topTemplates.length && (
-                  <button
-                    className="view-all-templates-btn"
-                    onClick={() => navigate('/')}
-                  >
-                    Browse full template library →
-                  </button>
-                )}
-              </section>
-            )}
-
-            {user && (
-              <section className="create-card publish-card">
-                <label className="publish-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={publishToCommunity}
-                    onChange={(e) => setPublishToCommunity(e.target.checked)}
-                  />
-                  <span>Publish to Community when finished</span>
-                </label>
-                <p className="publish-hint">Your result always saves to “Me”. Publishing is optional.</p>
-              </section>
-            )}
-
-            <section className="create-card generate-card">
-              {isGenerating ? (
-                <ProgressDisplay
-                  progress={scriptedProgress}
-                  processingStatus={processingStatus}
-                  elapsedTime={clientElapsedTime}
-                  predictedTotalTime={predictedTotalTime}
-                />
-              ) : (
-                <button
-                  className="generate-btn-large"
-                  onClick={handleGenerate}
-                  disabled={!canGenerate}
-                >
-                  {creationMode === 'prompt'
-                    ? (prompt.trim() ? '✨ Generate with Prompt' : '✍️ Enter a prompt to start')
-                    : (selectedTemplate ? '✨ Apply Template Motion' : '🎬 Select a template to start')}
-                </button>
-              )}
-            </section>
+      <div className="cfc-shell">
+        <main className="cfc-main-panel">
+          <div className="cfc-top-bar">
+            <button
+              className="back-btn"
+              onClick={() => {
+                if (returnToPostId) {
+                  navigate('/community', { state: { detailPostId: returnToPostId } })
+                } else {
+                  navigate('/community')
+                }
+              }}
+            >
+              Back
+            </button>
+            <div className="cfc-mode-tabs">
+              <button
+                type="button"
+                className={creationMode === 'prompt' ? 'active' : ''}
+                onClick={() => setCreationMode('prompt')}
+              >
+                Prompt
+              </button>
+              <button
+                type="button"
+                className={creationMode === 'template' ? 'active' : ''}
+                onClick={() => setCreationMode('template')}
+              >
+                Templates
+              </button>
+            </div>
+            <div className="cfc-session-info">
+              <span>{isImage ? 'Remixing an image source' : 'Remixing a video clip'}</span>
+            </div>
           </div>
 
-          <div className="create-right-column">
-            {result ? (
-              <ResultDisplay
-                result={result}
-                selectedTemplate={selectedTemplate}
-                onDownload={async () => {
-                  try {
-                    const response = await fetch(result.url)
-                    const blob = await response.blob()
-                    const url = window.URL.createObjectURL(blob)
-                    const fileExtension = result.url.split('.').pop().split('?')[0]
-                    const fileName = `community-creation-${Date.now()}.${fileExtension}`
-                    const link = document.createElement('a')
-                    link.href = url
-                    link.download = fileName
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                    window.URL.revokeObjectURL(url)
-                  } catch (error) {
-                    toast.error('Download failed')
-                  }
-                }}
-                onCreateNew={() => {
-                  setResult(null)
-                  setPrompt('')
-                  setSelectedTemplate(null)
-                  setCreationMode('prompt')
-                }}
-                isDuoInteraction={false}
-                hasRequiredImages
-                isProcessing={isGenerating}
-                limitReached={false}
-              />
-            ) : (
-              <div className="preview-card">
-                <div className="preview-media">
+          <div className="cfc-editor-grid">
+            <section className="cfc-control-panel">
+              <div className="cfc-source-card">
+                <p className="cfc-step-label">Extend source</p>
+                <div className="cfc-source-thumb">
                   {isImage ? (
-                    <img src={sourceContent.url} alt="Preview" />
+                    <img src={sourceContent.url} alt="Source" />
                   ) : (
-                    <video src={sourceContent.url} autoPlay loop muted controls />
+                    <video src={sourceContent.url} autoPlay loop muted playsInline />
                   )}
                 </div>
-                <div className="preview-info">
-                  <h3>Ready to create?</h3>
-                  <p>Use a prompt or pick a motion template to twist this community creation.</p>
-                  <ul>
-                    <li>Prompt Remix: describe style, actions, or mood</li>
-                    <li>Template Motion: apply trending meme motions instantly</li>
-                    <li>Results auto-save to “Me” and can be published</li>
-                  </ul>
+                {sourcePost && (
+                  <>
+                    <h3>{sourcePost.title}</h3>
+                    <span>{sourcePost.author?.name}</span>
+                  </>
+                )}
+              </div>
+
+              <div className="cfc-step-card">
+                <div className="cfc-step-header">
+                  <span className="cfc-step-number">2</span>
+                  <div>
+                    <p className="cfc-step-title">
+                      {creationMode === 'prompt' ? 'Write prompt' : 'Choose template'}
+                    </p>
+                    <small>
+                      {creationMode === 'prompt'
+                        ? 'Describe your animation in detail for best motion results.'
+                        : 'Select a template motion to merge with this source clip.'}
+                    </small>
+                  </div>
+                </div>
+
+                {creationMode === 'prompt' ? (
+                  <>
+                    <textarea
+                      className="cfc-prompt-input"
+                      value={prompt}
+                      maxLength={1000}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder={isImage
+                        ? 'Describe how this photo should move, light, or transform...'
+                        : 'Describe new camera moves, pacing, or stylistic twists...'}
+                    />
+                    <div className="cfc-prompt-hints">
+                      {(isImage
+                        ? ['Add neon contours and subtle blink', 'Transform into painted concept art']
+                        : ['Slow zoom with dramatic smoke', 'Convert into anime style fight scene']
+                      ).map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => setPrompt(suggestion)}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                      <span className="cfc-char-count">{prompt.length}/1000</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="cfc-template-panel">
+                    <div className="cfc-template-panel-top">
+                      <input
+                        type="text"
+                        className="cfc-template-search"
+                        placeholder="Search templates by name or vibe"
+                        value={templateSearch}
+                        onChange={(e) => setTemplateSearch(e.target.value)}
+                      />
+                      <div className="cfc-carousel-controls">
+                        <button
+                          type="button"
+                          onClick={() => setTemplateCarouselIndex((prev) => Math.max(0, prev - 1))}
+                          disabled={!canSlidePrev}
+                        >
+                          ‹
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTemplateCarouselIndex((prev) => Math.min(maxCarouselStart, prev + 1))}
+                          disabled={!canSlideNext}
+                        >
+                          ›
+                        </button>
+                      </div>
+                    </div>
+                    <div className="cfc-template-carousel">
+                      {topTemplates.map((template) => (
+                        <button
+                          key={template.id}
+                          type="button"
+                          className={`cfc-carousel-card ${selectedTemplate?.id === template.id ? 'active' : ''}`}
+                          onClick={() => setSelectedTemplate(template)}
+                        >
+                          <div className="card-media">
+                            <video src={template.gifUrl} autoPlay loop muted playsInline />
+                          </div>
+                          <div className="card-labels">
+                            <strong>{template.name}</strong>
+                            <span>{template.category}</span>
+                          </div>
+                        </button>
+                      ))}
+                      {topTemplates.length === 0 && (
+                        <p className="cfc-empty-text">No templates match that search.</p>
+                      )}
+                    </div>
+                    <div className="cfc-carousel-footer">
+                      <button
+                        type="button"
+                        className="cfc-more-btn"
+                        onClick={() => setShowAllTemplates(true)}
+                      >
+                        More ▾
+                      </button>
+                      <span>{filteredTemplates.length} templates</span>
+                    </div>
+                    {showAllTemplates && (
+                      <div className="cfc-all-templates-panel">
+                        <div className="cfc-all-templates-header">
+                          <div>
+                            <h4>Browse all templates</h4>
+                            <p>Select any motion from the grid below.</p>
+                          </div>
+                          <button type="button" onClick={() => setShowAllTemplates(false)}>Close</button>
+                        </div>
+                        <div className="cfc-all-template-grid">
+                          {filteredTemplates.map((template) => (
+                            <button
+                              key={`all-${template.id}`}
+                              type="button"
+                              className={`cfc-grid-card ${selectedTemplate?.id === template.id ? 'active' : ''}`}
+                              onClick={() => {
+                                setSelectedTemplate(template)
+                                setCreationMode('template')
+                                setShowAllTemplates(false)
+                              }}
+                            >
+                              <video src={template.gifUrl} autoPlay loop muted playsInline />
+                              <div>
+                                <strong>{template.name}</strong>
+                                <span>{template.category}</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="cfc-premium-row">
+                  <label>
+                    <input type="checkbox" disabled />
+                    Premium model
+                  </label>
+                  <button type="button" className="cfc-upgrade-pill">Upgrade</button>
                 </div>
               </div>
-            )}
+
+              {user && (
+                <div className="cfc-publish-card">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={publishToCommunity}
+                      onChange={(e) => setPublishToCommunity(e.target.checked)}
+                    />
+                    Publish to Community when finished
+                  </label>
+                  <small>Your video still saves privately under “Me”.</small>
+                </div>
+              )}
+
+              <div className="cfc-generate-card">
+                {isGenerating ? (
+                  <ProgressDisplay
+                    progress={scriptedProgress}
+                    processingStatus={processingStatus}
+                    elapsedTime={clientElapsedTime}
+                    predictedTotalTime={predictedTotalTime}
+                  />
+                ) : (
+                  <button
+                    className="cfc-create-btn"
+                    onClick={handleGenerate}
+                    disabled={!canGenerate}
+                  >
+                    {createButtonLabel}
+                    <span className="cfc-credit-pill">30</span>
+                  </button>
+                )}
+              </div>
+            </section>
+
+            <section className="cfc-preview-panel">
+              {result ? (
+                <ResultDisplay
+                  result={result}
+                  selectedTemplate={selectedTemplate}
+                  onDownload={async () => {
+                    try {
+                      const response = await fetch(result.url)
+                      const blob = await response.blob()
+                      const url = window.URL.createObjectURL(blob)
+                      const fileExtension = result.url.split('.').pop().split('?')[0]
+                      const fileName = `community-creation-${Date.now()}.${fileExtension}`
+                      const link = document.createElement('a')
+                      link.href = url
+                      link.download = fileName
+                      document.body.appendChild(link)
+                      link.click()
+                      document.body.removeChild(link)
+                      window.URL.revokeObjectURL(url)
+                    } catch (error) {
+                      toast.error('Download failed')
+                    }
+                  }}
+                  onCreateNew={() => {
+                    setResult(null)
+                    setPrompt('')
+                    setSelectedTemplate(null)
+                    setCreationMode('prompt')
+                  }}
+                  isDuoInteraction={false}
+                  hasRequiredImages={hasRequiredImages}
+                  isProcessing={isGenerating}
+                  limitReached={false}
+                />
+              ) : (
+                <div className="cfc-preview-placeholder">
+                  <div className="cfc-preview-ghost">
+                    {isImage ? (
+                      <img src={sourceContent.url} alt="Source preview" />
+                    ) : (
+                      <video src={sourceContent.url} autoPlay loop muted playsInline />
+                    )}
+                  </div>
+                  <p>Choose a photo to start</p>
+                  <span>Use prompts or template motions from the left panel.</span>
+                </div>
+              )}
+            </section>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </>
   )
 }
