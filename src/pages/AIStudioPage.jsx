@@ -66,6 +66,8 @@ async function pollEvolink(taskId, endpoint) {
       data.data?.taskStatus;
     const output =
       resultBlock?.output ||
+      resultBlock?.data?.output ||
+      resultBlock?.data?.result ||
       resultBlock?.result ||
       data.data?.output ||
       data.data?.result ||
@@ -76,7 +78,8 @@ async function pollEvolink(taskId, endpoint) {
       status === 'finished' ||
       status === 'succeeded' ||
       status === 'success' ||
-      status === 'done'
+      status === 'done' ||
+      status === 'completed'
     ) {
       return output;
     }
@@ -209,6 +212,8 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
         output?.result_url ||
         output?.images?.[0] ||
         output?.videos?.[0] ||
+        output?.data?.url ||
+        output?.data?.output?.[0] ||
         (Array.isArray(output?.results) && pickFromArray(output.results)) ||
         (typeof output === 'string' ? output : null);
 
