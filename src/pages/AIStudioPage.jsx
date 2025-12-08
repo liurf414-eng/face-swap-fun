@@ -237,7 +237,11 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
       setProgress(0);
     } catch (error) {
       console.error('Evolink generate error:', error);
-      const readable = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+      const readable = typeof error?.message === 'string'
+        ? error.message
+        : typeof error === 'string'
+          ? error
+          : JSON.stringify(error);
       setErrorMessage(readable);
       setIsGenerating(false);
       setProgress(0);

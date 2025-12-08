@@ -73,13 +73,18 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-      const { taskId, endpoint } = req.query || {}
-      const target = endpoint || ENDPOINTS.status
-      if (!taskId || !target) {
+      const { taskId, task, task_id, endpoint } = req.query || {}
+      const resolvedTaskId = taskId || task || task_id
+      let target = endpoint || ENDPOINTS.status
+      // Normalize relative targets to full Evolink host (safety for older cached clients using GET polling)
+      if (target && !target.startsWith('http')) {
+        target = `https://api.evolink.ai${target.startsWith('/') ? '' : '/'}${target}`
+      }
+      if (!resolvedTaskId || !target) {
         return res.status(400).json({ success: false, error: 'Missing taskId or endpoint' })
       }
 
-      const url = `${target}${target.includes('?') ? '&' : '?'}task_id=${encodeURIComponent(taskId)}`
+      const url = `${target}${target.includes('?') ? '&' : '?'}task_id=${encodeURIComponent(resolvedTaskId)}`
       const evoRes = await fetch(url, {
         method: 'GET',
         headers: {
