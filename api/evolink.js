@@ -30,8 +30,9 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const { action, payload = {}, endpointOverride } = req.body || {}
       let target = endpointOverride || ENDPOINTS[action]
-      if (endpointOverride && !endpointOverride.startsWith('http')) {
-        target = `https://api.evolink.ai${endpointOverride.startsWith('/') ? '' : '/'}${endpointOverride}`
+      // Normalize relative targets to full Evolink host (safety for relative status endpoints)
+      if (target && !target.startsWith('http')) {
+        target = `https://api.evolink.ai${target.startsWith('/') ? '' : '/'}${target}`
       }
       if (!action || !target) {
         return res.status(400).json({ success: false, error: 'Invalid action or endpoint' })
