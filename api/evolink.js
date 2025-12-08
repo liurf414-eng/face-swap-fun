@@ -37,6 +37,23 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, error: 'Invalid action or endpoint' })
       }
 
+      // status query should be GET
+      if (action === 'status') {
+        const url = `${target}${target.includes('?') ? '&' : '?'}task_id=${encodeURIComponent(payload.task_id || '')}`
+        const evoRes = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        const data = await evoRes.json().catch(() => ({}))
+        if (!evoRes.ok) {
+          return res.status(evoRes.status).json({ success: false, error: data?.error || data?.message || 'Evolink status error', detail: data })
+        }
+        return res.status(200).json({ success: true, data })
+      }
+
       const evoRes = await fetch(target, {
         method: 'POST',
         headers: {
