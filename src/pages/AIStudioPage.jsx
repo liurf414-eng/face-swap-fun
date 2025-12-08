@@ -44,8 +44,15 @@ async function callEvolink(action, payload) {
 async function pollEvolink(taskId, endpoint) {
   for (let i = 0; i < 120; i++) {
     await new Promise((r) => setTimeout(r, 2000));
-    const url = `/api/evolink?taskId=${encodeURIComponent(taskId)}${endpoint ? `&endpoint=${encodeURIComponent(endpoint)}` : ''}`;
-    const res = await fetch(url, { method: 'GET' });
+    const res = await fetch('/api/evolink', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'status',
+        payload: { task_id: taskId },
+        endpointOverride: endpoint
+      })
+    });
     const data = await res.json();
     if (!res.ok || !data.success) {
       throw new Error(data?.error || `Status error (${res.status})`);
