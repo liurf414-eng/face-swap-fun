@@ -57,12 +57,16 @@ async function pollEvolink(taskId, endpoint) {
     if (!res.ok || !data.success) {
       throw new Error(data?.error || `Status error (${res.status})`);
     }
+    const resultBlock = data.data?.result || data.data?.data?.result || data.data;
     const status =
+      resultBlock?.status ||
       data.data?.status ||
       data.data?.task_status ||
       data.data?.data?.status ||
       data.data?.taskStatus;
     const output =
+      resultBlock?.output ||
+      resultBlock?.result ||
       data.data?.output ||
       data.data?.result ||
       data.data?.data?.result ||
