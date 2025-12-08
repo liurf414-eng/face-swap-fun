@@ -38,15 +38,15 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, error: 'Invalid action or endpoint' })
       }
 
-      // status query must be POST per Evolink docs: https://docs.evolink.ai/cn/api-manual/image-series/z-image-turbo/z-image-turbo-image-generate#%E4%BB%BB%E5%8A%A1%E8%8E%B7%E5%8F%96
+      // status query: Evolink currently responds to GET /v1/tasks/query?task_id=...
       if (action === 'status') {
-        const evoRes = await fetch(target, {
-          method: 'POST',
+        const url = `${target}${target.includes('?') ? '&' : '?'}task_id=${encodeURIComponent(payload.task_id || '')}`
+        const evoRes = await fetch(url, {
+          method: 'GET',
           headers: {
             'Authorization': `Bearer ${API_KEY}`,
             'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ task_id: payload.task_id })
+          }
         })
         const data = await evoRes.json().catch(() => ({}))
         if (!evoRes.ok) {
