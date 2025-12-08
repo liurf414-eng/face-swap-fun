@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     'text-to-video': 'https://api.evolink.ai/v1/videos/generations',
     'image-to-video': 'https://api.evolink.ai/v1/videos/generations',
     'video-to-video': 'https://api.evolink.ai/v1/videos/generations',
-    status: 'https://api.evolink.ai/v1/tasks/query'
+    status: 'https://api.evolink.ai/v1/tasks'
   }
 
   try {
@@ -38,9 +38,15 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, error: 'Invalid action or endpoint' })
       }
 
-      // status query: Evolink currently responds to GET /v1/tasks/query?task_id=...
+      // status query: GET /v1/tasks/{task_id} (per Evolink task detail docs)
       if (action === 'status') {
-        const url = `${target}${target.includes('?') ? '&' : '?'}task_id=${encodeURIComponent(payload.task_id || '')}`
+        let statusUrl = target
+        if (statusUrl.endsWith('/tasks')) {
+          statusUrl = `${statusUrl}/${encodeURIComponent(payload.task_id || '')}`
+        } else if (!statusUrl.includes(payload.task_id || '')) {
+          statusUrl = `${statusUrl}${statusUrl.endsWith('/') ? '' : '/'}${encodeURIComponent(payload.task_id || '')}`
+        }
+        const url = statusUrl
         const evoRes = await fetch(url, {
           method: 'GET',
           headers: {
@@ -84,7 +90,13 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, error: 'Missing taskId or endpoint' })
       }
 
-      const url = `${target}${target.includes('?') ? '&' : '?'}task_id=${encodeURIComponent(resolvedTaskId)}`
+      let statusUrl = target
+      if (statusUrl.endsWith('/tasks')) {
+        statusUrl = `${statusUrl}/${encodeURIComponent(resolvedTaskId)}`
+      } else if (!statusUrl.includes(resolvedTaskId)) {
+        statusUrl = `${statusUrl}${statusUrl.endsWith('/') ? '' : '/'}${encodeURIComponent(resolvedTaskId)}`
+      }
+      const url = statusUrl
       const evoRes = await fetch(url, {
         method: 'GET',
         headers: {
