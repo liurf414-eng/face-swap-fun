@@ -187,8 +187,18 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
       const taskId = createData?.task_id || createData?.data?.task_id || createData?.result?.task_id || createData?.id;
       if (!taskId) throw new Error('No task_id returned from Evolink');
 
+      // Normalize status endpoint if provided (may be relative)
+      const rawStatusEndpoint =
+        createData?.status_endpoint ||
+        createData?.data?.status_endpoint ||
+        createData?.result?.status_endpoint;
+      const statusEndpoint =
+        rawStatusEndpoint && !rawStatusEndpoint.startsWith('http')
+          ? `https://api.evolink.ai${rawStatusEndpoint.startsWith('/') ? '' : '/'}${rawStatusEndpoint}`
+          : rawStatusEndpoint;
+
       setProgress(15);
-      const output = await pollEvolink(taskId, createData?.status_endpoint);
+      const output = await pollEvolink(taskId, statusEndpoint);
       setProgress(100);
 
       // Attempt to extract output URL
