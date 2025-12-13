@@ -66,12 +66,15 @@ async function pollEvolink(taskId, endpoint) {
       data.data?.taskStatus;
     const output =
       resultBlock?.output ||
+      resultBlock?.results ||
       resultBlock?.output_url ||
       resultBlock?.data?.output ||
+      resultBlock?.data?.results ||
       resultBlock?.data?.output_url ||
       resultBlock?.data?.result ||
       resultBlock?.result ||
       data.data?.output ||
+      data.data?.results ||
       data.data?.output_url ||
       data.data?.result ||
       data.data?.data?.result ||
