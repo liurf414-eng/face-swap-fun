@@ -1,6 +1,22 @@
 {
   "rewrites": [
     {
+      "source": "/@vite/(.*)",
+      "destination": "/@vite/$1"
+    },
+    {
+      "source": "/@react-refresh",
+      "destination": "/@react-refresh"
+    },
+    {
+      "source": "/src/(.*)",
+      "destination": "/src/$1"
+    },
+    {
+      "source": "/node_modules/(.*)",
+      "destination": "/node_modules/$1"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },

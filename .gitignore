@@ -63,3 +63,4 @@ public/videos/
 
 # Scripts (not needed for production)
 scripts/
+.vercel

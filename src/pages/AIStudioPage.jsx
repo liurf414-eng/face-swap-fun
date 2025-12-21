@@ -41,7 +41,7 @@ async function callEvolink(action, payload) {
   return data.data;
 }
 
-async function pollEvolink(taskId, endpoint) {
+async function pollEvolink(taskId, endpoint, sourceAction) {
   for (let i = 0; i < 120; i++) {
     await new Promise((r) => setTimeout(r, 2000));
     const res = await fetch('/api/evolink', {
@@ -49,7 +49,7 @@ async function pollEvolink(taskId, endpoint) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'status',
-        payload: { task_id: taskId },
+        payload: { task_id: taskId, sourceAction },
         endpointOverride: endpoint
       })
     });
@@ -144,10 +144,11 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
     }
     if (mode === 'video') {
       return {
-        model: 'veo-3.1-fast',
+        // Fallback to sora-2 to avoid channel restrictions seen on veo-3.1-fast
+        model: 'sora-2',
         prompt,
         size: ratioDef.size,
-        duration: 6
+        duration: 10
       };
     }
     if (mode === 'edit') {
@@ -205,7 +206,7 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
           : rawStatusEndpoint;
 
       setProgress(15);
-      const output = await pollEvolink(taskId, statusEndpoint);
+      const output = await pollEvolink(taskId, statusEndpoint, action);
       setProgress(100);
 
       // Attempt to extract output URL

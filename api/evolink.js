@@ -1,8 +1,17 @@
 // Evolink proxy for AI Studio (text-to-image, text-to-video, image-to-video, video-to-video)
 // Uses environment variable EVOLINK_API_KEY. Do NOT hardcode the key.
+import dotenv from 'dotenv'
+dotenv.config()
+dotenv.config({ path: '.env.local', override: true })
 
 export default async function handler(req, res) {
-  const API_KEY = process.env.EVOLINK_API_KEY
+  // 支持按 action 使用不同的 API Key；未配置则回退默认 EVOLINK_API_KEY
+  const API_KEYS = {
+    'text-to-video': process.env.EVOLINK_API_KEY_TEXT_VIDEO || process.env.EVOLINK_API_KEY,
+    'image-to-video': process.env.EVOLINK_API_KEY_IMAGE_TO_VIDEO || process.env.EVOLINK_API_KEY,
+    'video-to-video': process.env.EVOLINK_API_KEY_VIDEO_TO_VIDEO || process.env.EVOLINK_API_KEY,
+    'text-to-image': process.env.EVOLINK_API_KEY_TEXT_IMAGE || process.env.EVOLINK_API_KEY
+  }
 
   // Basic CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -14,7 +23,12 @@ export default async function handler(req, res) {
     return res.status(200).end()
   }
 
-  if (!API_KEY) {
+  const pickApiKey = (actionHint) => {
+    const key = API_KEYS[actionHint] || process.env.EVOLINK_API_KEY
+    return key
+  }
+
+  if (!process.env.EVOLINK_API_KEY && Object.values(API_KEYS).every(v => !v)) {
     return res.status(500).json({ success: false, error: 'EVOLINK_API_KEY is not configured' })
   }
 
@@ -29,6 +43,15 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'POST') {
       const { action, payload = {}, endpointOverride } = req.body || {}
+      const actionForKey = action === 'status' ? (payload?.sourceAction || 'status') : action
+      const API_KEY = pickApiKey(actionForKey)
+      if (process.env.VERCEL_ENV !== 'production') {
+        const tail = API_KEY ? API_KEY.slice(-4) : 'none'
+        const len = API_KEY ? API_KEY.length : 0
+        const hint = `action=${actionForKey};len=${len};tail=${tail}`
+        res.setHeader('x-evolink-key-hint', hint)
+        console.log(`[evolink] ${hint}`)
+      }
       let target = endpointOverride || ENDPOINTS[action]
       // Normalize relative targets to full Evolink host (safety for relative status endpoints)
       if (target && !target.startsWith('http')) {
@@ -82,6 +105,7 @@ export default async function handler(req, res) {
       const { taskId, task, task_id, endpoint } = req.query || {}
       const resolvedTaskId = taskId || task || task_id
       let target = endpoint || ENDPOINTS.status
+      const API_KEY = pickApiKey('status')
       // Normalize relative targets to full Evolink host (safety for older cached clients using GET polling)
       if (target && !target.startsWith('http')) {
         target = `https://api.evolink.ai${target.startsWith('/') ? '' : '/'}${target}`

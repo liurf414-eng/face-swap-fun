@@ -9,7 +9,6 @@
     "preview": "vite preview",
     "upload-templates": "node scripts/upload-templates.js upload",
     "scan-templates": "node scripts/upload-templates.js scan",
-    "setup-storage": "node scripts/setup-storage.js list",
     "validate-sitemap": "node scripts/validate-sitemap.js",
     "check-sitemap": "node scripts/check-sitemap-accessibility.js",
     "generate-sitemap": "node scripts/generate-sitemap.js"
@@ -22,7 +21,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.913.0",
     "@vitejs/plugin-react": "^5.0.4",
     "browser-image-compression": "^2.0.2",
     "cors": "^2.8.5",
