@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 
-// Style presets and aspect ratios (kept for UX hints)
-const STYLE_PRESETS = [
-  { id: 'cinematic', name: 'Cinematic', icon: '🎬' },
-  { id: 'anime', name: 'Anime', icon: '🎌' },
-  { id: 'cyberpunk', name: 'Cyberpunk', icon: '🌆' },
-  { id: '3d-render', name: '3D Render', icon: '🧊' },
-  { id: 'watercolor', name: 'Watercolor', icon: '🎨' },
-  { id: 'oil-painting', name: 'Oil Painting', icon: '🖼️' },
-];
-
 const ASPECT_RATIOS = [
-  { id: '9:16', name: '9:16 (TikTok)', icon: '📱', size: '9:16' },
-  { id: '16:9', name: '16:9 (YouTube)', icon: '💻', size: '16:9' },
-  { id: '1:1', name: '1:1 (Square)', icon: '🟦', size: '1:1' },
+  { id: '9:16', name: '9:16 (TikTok)', icon: '📱' },
+  { id: '16:9', name: '16:9 (YouTube)', icon: '💻' },
+  { id: '1:1', name: '1:1 (Square)', icon: '🟦' },
+  { id: '4:3', name: '4:3', icon: '📺' },
+  { id: '3:4', name: '3:4', icon: '📱' },
 ];
 
 // Helper to read file as data URL
@@ -99,20 +91,19 @@ async function pollEvolink(taskId, endpoint, sourceAction) {
 
 function AIStudioPage({ mode: initialMode = 'image' }) {
   const navigate = useNavigate();
-  const [mode, setMode] = useState(initialMode); // 'image' | 'video' | 'edit' | 'remix'
-  
+  const [mode, setMode] = useState(initialMode); // 'image' | 'video' | 'edit'
+
   useEffect(() => {
     setMode(initialMode);
   }, [initialMode]);
 
   const [prompt, setPrompt] = useState('');
-  const [selectedStyle, setSelectedStyle] = useState('cinematic');
-  const [aspectRatio, setAspectRatio] = useState('9:16');
+  const [aspectRatio, setAspectRatio] = useState('16:9');
+  const [duration, setDuration] = useState(5); // 视频时长 2-12秒
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null); // For image-to-video
-  const [uploadedVideo, setUploadedVideo] = useState(null); // For video-to-video
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleImageUpload = async (e) => {
@@ -123,52 +114,34 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
     }
   };
 
-  const handleVideoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const dataUrl = await readFileAsDataUrl(file);
-      setUploadedVideo(dataUrl);
-    }
-  };
-
   const buildPayload = async () => {
-    const ratioDef = ASPECT_RATIOS.find(r => r.id === aspectRatio) || ASPECT_RATIOS[0];
-
     if (mode === 'image') {
+      // 文生图：使用 z-image-turbo
       return {
         model: 'z-image-turbo',
         prompt,
-        size: ratioDef.size,
+        size: aspectRatio === '9:16' ? '768x1344' : aspectRatio === '16:9' ? '1344x768' : '1024x1024',
         nsfw_check: false
       };
     }
     if (mode === 'video') {
+      // 文生视频：使用 Seedance 1.0 Pro Fast
       return {
-        // Fallback to sora-2 to avoid channel restrictions seen on veo-3.1-fast
-        model: 'sora-2',
+        model: 'doubao-seedance-1.0-pro-fast',
         prompt,
-        size: ratioDef.size,
-        duration: 10
+        duration: duration,
+        aspect_ratio: aspectRatio
       };
     }
     if (mode === 'edit') {
+      // 图生视频：使用 Seedance 1.0 Pro Fast + image_urls
       if (!uploadedImage) throw new Error('Please upload an image first.');
       return {
-        model: 'sora-2',
+        model: 'doubao-seedance-1.0-pro-fast',
         prompt,
-        image: uploadedImage,
-        size: ratioDef.size,
-        duration: 6
-      };
-    }
-    if (mode === 'remix') {
-      if (!uploadedVideo) throw new Error('Please upload a video first.');
-      return {
-        model: 'sora-2-remix',
-        prompt,
-        video: uploadedVideo,
-        duration: 6,
-        strength: 0.7
+        duration: duration,
+        aspect_ratio: aspectRatio,
+        image: uploadedImage // 后端会处理上传到 ImgBB 并转换为 image_urls
       };
     }
     throw new Error('Unknown mode');
@@ -177,9 +150,8 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
   const handleGenerate = async () => {
     try {
       setErrorMessage('');
-      if (!prompt && mode !== 'remix' && mode !== 'edit') throw new Error('Please enter a prompt');
+      if (!prompt && mode !== 'edit') throw new Error('Please enter a prompt');
       if (mode === 'edit' && !uploadedImage) throw new Error('Please upload an image first');
-      if (mode === 'remix' && !uploadedVideo) throw new Error('Please upload a video first');
 
       setIsGenerating(true);
       setProgress(5);
@@ -189,7 +161,6 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
       let action = 'text-to-image';
       if (mode === 'video') action = 'text-to-video';
       if (mode === 'edit') action = 'image-to-video';
-      if (mode === 'remix') action = 'video-to-video';
 
       const createData = await callEvolink(action, payload);
       const taskId = createData?.task_id || createData?.data?.task_id || createData?.result?.task_id || createData?.id;
@@ -297,37 +268,32 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
         <title>
           {mode === 'image' ? 'Text to Image Generator - AI Image Creator | FaceAI Hub' :
            mode === 'video' ? 'Text to Video Generator - AI Video Creator | FaceAI Hub' :
-           mode === 'edit' ? 'Image to Video Generator - Convert Image to Video | FaceAI Hub' :
-           'Video to Video Generator - Remix Videos with AI | FaceAI Hub'}
+           'Image to Video Generator - Convert Image to Video | FaceAI Hub'}
         </title>
         <meta name="description" content={
           mode === 'image' ? 'Create AI images from text descriptions! Free AI image generator, generate custom images for face swapping. No watermark.' :
           mode === 'video' ? 'Create AI videos from text descriptions! Free AI video generator, make your own meme videos. No watermark.' :
-          mode === 'edit' ? 'Convert images to videos with AI! Upload an image and describe the animation you want. Free AI image to video converter.' :
-          'Remix source videos into new AI videos. Upload a video and describe the motion you want.'
+          'Convert images to videos with AI! Upload an image and describe the animation you want. Free AI image to video converter.'
         } />
         <meta name="keywords" content={
           mode === 'image' ? 'AI image generator, text to image, create image from text, ai image creator free' :
           mode === 'video' ? 'AI video generator, text to video ai, create meme video from text, ai video creator free' :
-          mode === 'edit' ? 'image to video, convert image to video, animate image, ai image to video converter' :
-          'video to video, ai video remix, convert video to ai video'
+          'image to video, convert image to video, animate image, ai image to video converter'
         } />
-        <link rel="canonical" href={`https://faceaihub.com/ai-studio/${mode === 'image' ? 'text-to-image' : mode === 'video' ? 'text-to-video' : mode === 'edit' ? 'image-to-video' : 'video-to-video'}`} />
-        
+        <link rel="canonical" href={`https://faceaihub.com/ai-studio/${mode === 'image' ? 'text-to-image' : mode === 'video' ? 'text-to-video' : 'image-to-video'}`} />
+
         {/* Open Graph */}
         <meta property="og:title" content={
           mode === 'image' ? 'Text to Image Generator - AI Image Creator' :
           mode === 'video' ? 'Text to Video Generator - AI Video Creator' :
-          mode === 'edit' ? 'Image to Video Generator - Convert Image to Video' :
-          'Video to Video Generator - Remix Videos with AI'
+          'Image to Video Generator - Convert Image to Video'
         } />
         <meta property="og:description" content={
           mode === 'image' ? 'Create AI images from text descriptions instantly.' :
           mode === 'video' ? 'Create AI videos from text descriptions instantly.' :
-          mode === 'edit' ? 'Convert images to videos with AI animation.' :
-          'Remix videos with AI using your own source clips.'
+          'Convert images to videos with AI animation.'
         } />
-        <meta property="og:url" content={`https://faceaihub.com/ai-studio/${mode === 'image' ? 'text-to-image' : mode === 'video' ? 'text-to-video' : mode === 'edit' ? 'image-to-video' : 'video-to-video'}`} />
+        <meta property="og:url" content={`https://faceaihub.com/ai-studio/${mode === 'image' ? 'text-to-image' : mode === 'video' ? 'text-to-video' : 'image-to-video'}`} />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://faceaihub.com/og-image.jpg" />
 
@@ -350,9 +316,8 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
           <div className="studio-controls glass-panel">
             <div className="controls-header">
               <h2>
-                {mode === 'image' ? 'Text to Image' : 
-               mode === 'video' ? 'Text to Video' : 
-               mode === 'edit' ? 'Image to Video' : 'Video to Video'}
+                {mode === 'image' ? 'Text to Image' :
+               mode === 'video' ? 'Text to Video' : 'Image to Video'}
             </h2>
           </div>
 
@@ -360,7 +325,7 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
             {/* Image Upload for Edit Mode */}
             {mode === 'edit' && (
               <div className="control-group">
-                <label>Upload Image to Edit</label>
+                <label>Upload Image</label>
                 <div className="studio-upload-box">
                   {uploadedImage ? (
                     <div className="studio-uploaded-preview">
@@ -377,40 +342,44 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
                 </div>
               </div>
             )}
-            {mode === 'remix' && (
-              <div className="control-group">
-                <label>Upload Video to Remix</label>
-                <div className="studio-upload-box">
-                  <label className="studio-upload-label">
-                    <input type="file" accept="video/*" onChange={handleVideoUpload} hidden />
-                    <span className="upload-icon">📤</span>
-                    <span>Click to Upload Video</span>
-                  </label>
-                </div>
-              </div>
-            )}
 
             {/* Prompt Input */}
             <div className="control-group">
               <label>
                 {mode === 'image' ? 'Prompt' :
-                 mode === 'video' ? 'Prompt' :
-                 mode === 'edit' ? 'Transformation Prompt' : 'Remix Prompt'}
+                 mode === 'video' ? 'Prompt' : 'Animation Prompt'}
               </label>
-              <textarea 
+              <textarea
                 className="prompt-input"
-                placeholder={mode === 'image' 
-                  ? "Describe the image you want to create... (e.g., A futuristic cyberpunk city with neon lights, cinematic lighting, highly detailed)" 
+                placeholder={mode === 'image'
+                  ? "Describe the image you want to create... (e.g., A futuristic cyberpunk city with neon lights, cinematic lighting, highly detailed)"
                   : mode === 'video'
                     ? "Describe the video you want to create... (e.g., A cinematic drone shot of a mountain peak at sunset, smooth camera movement, epic landscape)"
-                    : mode === 'edit'
-                      ? "Describe how to transform this image into a video... (e.g., Make the person dance smoothly, add flowing effects, create smooth movement, animate the background)"
-                      : "Describe how to remix this video... (e.g., Add cinematic slow motion, enhance colors, apply anime style)"}
+                    : "Describe how to animate this image... (e.g., Make the person dance smoothly, add flowing effects, animate the background)"}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 rows={6}
               />
             </div>
+
+            {/* Duration Selector for Video modes */}
+            {(mode === 'video' || mode === 'edit') && (
+              <div className="control-group">
+                <label>Duration: {duration} seconds</label>
+                <input
+                  type="range"
+                  min="2"
+                  max="12"
+                  value={duration}
+                  onChange={(e) => setDuration(Number(e.target.value))}
+                  className="duration-slider"
+                />
+                <div className="duration-labels">
+                  <span>2s</span>
+                  <span>12s</span>
+                </div>
+              </div>
+            )}
 
             {/* Aspect Ratio */}
             <div className="control-group">

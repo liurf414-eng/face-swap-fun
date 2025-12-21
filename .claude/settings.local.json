@@ -5,7 +5,8 @@
       "Bash(npm run build:*)",
       "Bash(curl:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: remove 76 obsolete documentation files and unused dependencies\n\n- Delete 68 outdated MD files \\(SEO, Vercel, testing docs\\)\n- Delete 10 unused scripts from scripts/ directory\n- Remove empty server/ directory\n- Remove unused @aws-sdk/client-s3 dependency\n- Remove TEMPLATE_KEYWORDS_MAPPING.json\n- Clean up package.json scripts\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: remove 76 obsolete documentation files and unused dependencies\n\n- Delete 68 outdated MD files \\(SEO, Vercel, testing docs\\)\n- Delete 10 unused scripts from scripts/ directory\n- Remove empty server/ directory\n- Remove unused @aws-sdk/client-s3 dependency\n- Remove TEMPLATE_KEYWORDS_MAPPING.json\n- Clean up package.json scripts\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)"
     ]
   }
 }
