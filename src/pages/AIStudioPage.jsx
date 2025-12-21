@@ -2,7 +2,19 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 
+// 通用比例选项（文生图、文生视频）
 const ASPECT_RATIOS = [
+  { id: '9:16', name: '9:16 (TikTok)', icon: '📱' },
+  { id: '16:9', name: '16:9 (YouTube)', icon: '💻' },
+  { id: '1:1', name: '1:1 (Square)', icon: '🟦' },
+  { id: '4:3', name: '4:3', icon: '📺' },
+  { id: '3:4', name: '3:4', icon: '📱' },
+];
+
+// 图生视频专用比例选项（额外支持 adaptive 和 keep_ratio）
+const IMAGE_TO_VIDEO_RATIOS = [
+  { id: 'adaptive', name: 'Adaptive', icon: '🔄' },
+  { id: 'keep_ratio', name: 'Keep Ratio', icon: '📐' },
   { id: '9:16', name: '9:16 (TikTok)', icon: '📱' },
   { id: '16:9', name: '16:9 (YouTube)', icon: '💻' },
   { id: '1:1', name: '1:1 (Square)', icon: '🟦' },
@@ -93,18 +105,23 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
   const navigate = useNavigate();
   const [mode, setMode] = useState(initialMode); // 'image' | 'video' | 'edit'
 
-  useEffect(() => {
-    setMode(initialMode);
-  }, [initialMode]);
+  // 根据模式设置默认比例：图生视频默认 adaptive，其他默认 16:9
+  const getDefaultRatio = (m) => m === 'edit' ? 'adaptive' : '16:9';
 
   const [prompt, setPrompt] = useState('');
-  const [aspectRatio, setAspectRatio] = useState('16:9');
+  const [aspectRatio, setAspectRatio] = useState(getDefaultRatio(initialMode));
   const [duration, setDuration] = useState(5); // 视频时长 2-12秒
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null); // For image-to-video
   const [errorMessage, setErrorMessage] = useState('');
+
+  // 模式切换时更新默认比例
+  useEffect(() => {
+    setMode(initialMode);
+    setAspectRatio(getDefaultRatio(initialMode));
+  }, [initialMode]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -385,7 +402,7 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
             <div className="control-group">
               <label>Aspect Ratio</label>
               <div className="ratio-selector">
-                {ASPECT_RATIOS.map(ratio => (
+                {(mode === 'edit' ? IMAGE_TO_VIDEO_RATIOS : ASPECT_RATIOS).map(ratio => (
                   <button
                     key={ratio.id}
                     className={`ratio-btn ${aspectRatio === ratio.id ? 'active' : ''}`}
