@@ -6,22 +6,22 @@ import { calculateCost } from '../utils/creditCalculator';
 
 // 通用比例选项（文生图、文生视频）
 const ASPECT_RATIOS = [
-  { id: '9:16', name: '9:16 (TikTok)', icon: '📱' },
-  { id: '16:9', name: '16:9 (YouTube)', icon: '💻' },
-  { id: '1:1', name: '1:1 (Square)', icon: '🟦' },
-  { id: '4:3', name: '4:3', icon: '📺' },
-  { id: '3:4', name: '3:4', icon: '📱' },
+  { id: '9:16', label: '9:16', desc: 'TikTok', width: 9, height: 16 },
+  { id: '16:9', label: '16:9', desc: 'YouTube', width: 16, height: 9 },
+  { id: '1:1', label: '1:1', desc: 'Square', width: 1, height: 1 },
+  { id: '4:3', label: '4:3', desc: 'Classic', width: 4, height: 3 },
+  { id: '3:4', label: '3:4', desc: 'Portrait', width: 3, height: 4 },
 ];
 
 // 图生视频专用比例选项（额外支持 adaptive 和 keep_ratio）
 const IMAGE_TO_VIDEO_RATIOS = [
-  { id: 'adaptive', name: 'Adaptive', icon: '🔄' },
-  { id: 'keep_ratio', name: 'Keep Ratio', icon: '📐' },
-  { id: '9:16', name: '9:16 (TikTok)', icon: '📱' },
-  { id: '16:9', name: '16:9 (YouTube)', icon: '💻' },
-  { id: '1:1', name: '1:1 (Square)', icon: '🟦' },
-  { id: '4:3', name: '4:3', icon: '📺' },
-  { id: '3:4', name: '3:4', icon: '📱' },
+  { id: 'adaptive', label: 'Adaptive', desc: 'Auto', isSpecial: true, icon: '🔄' },
+  { id: 'keep_ratio', label: 'Keep', desc: 'Original', isSpecial: true, icon: '📐' },
+  { id: '9:16', label: '9:16', desc: 'TikTok', width: 9, height: 16 },
+  { id: '16:9', label: '16:9', desc: 'YouTube', width: 16, height: 9 },
+  { id: '1:1', label: '1:1', desc: 'Square', width: 1, height: 1 },
+  { id: '4:3', label: '4:3', desc: 'Classic', width: 4, height: 3 },
+  { id: '3:4', label: '3:4', desc: 'Portrait', width: 3, height: 4 },
 ];
 
 // Helper to read file as data URL
@@ -459,14 +459,28 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
             {/* Aspect Ratio */}
             <div className="control-group">
               <label>Aspect Ratio</label>
-              <div className="ratio-selector">
+              <div className="ratio-grid">
                 {(mode === 'edit' ? IMAGE_TO_VIDEO_RATIOS : ASPECT_RATIOS).map(ratio => (
                   <button
                     key={ratio.id}
-                    className={`ratio-btn ${aspectRatio === ratio.id ? 'active' : ''}`}
+                    className={`ratio-card ${aspectRatio === ratio.id ? 'active' : ''}`}
                     onClick={() => setAspectRatio(ratio.id)}
+                    title={ratio.desc}
                   >
-                    {ratio.icon} {ratio.name}
+                    {ratio.isSpecial ? (
+                      <span className="ratio-special-icon">{ratio.icon}</span>
+                    ) : (
+                      <div
+                        className="ratio-preview"
+                        style={{
+                          aspectRatio: `${ratio.width} / ${ratio.height}`,
+                          maxWidth: ratio.width > ratio.height ? '24px' : `${24 * ratio.width / ratio.height}px`,
+                          maxHeight: ratio.height > ratio.width ? '24px' : `${24 * ratio.height / ratio.width}px`
+                        }}
+                      />
+                    )}
+                    <span className="ratio-label">{ratio.label}</span>
+                    <span className="ratio-desc">{ratio.desc}</span>
                   </button>
                 ))}
               </div>

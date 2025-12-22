@@ -960,6 +960,73 @@ a {
   background: rgba(99, 102, 241, 0.1);
 }
 
+/* New Ratio Grid Design */
+.ratio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 8px;
+}
+
+.ratio-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: var(--bg-dark);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ratio-card:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.ratio-card.active {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.ratio-card.active .ratio-label {
+  color: #fff;
+}
+
+.ratio-card.active .ratio-preview {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.ratio-preview {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-color);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.ratio-special-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.ratio-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.ratio-desc {
+  font-size: 10px;
+  color: var(--text-muted, #666);
+  opacity: 0.7;
+}
+
 .action-area-fixed {
   padding: 20px;
   border-top: 1px solid var(--border-color);
