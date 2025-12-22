@@ -36,7 +36,11 @@ export default function CreditsDisplay({ onLoginClick, onBuyClick }) {
         className="credits-trigger"
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
       >
-        <span className="credits-icon">&#9889;</span>
+        {user?.picture ? (
+          <img src={user.picture} alt="" className="credits-user-avatar" />
+        ) : (
+          <span className="credits-icon">&#9889;</span>
+        )}
         <span className="credits-amount">{credits.totalCredits}</span>
         <span className="credits-arrow">{isDropdownOpen ? '▲' : '▼'}</span>
       </button>
@@ -48,6 +52,21 @@ export default function CreditsDisplay({ onLoginClick, onBuyClick }) {
             onClick={() => setIsDropdownOpen(false)}
           />
           <div className="credits-dropdown">
+            {/* User Info Header */}
+            {user && (
+              <div className="credits-user-header">
+                {user.picture && (
+                  <img src={user.picture} alt="" className="credits-avatar-large" />
+                )}
+                <div className="credits-user-info">
+                  <span className="credits-user-name">{user.name}</span>
+                  <span className="credits-user-email">{user.email}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="credits-divider" />
+
             <div className="credits-dropdown-header">
               <span className="credits-icon-large">&#9889;</span>
               <span>Your Credits</span>
@@ -94,18 +113,15 @@ export default function CreditsDisplay({ onLoginClick, onBuyClick }) {
               onBuyClick?.();
             }}>
               <span>&#128722;</span>
-              Buy More Credits
+              Get More Credits
             </button>
 
-            <div className="credits-user-section">
-              <span className="credits-email">{user?.email}</span>
-              <button className="credits-logout-btn" onClick={() => {
-                setIsDropdownOpen(false);
-                logout();
-              }}>
-                Sign Out
-              </button>
-            </div>
+            <button className="credits-logout-btn-full" onClick={() => {
+              setIsDropdownOpen(false);
+              logout();
+            }}>
+              Sign Out
+            </button>
           </div>
         </>
       )}

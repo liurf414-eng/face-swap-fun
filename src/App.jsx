@@ -61,7 +61,7 @@ const defaultTemplates = [
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user: authUser, isLoggedIn, credits, checkCredits, deductCredits, refreshCredits, formatTimeUntilReset } = useAuth();
+  const { user, isLoggedIn, credits, checkCredits, deductCredits, refreshCredits, formatTimeUntilReset, googleSignIn, logout } = useAuth();
 
   // Modal states for credits system
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -77,7 +77,7 @@ function AppContent() {
   const [result, setResult] = useState(null)
   const [processingStatus, setProcessingStatus] = useState('')
   const videoRef = useRef(null)
-  
+
   // Refs for scroll preservation
   const mainContentRef = useRef(null)
   const scrollPositionRef = useRef(0)
@@ -115,14 +115,12 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true)  // 新增：模板加载状态
   const [isOnline, setIsOnline] = useState(navigator.onLine)  // 新增：网络状态
   const [showCelebration, setShowCelebration] = useState(false)  // 新增：庆祝动画
-  const [user, setUser] = useState(null)  // 新增：用户信息
-  const [showMyVideos, setShowMyVideos] = useState(false)  // 新增：显示我的视频
   const [myVideos, setMyVideos] = useState([])  // 新增：我的视频列表
   const [forcePlusOneMode, setForcePlusOneMode] = useState(false)
   const [cameFromCommunity, setCameFromCommunity] = useState(false)  // 记住是否从社区来的
   const [returnToCommunityPostId, setReturnToCommunityPostId] = useState(null)
   const [favoriteTemplates, setFavoriteTemplates] = useState([])  // 新增：收藏的模板ID列表
-  const MAX_GENERATIONS = user ? 6 : 3  // 登录用户6次，非登录用户3次
+  const MAX_GENERATIONS = isLoggedIn ? 6 : 3  // 登录用户6次，非登录用户3次
   const TEMPLATES_PER_PAGE = 6
   const [categoryPages, setCategoryPages] = useState({})
   const touchStartRef = useRef({})
@@ -131,7 +129,7 @@ function AppContent() {
   const remainingGenerations = Math.max(0, MAX_GENERATIONS - generationCount)
   const limitReached = generationCount >= MAX_GENERATIONS
   const isDuoInteraction = forcePlusOneMode || selectedTemplate?.category === 'Duo Interaction'
-  const hasRequiredImages = isDuoInteraction 
+  const hasRequiredImages = isDuoInteraction
     ? (uploadedImage && uploadedImage2)
     : uploadedImage
   const canGenerate = Boolean(selectedTemplate && hasRequiredImages && !limitReached && !isProcessing && !result)
@@ -365,130 +363,33 @@ function AppContent() {
     }
   }, [])
 
-  // Google 登录
-  const handleGoogleSignIn = async (response) => {
-    try {
-      console.log('Google login response:', response)
-      const userInfo = {
-        email: response.email,
-        name: response.name,
-        picture: response.picture,
-        sub: response.sub
-      }
-      setUser(userInfo)
-      // 保存用户信息到本地存储
-      localStorage.setItem('user', JSON.stringify(userInfo))
-      
-      // 从本地存储加载用户的视频
-      const savedVideos = localStorage.getItem('myVideos') || '[]'
-      setMyVideos(JSON.parse(savedVideos))
-      
-      console.log('✅ Login success:', userInfo)
-    } catch (error) {
-      console.error('Login failed:', error)
-      toast.error('Login failed. Please try again.')
-    }
-  }
-
-  // 点击登录按钮时的处理
-  const handleGoogleSignInClick = async () => {
-    console.log('Login button clicked')
-    
-    // 使用 Google Identity Services (GIS)
-    if (window.google && window.google.accounts) {
-      try {
-        // 使用 signIn 方法获取用户信息
-        window.google.accounts.oauth2.initTokenClient({
-          client_id: '457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com',
-          scope: 'openid email profile',
-          callback: async (response) => {
-            console.log('Token response:', response)
-            
-            if (response.access_token) {
-              // 使用 token 获取用户信息
-              try {
-                const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-                  headers: {
-                    'Authorization': `Bearer ${response.access_token}`
-                  }
-                })
-                const userInfo = await userInfoResponse.json()
-                console.log('User info:', userInfo)
-                
-                // 设置用户信息
-                const userData = {
-                  email: userInfo.email,
-                  name: userInfo.name,
-                  picture: userInfo.picture,
-                  sub: userInfo.id
-                }
-                
-                setUser(userData)
-                localStorage.setItem('user', JSON.stringify(userData))
-                
-                const savedVideos = localStorage.getItem('myVideos') || '[]'
-                setMyVideos(JSON.parse(savedVideos))
-                
-                // 显示欢迎信息（可选）
-                console.log('✅ Login successful! Welcome ' + userInfo.name + '!')
-              } catch (error) {
-                console.error('Failed to fetch user info:', error)
-                toast.warning('Login succeeded but we could not load your profile.')
-              }
-            }
-          }
-        }).requestAccessToken({ prompt: 'consent' })
-      } catch (error) {
-        console.error('OAuth2 error:', error)
-        toast.error('Login is temporarily unavailable. Please try again later.')
-      }
-    } else {
-      console.error('Google API not loaded')
-      toast.error('Google login is temporarily unavailable. Please refresh and try again.')
-    }
-  }
-
-  const handleSignOut = () => {
-    setUser(null)
-    localStorage.removeItem('user')
-    setMyVideos([])
-    navigate('/') // 回到首页
-    // 关闭下拉菜单
-    const menu = document.querySelector('.user-dropdown')
-    if (menu) {
-      menu.classList.remove('show')
-    }
-  }
-
   // Save generated videos to the "My Videos" list
   const saveVideoToMyList = (videoData) => {
     if (!user) return
-    
+
     const video = {
       id: Date.now(),
       url: videoData.url,
       template: videoData.template,
       timestamp: new Date().toISOString(),
-      userId: user.sub
+      userId: user.id
     }
-    
+
     const updatedVideos = [...myVideos, video]
     setMyVideos(updatedVideos)
     localStorage.setItem('myVideos', JSON.stringify(updatedVideos))
   }
 
-  // 页面加载时检查登录状态
+  // 页面加载时检查登录状态和加载视频
   useEffect(() => {
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
+    if (user) {
       const savedVideos = localStorage.getItem('myVideos') || '[]'
       setMyVideos(JSON.parse(savedVideos))
     }
     // 加载收藏的模板
     const savedFavorites = localStorage.getItem('favoriteTemplates') || '[]'
     setFavoriteTemplates(JSON.parse(savedFavorites))
-  }, [])
+  }, [user])
 
   // 切换模板收藏状态
   const handleToggleFavorite = useCallback((templateId) => {
@@ -502,26 +403,6 @@ function AppContent() {
       return updated
     })
   }, [])
-
-  // 初始化 Google 登录
-  useEffect(() => {
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      // 使用 One Tap 登录
-      window.google.accounts.id.initialize({
-        client_id: '457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com',
-        callback: handleGoogleSignIn,
-        auto_select: false,
-        cancel_on_tap_outside: true
-      })
-      
-      // 自动显示 One Tap 提示（可选）
-      if (!user) {
-        window.google.accounts.id.prompt((notification) => {
-          console.log('One Tap prompt status:', notification)
-        })
-      }
-    }
-  }, [user])
 
   // 获取今天的日期字符串（格式：YYYY-MM-DD）
   const getTodayDateString = () => {
@@ -1371,15 +1252,15 @@ function AppContent() {
         </nav>
         
         <div className="sidebar-footer">
-          {!user ? (
-            <button className="btn-upgrade" onClick={handleGoogleSignInClick}>
+          {!isLoggedIn ? (
+            <button className="btn-upgrade" onClick={() => setShowAuthModal(true)}>
               Sign In to Save
             </button>
           ) : (
             <div className="upgrade-card">
               <div className="upgrade-title">Pro Plan</div>
               <div className="upgrade-desc">Unlock 4K Export</div>
-              <button className="btn-upgrade">Upgrade Now</button>
+              <button className="btn-upgrade" onClick={() => setShowBuyCreditsModal(true)}>Upgrade Now</button>
             </div>
           )}
         </div>
@@ -1388,41 +1269,11 @@ function AppContent() {
       <div className="app-body">
         {/* Top Navbar moved here */}
         <div className="top-navbar">
-          {/* Credits Display - New component */}
+          {/* Credits Display - handles login/logout and credits */}
           <CreditsDisplay
             onLoginClick={() => setShowAuthModal(true)}
             onBuyClick={() => setShowBuyCreditsModal(true)}
           />
-
-          <div className="top-navbar-actions">
-            {user ? (
-              <div className="user-menu">
-                <button
-                  className="user-menu-trigger"
-                  onClick={() => {
-                    const menu = document.querySelector('.user-dropdown')
-                    menu.classList.toggle('show')
-                  }}
-                >
-                  <img src={user.picture} alt={user.name} className="user-avatar" />
-                  <span className="user-name">{user.name}</span>
-                  <span className="dropdown-arrow">▼</span>
-                </button>
-                <div className="user-dropdown">
-                  <button className="dropdown-item" onClick={handleSignOut}>
-                    🚪 Logout
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                className="login-btn"
-                onClick={() => setShowAuthModal(true)}
-              >
-                Log In
-              </button>
-            )}
-          </div>
         </div>
 
       {/* 主内容区域 - 移除巨大的Hero，改为紧凑横幅 */}
@@ -1464,7 +1315,7 @@ function AppContent() {
         {isCommunity && (
           <CommunityPage
             user={user}
-            onLogin={handleGoogleSignInClick}
+            onLogin={() => setShowAuthModal(true)}
           />
         )}
 

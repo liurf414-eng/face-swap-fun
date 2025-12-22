@@ -5,6 +5,7 @@ const AuthContext = createContext(null);
 
 const SESSION_KEY = 'faceai_session';
 const USER_KEY = 'faceai_user';
+const GOOGLE_CLIENT_ID = '457199816989-e16gt3va81kalp0nphhqf0rj0v39ij0b.apps.googleusercontent.com';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -23,39 +24,14 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const loadSession = async () => {
       try {
-        const savedSession = localStorage.getItem(SESSION_KEY);
         const savedUser = localStorage.getItem(USER_KEY);
 
-        if (savedSession && savedUser) {
-          const sessionData = JSON.parse(savedSession);
+        if (savedUser) {
           const userData = JSON.parse(savedUser);
+          setUser(userData);
 
-          // Validate session with server
-          const res = await fetch('/api/auth?action=session', {
-            headers: {
-              'Authorization': `Bearer ${sessionData.sessionToken}`
-            }
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data.success) {
-              setUser({
-                id: data.data.userId,
-                email: data.data.email
-              });
-              setCredits({
-                dailyCredits: data.data.dailyCredits,
-                bonusCredits: data.data.bonusCredits || 0,
-                totalCredits: data.data.dailyCredits + (data.data.bonusCredits || 0),
-                tier: data.data.tier
-              });
-            } else {
-              // Invalid session, clear storage
-              localStorage.removeItem(SESSION_KEY);
-              localStorage.removeItem(USER_KEY);
-            }
-          }
+          // Fetch credits for this user
+          await refreshCredits(userData.id);
         }
       } catch (err) {
         console.error('Failed to load session:', err);
@@ -67,160 +43,143 @@ export function AuthProvider({ children }) {
     loadSession();
   }, []);
 
-  // Send verification code to email
-  const sendCode = useCallback(async (email) => {
-    setError(null);
-    try {
-      const res = await fetch('/api/auth?action=sendCode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+  // Initialize Google Sign-In
+  useEffect(() => {
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCallback,
+        auto_select: false,
+        cancel_on_tap_outside: true
       });
-
-      const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to send code');
-      }
-
-      return { success: true, ...data };
-    } catch (err) {
-      setError(err.message);
-      return { success: false, error: err.message };
     }
   }, []);
 
-  // Verify code and login
-  const verifyCode = useCallback(async (email, code) => {
-    setError(null);
+  // Handle Google Sign-In callback
+  const handleGoogleCallback = useCallback(async (response) => {
     try {
-      const res = await fetch('/api/auth?action=verifyCode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code })
-      });
+      if (response.credential) {
+        // Decode JWT token to get user info
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
 
-      const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Invalid code');
+        const userData = {
+          id: payload.sub,
+          email: payload.email,
+          name: payload.name,
+          picture: payload.picture
+        };
+
+        setUser(userData);
+        localStorage.setItem(USER_KEY, JSON.stringify(userData));
+
+        // Fetch/initialize credits for this user
+        await refreshCredits(userData.id);
       }
-
-      // Save session
-      localStorage.setItem(SESSION_KEY, JSON.stringify({
-        sessionToken: data.data.sessionToken
-      }));
-      localStorage.setItem(USER_KEY, JSON.stringify({
-        id: data.data.userId,
-        email: data.data.email
-      }));
-
-      setUser({
-        id: data.data.userId,
-        email: data.data.email
-      });
-
-      // Fetch credits
-      await refreshCredits(data.data.userId, data.data.sessionToken);
-
-      return { success: true };
     } catch (err) {
-      setError(err.message);
-      return { success: false, error: err.message };
+      console.error('Google sign-in error:', err);
+      setError('Google sign-in failed. Please try again.');
     }
   }, []);
 
-  // Verify magic link token
-  const verifyToken = useCallback(async (email, token) => {
+  // Google Sign-In using OAuth2 token client
+  const googleSignIn = useCallback(async () => {
     setError(null);
-    try {
-      const res = await fetch('/api/auth?action=verifyToken', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token })
-      });
 
-      const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Invalid link');
-      }
-
-      // Save session
-      localStorage.setItem(SESSION_KEY, JSON.stringify({
-        sessionToken: data.data.sessionToken
-      }));
-      localStorage.setItem(USER_KEY, JSON.stringify({
-        id: data.data.userId,
-        email: data.data.email
-      }));
-
-      setUser({
-        id: data.data.userId,
-        email: data.data.email
-      });
-
-      // Fetch credits
-      await refreshCredits(data.data.userId, data.data.sessionToken);
-
-      return { success: true };
-    } catch (err) {
-      setError(err.message);
-      return { success: false, error: err.message };
+    if (!window.google || !window.google.accounts) {
+      setError('Google API not loaded. Please refresh and try again.');
+      return { success: false, error: 'Google API not loaded' };
     }
+
+    return new Promise((resolve) => {
+      try {
+        window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'openid email profile',
+          callback: async (response) => {
+            if (response.access_token) {
+              try {
+                // Fetch user info using the access token
+                const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                  headers: {
+                    'Authorization': `Bearer ${response.access_token}`
+                  }
+                });
+                const userInfo = await userInfoResponse.json();
+
+                const userData = {
+                  id: userInfo.id,
+                  email: userInfo.email,
+                  name: userInfo.name,
+                  picture: userInfo.picture
+                };
+
+                setUser(userData);
+                localStorage.setItem(USER_KEY, JSON.stringify(userData));
+
+                // Fetch/initialize credits for this user
+                await refreshCredits(userData.id);
+
+                resolve({ success: true });
+              } catch (err) {
+                console.error('Failed to fetch user info:', err);
+                setError('Failed to get user information');
+                resolve({ success: false, error: 'Failed to get user information' });
+              }
+            } else {
+              resolve({ success: false, error: 'No access token received' });
+            }
+          }
+        }).requestAccessToken({ prompt: 'consent' });
+      } catch (err) {
+        console.error('OAuth2 error:', err);
+        setError('Google sign-in failed');
+        resolve({ success: false, error: 'Google sign-in failed' });
+      }
+    });
   }, []);
 
   // Logout
   const logout = useCallback(async () => {
     try {
-      const savedSession = localStorage.getItem(SESSION_KEY);
-      if (savedSession) {
-        const { sessionToken } = JSON.parse(savedSession);
-        await fetch('/api/auth?action=logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${sessionToken}`
-          }
-        });
+      // Revoke Google token if available
+      if (window.google && window.google.accounts) {
+        window.google.accounts.id.disableAutoSelect();
       }
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
       localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(USER_KEY);
+      localStorage.removeItem('user'); // Also clear old user key
+      localStorage.removeItem('myVideos');
       setUser(null);
       setCredits({
         dailyCredits: DAILY_FREE_CREDITS,
         bonusCredits: 0,
         totalCredits: DAILY_FREE_CREDITS,
-        tier: 'free'
+        tier: 'free',
+        subscriptionPlan: 'free'
       });
     }
   }, []);
 
   // Refresh credits from server
-  const refreshCredits = useCallback(async (userId = null, sessionToken = null) => {
+  const refreshCredits = useCallback(async (userId = null) => {
     try {
       const uid = userId || user?.id;
       if (!uid) return;
 
-      let token = sessionToken;
-      if (!token) {
-        const savedSession = localStorage.getItem(SESSION_KEY);
-        if (savedSession) {
-          token = JSON.parse(savedSession).sessionToken;
-        }
-      }
-
-      const res = await fetch(`/api/credits?userId=${uid}`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-
+      const res = await fetch(`/api/credits?userId=${uid}`);
       const data = await res.json();
+
       if (data.success) {
         setCredits({
           dailyCredits: data.data.dailyCredits,
           bonusCredits: data.data.bonusCredits || 0,
           totalCredits: data.data.totalCredits,
           lastResetDate: data.data.lastResetDate,
-          tier: data.data.tier || 'free'
+          tier: data.data.tier || 'free',
+          subscriptionPlan: data.data.subscriptionPlan || 'free'
         });
       }
     } catch (err) {
@@ -264,14 +223,10 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const savedSession = localStorage.getItem(SESSION_KEY);
-      const token = savedSession ? JSON.parse(savedSession).sessionToken : null;
-
       const res = await fetch('/api/credits?action=deduct', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           userId: user.id,
@@ -302,14 +257,10 @@ export function AuthProvider({ children }) {
     if (!user) return { success: false };
 
     try {
-      const savedSession = localStorage.getItem(SESSION_KEY);
-      const token = savedSession ? JSON.parse(savedSession).sessionToken : null;
-
       const res = await fetch('/api/credits?action=refund', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           userId: user.id,
@@ -342,9 +293,7 @@ export function AuthProvider({ children }) {
     loading,
     error,
     isLoggedIn: !!user,
-    sendCode,
-    verifyCode,
-    verifyToken,
+    googleSignIn,
     logout,
     refreshCredits,
     checkCredits,

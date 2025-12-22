@@ -154,6 +154,65 @@
   color: #fff;
 }
 
+.auth-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.google-sign-in-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 24px;
+  background: #fff;
+  border: none;
+  border-radius: 8px;
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.google-sign-in-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+}
+
+.google-sign-in-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+.auth-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.benefit-icon {
+  font-size: 18px;
+}
+
 .auth-footer {
   margin-top: 24px;
   text-align: center;

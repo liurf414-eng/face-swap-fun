@@ -200,3 +200,69 @@
   border-color: rgba(255, 255, 255, 0.4);
   color: #fff;
 }
+
+/* User avatar in trigger button */
+.credits-user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* User header in dropdown */
+.credits-user-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.credits-avatar-large {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.credits-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.credits-user-name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.credits-user-email {
+  color: #888;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Full width logout button */
+.credits-logout-btn-full {
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 10px;
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.credits-logout-btn-full:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
