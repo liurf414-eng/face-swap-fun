@@ -21,6 +21,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@vercel/kv": "^3.0.0",
     "@vitejs/plugin-react": "^5.0.4",
     "browser-image-compression": "^2.0.2",
     "cors": "^2.8.5",
@@ -34,6 +35,7 @@
     "react-masonry-css": "^1.0.16",
     "react-router-dom": "^7.9.6",
     "react-toastify": "^11.0.5",
+    "stripe": "^20.1.0",
     "vite": "^7.1.9"
   }
 }

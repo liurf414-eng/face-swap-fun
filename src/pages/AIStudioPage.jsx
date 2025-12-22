@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { calculateCost } from '../utils/creditCalculator';
 
 // 通用比例选项（文生图、文生视频）
 const ASPECT_RATIOS = [
@@ -45,7 +47,7 @@ async function callEvolink(action, payload) {
   return data.data;
 }
 
-async function pollEvolink(taskId, endpoint, sourceAction) {
+async function pollEvolink(taskId, endpoint, sourceAction, onProgress) {
   for (let i = 0; i < 120; i++) {
     await new Promise((r) => setTimeout(r, 2000));
     const res = await fetch('/api/evolink', {
@@ -62,6 +64,18 @@ async function pollEvolink(taskId, endpoint, sourceAction) {
       throw new Error(data?.error || `Status error (${res.status})`);
     }
     const resultBlock = data.data?.result || data.data?.data?.result || data.data;
+
+    // 获取真实的进度值
+    const progress =
+      data.data?.progress ??
+      resultBlock?.progress ??
+      data.data?.data?.progress;
+
+    // 如果有进度回调且有进度值，更新进度
+    if (onProgress && typeof progress === 'number') {
+      onProgress(progress);
+    }
+
     const status =
       resultBlock?.status ||
       data.data?.status ||
@@ -103,6 +117,7 @@ async function pollEvolink(taskId, endpoint, sourceAction) {
 
 function AIStudioPage({ mode: initialMode = 'image' }) {
   const navigate = useNavigate();
+  const { isLoggedIn, credits, checkCredits, deductCredits, refundCredits } = useAuth();
   const [mode, setMode] = useState(initialMode); // 'image' | 'video' | 'edit'
 
   // 根据模式设置默认比例：图生视频默认 adaptive，其他默认 16:9
@@ -116,6 +131,16 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
   const [result, setResult] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null); // For image-to-video
   const [errorMessage, setErrorMessage] = useState('');
+
+  // 计算当前操作的积分消耗
+  const getCurrentCost = () => {
+    if (mode === 'image') {
+      return calculateCost('text-to-image', { count: 1 });
+    }
+    return calculateCost(mode === 'video' ? 'text-to-video' : 'image-to-video', { duration });
+  };
+
+  const currentCost = getCurrentCost();
 
   // 模式切换时更新默认比例
   useEffect(() => {
@@ -170,14 +195,39 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
       if (!prompt && mode !== 'edit') throw new Error('Please enter a prompt');
       if (mode === 'edit' && !uploadedImage) throw new Error('Please upload an image first');
 
+      // 检查用户是否登录
+      if (!isLoggedIn) {
+        setErrorMessage('Please sign in to generate content');
+        return;
+      }
+
+      // 检查积分是否足够
+      const action = mode === 'image' ? 'text-to-image' : mode === 'video' ? 'text-to-video' : 'image-to-video';
+      const creditCheck = await checkCredits(action, { duration, count: 1 });
+
+      if (!creditCheck.success) {
+        if (creditCheck.error === 'insufficient_credits') {
+          setErrorMessage(`Insufficient credits. Need ${creditCheck.cost}, have ${creditCheck.available}.`);
+        } else {
+          setErrorMessage(creditCheck.message || 'Please sign in to continue');
+        }
+        return;
+      }
+
       setIsGenerating(true);
-      setProgress(5);
+      setProgress(0);
       setResult(null);
 
+      // 先扣除积分
+      const deductResult = await deductCredits(action, { duration, count: 1 });
+      if (!deductResult.success) {
+        setErrorMessage('Failed to deduct credits');
+        setIsGenerating(false);
+        return;
+      }
+
       const payload = await buildPayload();
-      let action = 'text-to-image';
-      if (mode === 'video') action = 'text-to-video';
-      if (mode === 'edit') action = 'image-to-video';
+      // action already defined above for credit check
 
       const createData = await callEvolink(action, payload);
       const taskId = createData?.task_id || createData?.data?.task_id || createData?.result?.task_id || createData?.id;
@@ -193,8 +243,11 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
           ? `https://api.evolink.ai${rawStatusEndpoint.startsWith('/') ? '' : '/'}${rawStatusEndpoint}`
           : rawStatusEndpoint;
 
-      setProgress(15);
-      const output = await pollEvolink(taskId, statusEndpoint, action);
+      // 使用API返回的真实进度值
+      const output = await pollEvolink(taskId, statusEndpoint, action, (realProgress) => {
+        // API返回的progress是0-100的数值
+        setProgress(realProgress);
+      });
       setProgress(100);
 
       // Attempt to extract output URL
@@ -243,6 +296,11 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
       setErrorMessage(readable);
       setIsGenerating(false);
       setProgress(0);
+
+      // 生成失败时退还积分
+      const action = mode === 'image' ? 'text-to-image' : mode === 'video' ? 'text-to-video' : 'image-to-video';
+      const refundAmount = calculateCost(action, { duration, count: 1 });
+      await refundCredits(refundAmount, null, 'Generation failed');
     }
   };
 
@@ -441,7 +499,8 @@ function AIStudioPage({ mode: initialMode = 'image' }) {
               </div>
             )}
             <div className="cost-info">
-              <span>⚡ 1 Credit per generation</span>
+              <span>Cost: {currentCost} credits</span>
+              {isLoggedIn && <span className="credits-available">Available: {credits.totalCredits}</span>}
             </div>
             {errorMessage && <p className="error-text">{errorMessage}</p>}
           </div>

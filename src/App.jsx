@@ -16,6 +16,8 @@ import GifMakerPage from './pages/GifMakerPage'
 import VideoMakerPage from './pages/VideoMakerPage'
 import CommunityPage from './pages/CommunityPage'
 import CreateFromCommunityPage from './pages/CreateFromCommunityPage'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { AuthModal, CreditsDisplay, BuyCreditsModal, InsufficientCreditsModal } from './components/credits'
 
 // Default templates as a fallback
 const defaultTemplates = [
@@ -56,9 +58,17 @@ const defaultTemplates = [
   { id: 30, name: 'Sweet Smile', gifUrl: 'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.mp4', category: 'Emotion', type: 'video' }
 ]
 
-function App() {
+function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user: authUser, isLoggedIn, credits, checkCredits, deductCredits, refreshCredits, formatTimeUntilReset } = useAuth();
+
+  // Modal states for credits system
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
+  const [showInsufficientModal, setShowInsufficientModal] = useState(false);
+  const [insufficientCost, setInsufficientCost] = useState(0);
+
   const [templates, setTemplates] = useState([])
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
@@ -1378,16 +1388,16 @@ function App() {
       <div className="app-body">
         {/* Top Navbar moved here */}
         <div className="top-navbar">
-          <div className="credits-pill">
-            <span className="credits-icon">⚡</span>
-            <span className="credits-text">Credits:</span>
-            <span className="credits-count">{user ? Math.max(0, (user ? 6 : 3) - generationCount) : 3}</span>
-          </div>
+          {/* Credits Display - New component */}
+          <CreditsDisplay
+            onLoginClick={() => setShowAuthModal(true)}
+            onBuyClick={() => setShowBuyCreditsModal(true)}
+          />
 
           <div className="top-navbar-actions">
             {user ? (
               <div className="user-menu">
-                <button 
+                <button
                   className="user-menu-trigger"
                   onClick={() => {
                     const menu = document.querySelector('.user-dropdown')
@@ -1405,9 +1415,9 @@ function App() {
                 </div>
               </div>
             ) : (
-              <button 
+              <button
                 className="login-btn"
-                onClick={handleGoogleSignInClick}
+                onClick={() => setShowAuthModal(true)}
               >
                 Log In
               </button>
@@ -1821,8 +1831,40 @@ function App() {
       pauseOnHover
       theme="dark"
     />
+
+    {/* Credits System Modals */}
+    <AuthModal
+      isOpen={showAuthModal}
+      onClose={() => setShowAuthModal(false)}
+    />
+    <BuyCreditsModal
+      isOpen={showBuyCreditsModal}
+      onClose={() => setShowBuyCreditsModal(false)}
+      currentPlan={credits.subscriptionPlan || 'free'}
+      dailyCredits={credits.dailyCredits}
+    />
+    <InsufficientCreditsModal
+      isOpen={showInsufficientModal}
+      onClose={() => setShowInsufficientModal(false)}
+      cost={insufficientCost}
+      available={credits.totalCredits}
+      onBuyCredits={() => {
+        setShowInsufficientModal(false);
+        setShowBuyCreditsModal(true);
+      }}
+      timeUntilReset={formatTimeUntilReset()}
+    />
   </div>
   )
+}
+
+// Wrap AppContent with AuthProvider
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }
 
 export default App

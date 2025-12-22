@@ -6,7 +6,8 @@
       "Bash(curl:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: remove 76 obsolete documentation files and unused dependencies\n\n- Delete 68 outdated MD files \\(SEO, Vercel, testing docs\\)\n- Delete 10 unused scripts from scripts/ directory\n- Remove empty server/ directory\n- Remove unused @aws-sdk/client-s3 dependency\n- Remove TEMPLATE_KEYWORDS_MAPPING.json\n- Clean up package.json scripts\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: add user credits system with email authentication\n\n- Add email magic link authentication \\(api/auth.js\\)\n- Add credits management API with Vercel KV \\(api/credits.js\\)\n- Add credit calculator utility with subscription plans\n- Add AuthContext for global auth state management\n- Add UI components: AuthModal, CreditsDisplay, BuyCreditsModal, InsufficientCreditsModal\n- Integrate credits system into App.jsx and AIStudioPage.jsx\n- Credits rules: 100 daily free + 100 initial bonus for new users\n- Deduct credits before generation, refund on failure\n- Subscription payments marked as \"Coming Soon\"\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }

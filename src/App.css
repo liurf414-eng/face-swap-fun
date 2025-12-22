@@ -4578,3 +4578,23 @@ a {
   margin-top: 20px;
 }
 
+/* Credits Display Styles for AI Studio */
+.cost-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #888;
+}
+
+.cost-info span:first-child {
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.credits-available {
+  color: #10b981;
+}
+
